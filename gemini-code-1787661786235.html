@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobra TV Live - لوحة التحكم الشاملة</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --bg-black: #050505;
+            --card-black: #0f172a;
+            --pink-main: #ec4899;
+            --pink-glow: #ff007f;
+            --wine-red: #881337;
+            --wine-dark: #4c0519;
+            --text-light: #f8fafc;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--bg-black); color: var(--text-light); padding: 20px; direction: rtl; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: linear-gradient(135deg, var(--wine-dark), var(--card-black)); border: 1px solid var(--pink-main); border-radius: 12px; margin-bottom: 20px; box-shadow: 0 0 15px rgba(236, 72, 153, 0.3); }
+        .logo-text { font-size: 24px; font-weight: bold; color: var(--pink-main); text-shadow: 0 0 8px var(--pink-glow); }
+        .live-badge { background: var(--wine-red); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; border: 1px solid var(--pink-main); }
+
+        /* Grid */
+        .grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid-main { grid-template-columns: 1fr; } }
+
+        /* Cards */
+        .card { background: var(--card-black); border-radius: 12px; padding: 20px; border: 1px solid #334155; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .card-wine { border-color: var(--wine-red); background: linear-gradient(180deg, var(--card-black), var(--wine-dark)); }
+        .card-title { font-size: 18px; font-weight: bold; color: var(--pink-main); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        /* Video Player Preview with Overlay Logo */
+        .player-container { width: 100%; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid var(--pink-main); position: relative; }
+        video { width: 100%; height: 320px; object-fit: contain; }
+        
+        /* Dynamic Overlay Logo */
+        #watermarkLogo { position: absolute; max-width: 100px; z-index: 10; transition: all 0.3s ease; pointer-events: none; }
+        .pos-top-right { top: 15px; right: 15px; }
+        .pos-top-left { top: 15px; left: 15px; }
+        .pos-bottom-right { bottom: 40px; right: 15px; }
+        .pos-bottom-left { bottom: 40px; left: 15px; }
+
+        /* Form Controls */
+        input[type="text"], select, input[type="number"] { width: 100%; padding: 10px; background: #050505; border: 1px solid #475569; color: #fff; border-radius: 6px; margin-bottom: 10px; font-size: 14px; }
+        input:focus, select:focus { border-color: var(--pink-main); outline: none; }
+        label { font-size: 13px; color: #cbd5e1; margin-bottom: 4px; display: block; }
+
+        /* Buttons */
+        .btn { border: none; border-radius: 6px; padding: 10px 15px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-pink { background: var(--pink-main); }
+        .btn-pink:hover { background: var(--pink-glow); box-shadow: 0 0 10px var(--pink-glow); }
+        .btn-wine { background: var(--wine-red); }
+        .btn-wine:hover { background: #9f1239; }
+        .btn-dark { background: #334155; }
+        .btn-full { width: 100%; margin-bottom: 8px; }
+
+        .playlist-list { list-style: none; max-height: 200px; overflow-y: auto; }
+        .playlist-item { background: #050505; padding: 10px; border-radius: 6px; border: 1px solid #334155; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="logo-text">🐍 Cobra TV Live</div>
+        <div class="live-badge">● البث المباشر</div>
+    </div>
+
+    <div class="grid-main">
+        <div>
+            <!-- شاشة المعاينة الحية مع اللوجو المتحرك -->
+            <div class="card">
+                <div class="card-title">🎬 المعاينة الحية والتحكم بالشاشة</div>
+                <div class="player-container">
+                    <img id="watermarkLogo" src="https://via.placeholder.com/80/ec4899/ffffff?text=Cobra" class="pos-top-right" alt="Logo">
+                    <video id="livePlayer" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" controls></video>
+                </div>
+            </div>
+
+            <!-- كارت التحكم الكامل في اللوجو -->
+            <div class="card">
+                <div class="card-title">🎨 التحكم الكامل بـ شعار القناة (Logo Control)</div>
+                <label>رابط صورة اللوجو (PNG / Direct Image URL):</label>
+                <input type="text" id="logoUrlInput" placeholder="https://domain.com/logo.png">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>موقع اللوجو على الشاشة:</label>
+                        <select id="logoPositionSelect" onchange="updateLogoPreview()">
+                            <option value="pos-top-right">أعلى اليمين</option>
+                            <option value="pos-top-left">أعلى اليسار</option>
+                            <option value="pos-bottom-right">أسفل اليمين</option>
+                            <option value="pos-bottom-left">أسفل اليسار</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>عرض اللوجو (بالبكسل):</label>
+                        <input type="number" id="logoSizeInput" value="80" placeholder="80">
+                    </div>
+                </div>
+
+                <button class="btn btn-pink btn-full" onclick="applyLogoSettings()">حفظ وتطبيق إعدادات اللوجو في التطبيق</button>
+            </div>
+
+            <!-- إدارات الإعلانات -->
+            <div class="card card-wine">
+                <div class="card-title">📢 إدارة الإعلانات العاجلة</div>
+                <label>رابط فيديو الإعلان (MP4):</label>
+                <input type="text" id="adUrlInput" placeholder="https://example.com/ad.mp4">
+                <button class="btn btn-pink btn-full" onclick="injectAdNow()">⚡ بث الإعلان فوراً</button>
+            </div>
+        </div>
+
+        <div>
+            <!-- إضافة فيلم -->
+            <div class="card">
+                <div class="card-title">➕ إضافة فيلم للقناة</div>
+                <input type="text" id="movieTitleInput" placeholder="اسم الفيلم">
+                <input type="text" id="movieUrlInput" placeholder="رابط الفيلم (MP4 / M3U8)">
+                <button class="btn btn-pink btn-full" onclick="addMovieToQueue()">إضافة وإرسال</button>
+            </div>
+
+            <!-- قائمة الأفلام -->
+            <div class="card">
+                <div class="card-title">📜 قائمة التشغيل الحالية</div>
+                <ul class="playlist-list" id="playlistUI"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. ضع إعدادات Firebase الخاصة بمشروعك هنا
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "...",
+        appId: "..."
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const player = document.getElementById('livePlayer');
+    const watermarkLogo = document.getElementById('watermarkLogo');
+
+    function updateLogoPreview() {
+        const position = document.getElementById('logoPositionSelect').value;
+        const size = document.getElementById('logoSizeInput').value;
+        const url = document.getElementById('logoUrlInput').value;
+
+        watermarkLogo.className = position;
+        if(size) watermarkLogo.style.width = size + 'px';
+        if(url) watermarkLogo.src = url;
+    }
+
+    function applyLogoSettings() {
+        updateLogoPreview();
+        const logoData = {
+            url: watermarkLogo.src,
+            position: document.getElementById('logoPositionSelect').value,
+            size: document.getElementById('logoSizeInput').value || 80
+        };
+
+        db.collection("tv_channel").doc("logo_settings").set(logoData)
+            .then(() => alert("تم إرسال إعدادات اللوجو بنجاح للتطبيق!"))
+            .catch(err => alert("خطأ: " + err.message));
+    }
+
+    function syncToFirebase(url, title, isAd = false) {
+        db.collection("tv_channel").doc("current_state").set({
+            currentUrl: url,
+            title: title,
+            isAd: isAd,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+
+    function addMovieToQueue() {
+        const title = document.getElementById('movieTitleInput').value;
+        const url = document.getElementById('movieUrlInput').value;
+        if (!url) return alert('يرجى كتابة رابط الفيلم');
+        
+        player.src = url;
+        player.play();
+        syncToFirebase(url, title || "فيلم بدون عنوان", false);
+    }
+
+    function injectAdNow() {
+        const adUrl = document.getElementById('adUrlInput').value;
+        if (!adUrl) return alert('يرجى كتابة رابط الإعلان');
+        
+        player.src = adUrl;
+        player.play();
+        syncToFirebase(adUrl, "إعلان عاجل", true);
+    }
+</script>
+</body>
+</html>
