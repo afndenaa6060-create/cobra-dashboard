@@ -3,362 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cobra TV Live - Control Center</title>
+    <title>Cobra TV - لوحة التحكم الاحترافية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        :root {
-            --bg-main: #0b0f17;
-            --card-bg: #151c2c;
-            --pink-accent: #ec4899;
-            --purple-glow: #8b5cf6;
-            --text-main: #f1f5f9;
-            --text-sub: #94a3b8;
-            --border-color: #1e293b;
-        }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg-main); color: var(--text-main); padding: 20px; direction: rtl; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .logo-text { font-size: 22px; font-weight: 800; color: var(--pink-accent); }
-
-        .grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        @media (max-width: 850px) { .grid-main { grid-template-columns: 1fr; } }
-
-        .card { background: var(--card-bg); border-radius: 14px; padding: 18px; border: 1px solid var(--border-color); margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .card-ad { border-color: rgba(236, 72, 153, 0.4); background: linear-gradient(180deg, var(--card-bg), #1e1329); }
-        .card-title { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 14px; }
-
-        .player-wrapper { position: relative; width: 100%; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--purple-glow); }
-        video { width: 100%; height: 360px; object-fit: contain; }
-        
-        #overlayLogo { position: absolute; top: 10px; right: 10px; width: 80px; z-index: 99; pointer-events: none; }
-
-        .controls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; text-align: center; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: #0b0f17; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; margin-bottom: 10px; font-size: 13px; outline: none; }
-        input:focus { border-color: var(--pink-accent); }
-        label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; display: block; }
-
-        .btn { border: none; border-radius: 8px; padding: 10px 14px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 8px; font-size: 13px; transition: 0.2s; }
-        .btn-pink { background: linear-gradient(135deg, #ec4899, #d946ef); }
-        .btn-dark { background: #1e293b; border: 1px solid var(--border-color); }
-        .btn-dark:hover { background: #334155; }
-
-        .playlist-box { max-height: 240px; overflow-y: auto; list-style: none; }
-        .playlist-item { background: #0b0f17; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .active-movie { border-color: var(--pink-accent); background: #1f132b; }
+        body { background-color: #0f0a15; color: #ffffff; font-family: system-ui, sans-serif; }
+        .card-bg { background: rgba(25, 18, 38, 0.85); border: 1px solid rgba(236, 72, 153, 0.2); }
+        .btn-pink { background: linear-gradient(90deg, #ec4899, #8b5cf6); }
+        .btn-pink:hover { opacity: 0.9; }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-<div class="container">
-    <div class="header">
-        <div class="logo-text">🐍 Cobra TV - لوحة التحكم والبث المباشر</div>
-        <div style="font-size:12px; color:#4ade80;" id="statusBadge">● متصل بـ Firebase بنجاح</div>
-    </div>
-
-    <div class="grid-main">
-        <div>
-            <!-- شاشة المعاينة -->
-            <div class="card">
-                <div class="card-title">🎬 شاشة المعاينة الحية</div>
-                <div class="player-wrapper">
-                    <img id="overlayLogo" src="" alt="Logo">
-                    <video id="liveVideo" controls></video>
-                </div>
-                <div style="margin-top:10px; font-size:13px; color:var(--pink-accent); font-weight:bold;" id="nowPlayingText">جاري الانتظار...</div>
-            </div>
-
-            <!-- التحكم باللوجو لتطبيقه في الموبايل فوراً -->
-            <div class="card">
-                <div class="card-title">🎯 تحريك اللوجو والتزامن مع التطبيق</div>
-                <label>رابط صورة اللوجو:</label>
-                <input type="text" id="logoUrl" value="" onchange="updateLogoPreview()">
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                    <div>
-                        <label>من الأعلى (Top px):</label>
-                        <input type="number" id="logoTop" value="10" oninput="updateLogoPreview()">
-                    </div>
-                    <div>
-                        <label>من اليمين (Right px):</label>
-                        <input type="number" id="logoRight" value="10" oninput="updateLogoPreview()">
-                    </div>
-                    <div>
-                        <label>العرض (Width px):</label>
-                        <input type="number" id="logoWidth" value="80" oninput="updateLogoPreview()">
-                    </div>
-                </div>
-
-                <div class="controls-grid" style="max-width:180px; margin: 10px auto;">
-                    <div></div>
-                    <button class="btn btn-dark" onclick="moveLogo('top', -5)">⬆️</button>
-                    <div></div>
-                    <button class="btn btn-dark" onclick="moveLogo('right', 5)">⬅️</button>
-                    <button class="btn btn-dark" onclick="moveLogo('top', 5)">⬇️</button>
-                    <button class="btn btn-dark" onclick="moveLogo('right', -5)">➡️</button>
-                </div>
-
-                <button class="btn btn-pink" onclick="saveLogoToFirebase()">💾 حفظ ومزامنة اللوجو فوراً مع التطبيق</button>
-            </div>
-
-            <!-- التحكم بالإعلانات والشريط السفلي للفيلم القادم -->
-            <div class="card card-ad">
-                <div class="card-title">🖼️ التحكم بشريط الإعلانات والشريط الإخباري السفلي</div>
-                
-                <label>رابط بنر الإعلان العلوي (صورة عريضة):</label>
-                <input type="text" id="topBannerUrl" placeholder="https://example.com/banner.jpg">
-                
-                <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
-                    <label style="margin:0;"><input type="checkbox" id="topBannerActive"> تفعيل عرض الإعلان العلوي في التطبيق</label>
-                </div>
-
-                <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
-
-                <label>نص "الفيلم القادم" للشريط السفلي:</label>
-                <input type="text" id="nextMovieText" placeholder="مثال: الفيلم القادم: باتمان - اليوم الساعة 9 مساءً">
-
-                <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
-                    <label style="margin:0;"><input type="checkbox" id="nextMovieActive"> تفعيل الشريط السفلي في التطبيق</label>
-                </div>
-
-                <button class="btn btn-pink" onclick="saveBannersToFirebase()">📢 حفظ وتحديث بنرات التطبيق</button>
-            </div>
-        </div>
-
-        <div>
-            <!-- إضافة فيلم -->
-            <div class="card">
-                <div class="card-title">➕ إضافة فيديو جديد</div>
-                <input type="text" id="videoTitle" placeholder="اسم الفيلم / الحلقة">
-                <input type="text" id="videoUrl" placeholder="رابط البث (MP4)">
-                <button class="btn btn-pink" onclick="addToPlaylistCloud()">حفظ وإضافة للقائمة</button>
-            </div>
-
-            <!-- بث إعلان -->
-            <div class="card card-ad">
-                <div class="card-title">📢 قطع البث لإعلان عاجل</div>
-                <input type="text" id="adUrl" placeholder="رابط فيديو الإعلان (MP4)">
-                <button class="btn btn-pink" onclick="playAdNow()">⚡ بث الإعلان الآن</button>
-            </div>
-
-            <!-- القائمة -->
-            <div class="card">
-                <div class="card-title">📜 قائمة الفيديوهات</div>
-                <ul class="playlist-box" id="playlistUI"></ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyCzZSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",
-        authDomain: "cobra-tv-b1231.firebaseapp.com",
-        projectId: "cobra-tv-b1231",
-        storageBucket: "cobra-tv-b1231.firebasestorage.app",
-        messagingSenderId: "73044924945",
-        appId: "1:73044924945:web:4ed40ee2b6463b574e2fb0",
-        measurementId: "G-X5JQH06QNK"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const video = document.getElementById('liveVideo');
-    const logo = document.getElementById('overlayLogo');
-    
-    let playlist = [];
-    let currentIndex = 0;
-    let savedMovieTime = 0;
-    let isPlayingAd = false;
-
-    // جلب إعدادات اللوجو
-    db.collection("logo_settings").doc("config").onSnapshot(doc => {
-        if(doc.exists) {
-            const data = doc.data();
-            document.getElementById('logoUrl').value = data.url || '';
-            document.getElementById('logoTop').value = data.top || 10;
-            document.getElementById('logoRight').value = data.right || 10;
-            document.getElementById('logoWidth').value = data.width || 80;
-            updateLogoPreview();
-        }
-    });
-
-    // جلب إعدادات الإعلانات والشريط السفلي
-    db.collection("app_banners").doc("config").onSnapshot(doc => {
-        if(doc.exists) {
-            const data = doc.data();
-            document.getElementById('topBannerUrl').value = data.topBannerUrl || '';
-            document.getElementById('topBannerActive').checked = data.topBannerActive || false;
-            document.getElementById('nextMovieText').value = data.nextMovieText || '';
-            document.getElementById('nextMovieActive').checked = data.nextMovieActive || false;
-        }
-    });
-
-    // قائمة التشغيل
-    db.collection("playlist").orderBy("createdAt", "asc").onSnapshot(snapshot => {
-        const isFirstLoad = playlist.length === 0 && snapshot.docs.length > 0;
-        playlist = [];
-        snapshot.forEach(doc => {
-            playlist.push({ id: doc.id, ...doc.data() });
-        });
-        renderPlaylist();
-
-        if (isFirstLoad && !video.src) {
-            playCurrentMovie(0);
-        }
-    });
-
-    video.onended = function() {
-        if (isPlayingAd) {
-            isPlayingAd = false;
-            playCurrentMovie(savedMovieTime);
-        } else {
-            if (currentIndex + 1 < playlist.length) {
-                currentIndex++;
-                playCurrentMovie(0);
-            }
-        }
-    };
-
-    async function addToPlaylistCloud() {
-        const title = document.getElementById('videoTitle').value;
-        const url = document.getElementById('videoUrl').value;
-        if (!url) return alert('إدخل رابط الفيديو الأول!');
-
-        try {
-            await db.collection("playlist").add({
-                title: title || "فيديو " + (playlist.length + 1),
-                url: url,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            document.getElementById('videoTitle').value = '';
-            document.getElementById('videoUrl').value = '';
-        } catch (error) {
-            alert("خطأ: " + error.message);
-        }
-    }
-
-    function renderPlaylist() {
-        const ui = document.getElementById('playlistUI');
-        ui.innerHTML = '';
-        playlist.forEach((item, index) => {
-            ui.innerHTML += `
-                <li class="playlist-item ${index === currentIndex ? 'active-movie' : ''}">
-                    <span>${index + 1}. ${item.title}</span>
-                    <div>
-                        <button class="btn btn-pink" style="padding:4px 8px; font-size:11px;" onclick="playSelect(${index})">تشغيل</button>
-                        <button class="btn btn-dark" style="padding:4px 8px; font-size:11px;" onclick="removeItem('${item.id}')">حذف</button>
-                    </div>
-                </li>
-            `;
-        });
-    }
-
-    function playCurrentMovie(startTime = 0) {
-        if (playlist.length === 0) return;
-        const current = playlist[currentIndex];
-        video.src = current.url;
-        video.currentTime = startTime;
-        video.play().catch(e => console.log("Autoplay:", e));
-        document.getElementById('nowPlayingText').innerText = "شغال الآن: " + current.title;
-        renderPlaylist();
-
-        const nowMs = Date.now();
-        db.collection("live_stream").doc("current_state").set({
-            currentUrl: current.url,
-            title: current.title,
-            isAd: false,
-            startedAt: firebase.firestore.Timestamp.fromMillis(nowMs - (startTime * 1000)),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    }
-
-    function playSelect(index) {
-        currentIndex = index;
-        isPlayingAd = false;
-        playCurrentMovie(0);
-    }
-
-    async function removeItem(id) {
-        await db.collection("playlist").doc(id).delete();
-    }
-
-    function playAdNow() {
-        const adUrl = document.getElementById('adUrl').value;
-        if (!adUrl) return alert("ادخل رابط الإعلان!");
+    <div class="max-w-4xl mx-auto space-y-6">
         
-        savedMovieTime = video.currentTime;
-        isPlayingAd = true;
+        <!-- الهيدر -->
+        <div class="flex items-center justify-between border-b border-pink-500/30 pb-4">
+            <h1 class="text-2xl font-black text-pink-500 flex items-center gap-2">
+                <span>🐍 Cobra TV Dashboard</span>
+            </h1>
+            <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full border border-pink-500/40">مزامنة فورية</span>
+        </div>
 
-        video.src = adUrl;
-        video.play();
-        document.getElementById('nowPlayingText').innerText = "📢 بث إعلان عاجل...";
+        <!-- 🎬 1. التحكم في الفيلم الحالي والوصف (Movie Control) -->
+        <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
+            <h2 class="text-lg font-bold text-pink-400 flex items-center gap-2">🎬 الفيلم الحالي والبطاقة الوصفية</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">اسم الفيلم الحالي:</label>
+                    <input type="text" id="movieTitle" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="مثال: The Cure 2026">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">التصنيف:</label>
+                    <input type="text" id="movieCategory" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="رعب / تشويق">
+                </div>
+            </div>
 
-        const nowMs = Date.now();
-        db.collection("live_stream").doc("current_state").set({
-            currentUrl: adUrl,
-            title: "إعلان عاجل",
-            isAd: true,
-            startedAt: firebase.firestore.Timestamp.fromMillis(nowMs),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    }
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">رابط فيديو الفيلم (Stream/MP4/HLS):</label>
+                <input type="text" id="currentUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="https://example.com/video.mp4">
+            </div>
 
-    function updateLogoPreview() {
-        const url = document.getElementById('logoUrl').value;
-        const top = document.getElementById('logoTop').value;
-        const right = document.getElementById('logoRight').value;
-        const width = document.getElementById('logoWidth').value;
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">وصف الفيلم التفصيلي (يظهر للمستخدم عند فتح السهم):</label>
+                <textarea id="movieDescription" rows="3" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="اكتب قصة الفيلم أو التفاصيل هنا..."></textarea>
+            </div>
 
-        if (url) logo.src = url;
-        logo.style.top = top + 'px';
-        logo.style.right = right + 'px';
-        logo.style.width = width + 'px';
-    }
+            <button onclick="saveMovieInfo()" class="w-full btn-pink py-3 rounded-xl font-bold text-sm shadow-lg transition">
+                💾 تحديث وتشغيل الفيلم فوراً
+            </button>
+        </div>
 
-    function moveLogo(dir, value) {
-        if (dir === 'top') {
-            const el = document.getElementById('logoTop');
-            el.value = parseInt(el.value) + value;
-        } else if (dir === 'right') {
-            const el = document.getElementById('logoRight');
-            el.value = parseInt(el.value) + value;
+        <!-- 🖼️ 2. التحكم في اللوجو المزدوج (Portrait vs Landscape) -->
+        <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
+            <h2 class="text-lg font-bold text-pink-400">🖼️ تحريك وحجم اللوجو (منفصل جوه وبره)</h2>
+            
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">رابط صورة اللوجو:</label>
+                <input type="text" id="logoUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none">
+            </div>
+
+            <!-- إعدادات الوضع العادي Portrait -->
+            <div class="border-t border-gray-800 pt-3">
+                <h3 class="text-sm font-semibold text-gray-300 mb-2">📱 الوضع العادي (Portrait - جوه الشاشة):</h3>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-400">Top (px):</label>
+                        <input type="number" id="portTop" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400">Right (px):</label>
+                        <input type="number" id="portRight" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400">العرض Width (px):</label>
+                        <input type="number" id="portWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- إعدادات الوضع الأفقي Landscape -->
+            <div class="border-t border-gray-800 pt-3">
+                <h3 class="text-sm font-semibold text-gray-300 mb-2">🖥️ وضع الشاشة الكاملة (Landscape - بره الشاشة):</h3>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-400">Top (px):</label>
+                        <input type="number" id="landTop" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400">Right (px):</label>
+                        <input type="number" id="landRight" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400">العرض Width (px):</label>
+                        <input type="number" id="landWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="saveLogoSettings()" class="w-full bg-purple-600 hover:bg-purple-700 py-2.5 rounded-xl font-bold text-sm transition">
+                💾 حفظ ومزامنة موضع اللوجو
+            </button>
+        </div>
+
+        <!-- 📢 3. التحكم في البنرات والإعلانات المتحركة -->
+        <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
+            <h2 class="text-lg font-bold text-pink-400">📢 البنرات الذكية والفيلم القادم</h2>
+
+            <!-- الإعلان العلوي -->
+            <div class="space-y-3 bg-black/30 p-4 rounded-xl border border-gray-800">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-gray-200">1. الإعلان العلوي الممتاز (Top Banner)</span>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="topBannerActive" class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                        <span class="mr-2 text-xs text-gray-400">تفعيل</span>
+                    </label>
+                </div>
+                <input type="text" id="topBannerUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-xs text-white" placeholder="رابط صورة الإعلان العريض">
+                
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-gray-400">اتجاه الأنيميشن:</label>
+                        <select id="topBannerAnimType" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white">
+                            <option value="SLIDE_TOP">من الأعلى</option>
+                            <option value="SLIDE_RIGHT">من اليمين</option>
+                            <option value="SLIDE_LEFT">من اليسار</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400">العرض (px):</label>
+                        <input type="number" id="topBannerWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="300">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400">الموقع من الأعلى (Top px):</label>
+                        <input type="number" id="topBannerTopPx" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="10">
+                    </div>
+                </div>
+            </div>
+
+            <!-- بنر الفيلم القادم -->
+            <div class="space-y-3 bg-black/30 p-4 rounded-xl border border-gray-800">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-gray-200">2. بنر الفيلم القادم (Bottom Next Movie)</span>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="nextMovieActive" class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                        <span class="mr-2 text-xs text-gray-400">تفعيل</span>
+                    </label>
+                </div>
+                <input type="text" id="nextMovieBannerUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-xs text-white" placeholder="رابط بنر الفيلم القادم المصمم">
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-gray-400">طريقة الدخول:</label>
+                        <select id="nextMovieAnimType" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white">
+                            <option value="SLIDE_RIGHT">من اليمين</option>
+                            <option value="SLIDE_BOTTOM">من الأسفل</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400">مدة العرض (بالثواني):</label>
+                        <input type="number" id="nextMovieDurationSec" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="15">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="saveBannerSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl font-bold text-sm transition">
+                🚀 حفظ وتحديث بنرات الإعلانات
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Firebase Config & Logic Script -->
+    <script>
+        // ⚙️ تهيئة الفايربيس (تأكد من وضع إعدادات المشروع الخاصة بك)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-        updateLogoPreview();
-    }
+        const db = firebase.firestore();
 
-    async function saveLogoToFirebase() {
-        try {
-            await db.collection("logo_settings").doc("config").set({
-                url: document.getElementById('logoUrl').value,
-                top: parseInt(document.getElementById('logoTop').value),
-                right: parseInt(document.getElementById('logoRight').value),
-                width: parseInt(document.getElementById('logoWidth').value)
+        // 📥 تحميل البيانات الحالية عند فتح الصفحة
+        window.onload = function() {
+            // 1. تحميل بيانات الفيلم
+            db.collection("live_stream").doc("current_state").get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById("movieTitle").value = data.movieTitle || "";
+                    document.getElementById("movieCategory").value = data.movieCategory || "";
+                    document.getElementById("currentUrl").value = data.currentUrl || "";
+                    document.getElementById("movieDescription").value = data.movieDescription || "";
+                }
             });
-            alert("تم حفظ ونقل إعدادات اللوجو إلى التطبيق والموقع بنجاح!");
-        } catch (error) {
-            alert("خطأ: " + error.message);
-        }
-    }
 
-    async function saveBannersToFirebase() {
-        try {
-            await db.collection("app_banners").doc("config").set({
-                topBannerUrl: document.getElementById('topBannerUrl').value,
-                topBannerActive: document.getElementById('topBannerActive').checked,
-                nextMovieText: document.getElementById('nextMovieText').value,
-                nextMovieActive: document.getElementById('nextMovieActive').checked
+            // 2. تحميل إعدادات اللوجو
+            db.collection("logo_settings").doc("config").get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById("logoUrl").value = data.url || "";
+                    document.getElementById("portTop").value = data.portTop || 8;
+                    document.getElementById("portRight").value = data.portRight || 8;
+                    document.getElementById("portWidth").value = data.portWidth || 60;
+                    document.getElementById("landTop").value = data.landTop || 10;
+                    document.getElementById("landRight").value = data.landRight || 10;
+                    document.getElementById("landWidth").value = data.landWidth || 90;
+                }
             });
-            alert("تم حفظ تحديثات الإعلانات والشريط الإخباري في التطبيق!");
-        } catch (error) {
-            alert("خطأ: " + error.message);
+
+            // 3. تحميل إعدادات البنرات
+            db.collection("app_banners").doc("config").get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById("topBannerActive").checked = data.topBannerActive || false;
+                    document.getElementById("topBannerUrl").value = data.topBannerUrl || "";
+                    document.getElementById("topBannerAnimType").value = data.topBannerAnimType || "SLIDE_TOP";
+                    document.getElementById("topBannerWidth").value = data.topBannerWidth || 300;
+                    document.getElementById("topBannerTopPx").value = data.topBannerTopPx || 10;
+
+                    document.getElementById("nextMovieActive").checked = data.nextMovieActive || false;
+                    document.getElementById("nextMovieBannerUrl").value = data.nextMovieBannerUrl || "";
+                    document.getElementById("nextMovieAnimType").value = data.nextMovieAnimType || "SLIDE_RIGHT";
+                    document.getElementById("nextMovieDurationSec").value = data.nextMovieDurationSec || 15;
+                }
+            });
+        };
+
+        // 💾 حفظ الفيلم الحالي
+        function saveMovieInfo() {
+            db.collection("live_stream").doc("current_state").set({
+                movieTitle: document.getElementById("movieTitle").value,
+                movieCategory: document.getElementById("movieCategory").value,
+                currentUrl: document.getElementById("currentUrl").value,
+                movieDescription: document.getElementById("movieDescription").value,
+                startedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(() => alert("✅ تم تحديث الفيلم والوصف بنجاح!"));
         }
-    }
-</script>
+
+        // 💾 حفظ إعدادات اللوجو
+        function saveLogoSettings() {
+            db.collection("logo_settings").doc("config").set({
+                url: document.getElementById("logoUrl").value,
+                portTop: parseInt(document.getElementById("portTop").value),
+                portRight: parseInt(document.getElementById("portRight").value),
+                portWidth: parseInt(document.getElementById("portWidth").value),
+                landTop: parseInt(document.getElementById("landTop").value),
+                landRight: parseInt(document.getElementById("landRight").value),
+                landWidth: parseInt(document.getElementById("landWidth").value)
+            }, { merge: true }).then(() => alert("✅ تم حفظ إعدادات اللوجو المزدوج!"));
+        }
+
+        // 💾 حفظ إعدادات البنرات
+        function saveBannerSettings() {
+            db.collection("app_banners").doc("config").set({
+                topBannerActive: document.getElementById("topBannerActive").checked,
+                topBannerUrl: document.getElementById("topBannerUrl").value,
+                topBannerAnimType: document.getElementById("topBannerAnimType").value,
+                topBannerWidth: parseInt(document.getElementById("topBannerWidth").value),
+                topBannerTopPx: parseInt(document.getElementById("topBannerTopPx").value),
+
+                nextMovieActive: document.getElementById("nextMovieActive").checked,
+                nextMovieBannerUrl: document.getElementById("nextMovieBannerUrl").value,
+                nextMovieAnimType: document.getElementById("nextMovieAnimType").value,
+                nextMovieDurationSec: parseInt(document.getElementById("nextMovieDurationSec").value)
+            }, { merge: true }).then(() => alert("✅ تم تحديث الإعلانات والبنرات بنجاح!"));
+        }
+    </script>
 </body>
 </html>
