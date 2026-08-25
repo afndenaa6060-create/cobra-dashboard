@@ -160,6 +160,7 @@
     let currentIndex = 0;
     let savedMovieTime = 0;
     let isPlayingAd = false;
+    let syncInterval = null;
 
     // استماع لحظي للوجو
     db.collection("logo_settings").doc("config").onSnapshot(doc => {
@@ -182,17 +183,20 @@
         });
         renderPlaylist();
 
-        // لو دي أول مرة تزيد فيها القائمة، شغل الفيديو الأول فوراً
+        // تشغيل الفيديو عند التحميل لأول مرة
         if (isFirstLoad && !video.src) {
             playCurrentMovie(0);
         }
     }, err => console.error("Playlist listener error:", err));
 
+    // عند انتهاء الفيديو (إعلان أو فيلم)
     video.onended = function() {
         if (isPlayingAd) {
+            // انتهى الإعلان -> الرجوع للفيلم واستكماله تلقائياً
             isPlayingAd = false;
             playCurrentMovie(savedMovieTime);
         } else {
+            // انتهى الفيلم الحالي -> تشغيل الفيلم التالي في القائمة
             if (currentIndex + 1 < playlist.length) {
                 currentIndex++;
                 playCurrentMovie(0);
@@ -237,6 +241,7 @@
         });
     }
 
+    // 🔴 دالة تشغيل الفيلم مع التزامن الحي المباشر (تمنع إعادة الفيلم من الأول)
     function playCurrentMovie(startTime = 0) {
         if (playlist.length === 0) return;
         const current = playlist[currentIndex];
@@ -246,14 +251,27 @@
         document.getElementById('nowPlayingText').innerText = "شغال الآن: " + current.title;
         renderPlaylist();
         
-        // حفظ حالة البث الحي في الفايربيس للتطبيق فوراً
+        if (syncInterval) clearInterval(syncInterval);
+
+        const nowMs = Date.now();
         db.collection("live_stream").doc("current_state").set({
             currentUrl: current.url,
             title: current.title,
             isAd: false,
-            seekTime: startTime,
+            seekTime: Math.floor(startTime),
+            startedAt: firebase.firestore.Timestamp.fromMillis(nowMs - (startTime * 1000)),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }).catch(err => console.error("Live Stream State Error:", err));
+
+        // 🔥 التحديث الدوري المستمر لتزامن دقيقة الفيلم مع التطبيق كل 3 ثواني
+        syncInterval = setInterval(() => {
+            if (!video.paused && !video.ended && !isPlayingAd) {
+                db.collection("live_stream").doc("current_state").update({
+                    seekTime: Math.floor(video.currentTime),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(err => console.error("Sync Error:", err));
+            }
+        }, 3000);
     }
 
     function playSelect(index) {
@@ -270,22 +288,30 @@
         }
     }
 
+    // 📢 دالة بث الإعلان العاجل وقطع الفيلم ثم العودة له
     function playAdNow() {
         const adUrl = document.getElementById('adUrl').value;
         if (!adUrl) return alert("ادخل رابط الإعلان الأول!");
         
+        // 1. حفظ اللحظة الدقيقة التي وصل لها الفيلم
         savedMovieTime = video.currentTime;
         isPlayingAd = true;
 
+        if (syncInterval) clearInterval(syncInterval);
+
+        // 2. تشغيل الإعلان محلياً في لوحة التحكم
         video.src = adUrl;
         video.play();
         document.getElementById('nowPlayingText').innerText = "📢 عاجل: بث إعلان تجاري...";
-        
+
+        // 3. إرسال أمر الإعلان للفايربيس ليتحول التطبيق فوراً للإعلان
+        const nowMs = Date.now();
         db.collection("live_stream").doc("current_state").set({
             currentUrl: adUrl,
             title: "إعلان عاجل",
             isAd: true,
             seekTime: 0,
+            startedAt: firebase.firestore.Timestamp.fromMillis(nowMs),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }).catch(err => console.error("Ad Stream Error:", err));
     }
@@ -327,5 +353,6 @@
         }
     }
 </script>
+
 </body>
 </html>
