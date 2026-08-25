@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cobra TV - لوحة التحكم الاحترافية</title>
+    <title>Cobra TV - لوحة التحكم الاحترافية الشاملة</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDKs -->
@@ -18,6 +18,9 @@
 </head>
 <body class="p-4 md:p-8">
 
+    <!-- مشغل فيديو مخفي لقياس مدة الفيديو تلقائياً -->
+    <video id="hiddenVideoMeasurer" class="hidden" preload="metadata"></video>
+
     <div class="max-w-4xl mx-auto space-y-6">
         
         <!-- الهيدر -->
@@ -25,16 +28,31 @@
             <h1 class="text-2xl font-black text-pink-500 flex items-center gap-2">
                 <span>🐍 Cobra TV Dashboard</span>
             </h1>
-            <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full border border-pink-500/40">مزامنة فورية</span>
+            <span class="text-xs bg-pink-500/20 text-pink-300 px-3 py-1 rounded-full border border-pink-500/40">مزامنة فورية + عداد وقت</span>
         </div>
 
-        <!-- 🎬 1. التحكم في الفيلم الحالي والوصف (Movie Control) -->
+        <!-- ⏱️ شريط العداد التنازلي للفيلم الحالي -->
+        <div class="card-bg p-4 rounded-2xl shadow-xl flex items-center justify-between border-l-4 border-l-pink-500">
+            <div>
+                <h3 class="text-xs text-gray-400">حالة البث الحالي:</h3>
+                <p id="activeMovieName" class="text-base font-bold text-pink-400">جاري التحميل...</p>
+            </div>
+            <div class="text-left">
+                <h3 class="text-xs text-gray-400">الوقت المتبقي لانتهاء الفيلم:</h3>
+                <p id="countdownDisplay" class="text-2xl font-mono font-black text-emerald-400">00:00:00</p>
+            </div>
+        </div>
+
+        <!-- 🎬 1. التحكم في الفيلم الحالي والوصف -->
         <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
-            <h2 class="text-lg font-bold text-pink-400 flex items-center gap-2">🎬 الفيلم الحالي والبطاقة الوصفية</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-pink-400">🎬 تشغيل فيلم مباشر جديد</h2>
+                <button onclick="stopStream()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded-lg text-xs font-bold">⛔ إيقاف البث فوراً</button>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">اسم الفيلم الحالي:</label>
+                    <label class="block text-xs text-gray-400 mb-1">اسم الفيلم:</label>
                     <input type="text" id="movieTitle" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="مثال: The Cure 2026">
                 </div>
                 <div>
@@ -44,145 +62,107 @@
             </div>
 
             <div>
-                <label class="block text-xs text-gray-400 mb-1">رابط فيديو الفيلم (Stream/MP4/HLS):</label>
-                <input type="text" id="currentUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="https://example.com/video.mp4">
+                <label class="block text-xs text-gray-400 mb-1">رابط فيديو الفيلم (MP4 / Stream):</label>
+                <input type="text" id="currentUrl" onchange="detectVideoDuration()" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="https://example.com/video.mp4">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">مدة الفيلم (بالثواني - تُحسب تلقائياً):</label>
+                    <input type="number" id="movieDurationSec" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-emerald-400 font-bold" placeholder="مثال: 7200">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">إضافة إلى قائمة السلسلة (Queue):</label>
+                    <button onclick="addToPlaylist()" class="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-bold text-xs">➕ إضافة للسلسلة القادمة</button>
+                </div>
             </div>
 
             <div>
-                <label class="block text-xs text-gray-400 mb-1">وصف الفيلم التفصيلي (يظهر للمستخدم عند فتح السهم):</label>
-                <textarea id="movieDescription" rows="3" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="اكتب قصة الفيلم أو التفاصيل هنا..."></textarea>
+                <label class="block text-xs text-gray-400 mb-1">وصف الفيلم التفصيلي:</label>
+                <textarea id="movieDescription" rows="2" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none" placeholder="اكتب قصة الفيلم أو التفاصيل هنا..."></textarea>
             </div>
 
             <button onclick="saveMovieInfo()" class="w-full btn-pink py-3 rounded-xl font-bold text-sm shadow-lg transition">
-                💾 تحديث وتشغيل الفيلم فوراً
+                💾 تشغيل هذا الفيلم الآن في التطبيق والموقع
             </button>
         </div>
 
-        <!-- 🖼️ 2. التحكم في اللوجو المزدوج (Portrait vs Landscape) -->
+        <!-- 📑 2. قائمة أفلام السلسلة القادمة (Playlist / Queue) -->
         <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
-            <h2 class="text-lg font-bold text-pink-400">🖼️ تحريك وحجم اللوجو (منفصل جوه وبره)</h2>
-            
+            <h2 class="text-lg font-bold text-pink-400">📜 قائمة أفلام السلسلة القادمة (تشتغل تلقائياً)</h2>
+            <div id="playlistContainer" class="space-y-2">
+                <p class="text-xs text-gray-500">لا توجد أفلام قادمة في القائمة حالياً...</p>
+            </div>
+        </div>
+
+        <!-- 🖼️ 3. التحكم في اللوجو المزدوج -->
+        <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
+            <h2 class="text-lg font-bold text-pink-400">🖼️ تحريك وحجم اللوجو</h2>
             <div>
                 <label class="block text-xs text-gray-400 mb-1">رابط صورة اللوجو:</label>
                 <input type="text" id="logoUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2.5 text-sm text-white focus:border-pink-500 outline-none">
             </div>
-
-            <!-- إعدادات الوضع العادي Portrait -->
             <div class="border-t border-gray-800 pt-3">
-                <h3 class="text-sm font-semibold text-gray-300 mb-2">📱 الوضع العادي (Portrait - جوه الشاشة):</h3>
+                <h3 class="text-sm font-semibold text-gray-300 mb-2">📱 الوضع العادي (Portrait):</h3>
                 <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs text-gray-400">Top (px):</label>
-                        <input type="number" id="portTop" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400">Right (px):</label>
-                        <input type="number" id="portRight" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400">العرض Width (px):</label>
-                        <input type="number" id="portWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
-                    </div>
+                    <div><label class="block text-xs text-gray-400">Top:</label><input type="number" id="portTop" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white"></div>
+                    <div><label class="block text-xs text-gray-400">Right:</label><input type="number" id="portRight" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white"></div>
+                    <div><label class="block text-xs text-gray-400">Width:</label><input type="number" id="portWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white"></div>
                 </div>
             </div>
-
-            <!-- إعدادات الوضع الأفقي Landscape -->
             <div class="border-t border-gray-800 pt-3">
-                <h3 class="text-sm font-semibold text-gray-300 mb-2">🖥️ وضع الشاشة الكاملة (Landscape - بره الشاشة):</h3>
+                <h3 class="text-sm font-semibold text-gray-300 mb-2">🖥️ الشاشة الكاملة (Landscape):</h3>
                 <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs text-gray-400">Top (px):</label>
-                        <input type="number" id="landTop" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400">Right (px):</label>
-                        <input type="number" id="landRight" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400">العرض Width (px):</label>
-                        <input type="number" id="landWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white">
-                    </div>
+                    <div><label class="block text-xs text-gray-400">Top:</label><input type="number" id="landTop" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white"></div>
+                    <div><label class="block text-xs text-gray-400">Right:</label><input type="number" id="landRight" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white"></div>
+                    <div><label class="block text-xs text-gray-400">Width:</label><input type="number" id="landWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-sm text-white"></div>
                 </div>
             </div>
-
-            <button onclick="saveLogoSettings()" class="w-full bg-purple-600 hover:bg-purple-700 py-2.5 rounded-xl font-bold text-sm transition">
-                💾 حفظ ومزامنة موضع اللوجو
-            </button>
+            <button onclick="saveLogoSettings()" class="w-full bg-purple-600 hover:bg-purple-700 py-2.5 rounded-xl font-bold text-sm transition">💾 حفظ موضع اللوجو</button>
         </div>
 
-        <!-- 📢 3. التحكم في البنرات والإعلانات المتحركة -->
+        <!-- 📢 4. التحكم في البنرات والإعلانات -->
         <div class="card-bg p-6 rounded-2xl shadow-xl space-y-4">
             <h2 class="text-lg font-bold text-pink-400">📢 البنرات الذكية والفيلم القادم</h2>
-
-            <!-- الإعلان العلوي -->
             <div class="space-y-3 bg-black/30 p-4 rounded-xl border border-gray-800">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-sm text-gray-200">1. الإعلان العلوي الممتاز (Top Banner)</span>
+                    <span class="font-bold text-sm text-gray-200">1. الإعلان العلوي (Top Banner)</span>
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" id="topBannerActive" class="sr-only peer">
-                        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
-                        <span class="mr-2 text-xs text-gray-400">تفعيل</span>
+                        <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:bg-pink-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
                     </label>
                 </div>
-                <input type="text" id="topBannerUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-xs text-white" placeholder="رابط صورة الإعلان العريض">
-                
+                <input type="text" id="topBannerUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-xs text-white" placeholder="رابط الإعلان">
                 <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-[10px] text-gray-400">اتجاه الأنيميشن:</label>
                         <select id="topBannerAnimType" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white">
                             <option value="SLIDE_TOP">من الأعلى</option>
                             <option value="SLIDE_RIGHT">من اليمين</option>
                             <option value="SLIDE_LEFT">من اليسار</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-400">العرض (px):</label>
-                        <input type="number" id="topBannerWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="300">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-400">الموقع من الأعلى (Top px):</label>
-                        <input type="number" id="topBannerTopPx" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="10">
-                    </div>
+                    <div><input type="number" id="topBannerWidth" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="300"></div>
+                    <div><input type="number" id="topBannerTopPx" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="10"></div>
                 </div>
             </div>
 
-            <!-- بنر الفيلم القادم -->
             <div class="space-y-3 bg-black/30 p-4 rounded-xl border border-gray-800">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-sm text-gray-200">2. بنر الفيلم القادم (Bottom Next Movie)</span>
+                    <span class="font-bold text-sm text-gray-200">2. بنر الفيلم القادم (Bottom Ribbon)</span>
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" id="nextMovieActive" class="sr-only peer">
-                        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
-                        <span class="mr-2 text-xs text-gray-400">تفعيل</span>
+                        <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:bg-pink-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
                     </label>
                 </div>
-                <input type="text" id="nextMovieBannerUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-xs text-white" placeholder="رابط بنر الفيلم القادم المصمم">
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] text-gray-400">طريقة الدخول:</label>
-                        <select id="nextMovieAnimType" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white">
-                            <option value="SLIDE_RIGHT">من اليمين</option>
-                            <option value="SLIDE_BOTTOM">من الأسفل</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-400">مدة العرض (بالثواني):</label>
-                        <input type="number" id="nextMovieDurationSec" class="w-full bg-black/50 border border-gray-700 rounded-lg p-1.5 text-xs text-white" value="15">
-                    </div>
-                </div>
+                <input type="text" id="nextMovieBannerUrl" class="w-full bg-black/50 border border-gray-700 rounded-lg p-2 text-xs text-white" placeholder="رابط بنر الفيلم القادم">
             </div>
-
-            <button onclick="saveBannerSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl font-bold text-sm transition">
-                🚀 حفظ وتحديث بنرات الإعلانات
-            </button>
+            <button onclick="saveBannerSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl font-bold text-sm transition">🚀 حفظ وتحديث الإعلانات</button>
         </div>
 
     </div>
 
-    <!-- Firebase Config & Logic Script -->
+    <!-- Script Logic -->
     <script>
-        // ⚙️ تهيئة الفايربيس (تأكد من وضع إعدادات المشروع الخاصة بك)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -192,25 +172,199 @@
             appId: "YOUR_APP_ID"
         };
         
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 📥 تحميل البيانات الحالية عند فتح الصفحة
+        let currentMovieDuration = 0;
+        let streamStartedAtMs = 0;
+        let countdownInterval = null;
+
         window.onload = function() {
-            // 1. تحميل بيانات الفيلم
-            db.collection("live_stream").doc("current_state").get().then(doc => {
+            listenToCurrentStream();
+            loadLogoSettings();
+            loadBannerSettings();
+            listenToPlaylist();
+        };
+
+        // 🔍 قياس مدة الفيديو تلقائياً
+        function detectVideoDuration() {
+            const url = document.getElementById("currentUrl").value;
+            if (!url) return;
+            const video = document.getElementById("hiddenVideoMeasurer");
+            video.src = url;
+            video.onloadedmetadata = function() {
+                if (video.duration && !isNaN(video.duration)) {
+                    document.getElementById("movieDurationSec").value = Math.floor(video.duration);
+                }
+            };
+        }
+
+        // 📡 الاستماع للفيلم الحالي وتكليف العداد التنازلي
+        function listenToCurrentStream() {
+            db.collection("live_stream").doc("current_state").onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
                     document.getElementById("movieTitle").value = data.movieTitle || "";
                     document.getElementById("movieCategory").value = data.movieCategory || "";
                     document.getElementById("currentUrl").value = data.currentUrl || "";
                     document.getElementById("movieDescription").value = data.movieDescription || "";
+                    document.getElementById("movieDurationSec").value = data.durationSec || 0;
+
+                    document.getElementById("activeMovieName").innerText = data.movieTitle || "لا يوجد فيلم شغال حالياً";
+                    
+                    currentMovieDuration = data.durationSec || 0;
+                    if (data.startedAt) {
+                        streamStartedAtMs = data.startedAt.toDate().getTime();
+                        startCountdownTimer();
+                    } else {
+                        document.getElementById("countdownDisplay").innerText = "00:00:00";
+                    }
                 }
             });
+        }
 
-            // 2. تحميل إعدادات اللوجو
+        // ⏱️ العداد التنازلي الشغال بالثواني المتبقية
+        function startCountdownTimer() {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                if (!streamStartedAtMs || !currentMovieDuration) {
+                    document.getElementById("countdownDisplay").innerText = "00:00:00";
+                    return;
+                }
+
+                const elapsedSec = Math.floor((Date.now() - streamStartedAtMs) / 1000);
+                const remainingSec = currentMovieDuration - elapsedSec;
+
+                if (remainingSec <= 0) {
+                    document.getElementById("countdownDisplay").innerText = "00:00:00 (انتهى الفيلم)";
+                    clearInterval(countdownInterval);
+                    playNextInQueue(); // تشغيل الفيلم القادم تلقائياً عند انتهاء الوقت!
+                } else {
+                    const hrs = Math.floor(remainingSec / 3600);
+                    const mins = Math.floor((remainingSec % 3600) / 60);
+                    const secs = remainingSec % 60;
+                    document.getElementById("countdownDisplay").innerText = 
+                        `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // 💾 حفظ وتشغيل الفيلم فوراً
+        function saveMovieInfo() {
+            const title = document.getElementById("movieTitle").value;
+            const category = document.getElementById("movieCategory").value;
+            const url = document.getElementById("currentUrl").value;
+            const desc = document.getElementById("movieDescription").value;
+            const duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
+
+            db.collection("live_stream").doc("current_state").set({
+                movieTitle: title,
+                movieCategory: category,
+                currentUrl: url,
+                movieDescription: desc,
+                durationSec: duration,
+                startedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(() => alert("✅ تم بدء تشغيل الفيلم وتحديث العداد بنجاح!"));
+        }
+
+        // ⛔ إيقاف البث
+        function stopStream() {
+            db.collection("live_stream").doc("current_state").set({
+                currentUrl: "",
+                movieTitle: "البث متوقف حالياً",
+                durationSec: 0,
+                startedAt: null
+            }, { merge: true }).then(() => alert("🛑 تم إيقاف البث المباشر."));
+        }
+
+        // ➕ إضافة فيلم لقائمة الانتظار (Playlist)
+        function addToPlaylist() {
+            const title = document.getElementById("movieTitle").value;
+            const category = document.getElementById("movieCategory").value;
+            const url = document.getElementById("currentUrl").value;
+            const desc = document.getElementById("movieDescription").value;
+            const duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
+
+            if (!title || !url) return alert("يرجى إدخال اسم الفيلم والرابط أولاً!");
+
+            db.collection("playlist").add({
+                movieTitle: title,
+                movieCategory: category,
+                currentUrl: url,
+                movieDescription: desc,
+                durationSec: duration,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => alert("✅ تم إضافة الفيلم لقائمة الانتظار!"));
+        }
+
+        // 📜 الاستماع لقائمة الانتظار
+        function listenToPlaylist() {
+            db.collection("playlist").orderBy("createdAt", "asc").onSnapshot(snapshot => {
+                const container = document.getElementById("playlistContainer");
+                container.innerHTML = "";
+                if (snapshot.empty) {
+                    container.innerHTML = '<p class="text-xs text-gray-500">لا توجد أفلام قادمة في القائمة...</p>';
+                    return;
+                }
+
+                snapshot.docs.forEach((doc, index) => {
+                    const item = doc.data();
+                    const div = document.createElement("div");
+                    div.className = "flex items-center justify-between bg-black/40 p-3 rounded-xl border border-gray-800";
+                    div.innerHTML = `
+                        <div>
+                            <p class="text-sm font-bold text-gray-200">${index + 1}. ${item.movieTitle} <span class="text-xs text-pink-400">(${item.durationSec} ثانية)</span></p>
+                            <p class="text-xs text-gray-500">${item.currentUrl}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="playNowFromQueue('${doc.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded text-xs font-bold">▶️ تشغيل الآن</button>
+                            <button onclick="deleteFromQueue('${doc.id}')" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs font-bold">🗑️ حذف</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        // ▶️ تشغيل فيلم مباشر من القائمة
+        function playNowFromQueue(docId) {
+            db.collection("playlist").doc(docId).get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    db.collection("live_stream").doc("current_state").set({
+                        movieTitle: data.movieTitle,
+                        movieCategory: data.movieCategory,
+                        currentUrl: data.currentUrl,
+                        movieDescription: data.movieDescription,
+                        durationSec: data.durationSec,
+                        startedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        db.collection("playlist").doc(docId).delete();
+                    });
+                }
+            });
+        }
+
+        // ⏭️ التشغيل التلقائي للفيلم التالي
+        function playNextInQueue() {
+            db.collection("playlist").orderBy("createdAt", "asc").limit(1).get().then(snapshot => {
+                if (!snapshot.empty) {
+                    const nextDoc = snapshot.docs[0];
+                    playNowFromQueue(nextDoc.id);
+                } else {
+                    stopStream();
+                }
+            });
+        }
+
+        // 🗑️ حذف فيلم من القائمة
+        function deleteFromQueue(docId) {
+            db.collection("playlist").doc(docId).delete();
+        }
+
+        // 📥 تحميل باقي الإعدادات (Logo & Banners)
+        function loadLogoSettings() {
             db.collection("logo_settings").doc("config").get().then(doc => {
                 if (doc.exists) {
                     const data = doc.data();
@@ -223,37 +377,8 @@
                     document.getElementById("landWidth").value = data.landWidth || 90;
                 }
             });
-
-            // 3. تحميل إعدادات البنرات
-            db.collection("app_banners").doc("config").get().then(doc => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    document.getElementById("topBannerActive").checked = data.topBannerActive || false;
-                    document.getElementById("topBannerUrl").value = data.topBannerUrl || "";
-                    document.getElementById("topBannerAnimType").value = data.topBannerAnimType || "SLIDE_TOP";
-                    document.getElementById("topBannerWidth").value = data.topBannerWidth || 300;
-                    document.getElementById("topBannerTopPx").value = data.topBannerTopPx || 10;
-
-                    document.getElementById("nextMovieActive").checked = data.nextMovieActive || false;
-                    document.getElementById("nextMovieBannerUrl").value = data.nextMovieBannerUrl || "";
-                    document.getElementById("nextMovieAnimType").value = data.nextMovieAnimType || "SLIDE_RIGHT";
-                    document.getElementById("nextMovieDurationSec").value = data.nextMovieDurationSec || 15;
-                }
-            });
-        };
-
-        // 💾 حفظ الفيلم الحالي
-        function saveMovieInfo() {
-            db.collection("live_stream").doc("current_state").set({
-                movieTitle: document.getElementById("movieTitle").value,
-                movieCategory: document.getElementById("movieCategory").value,
-                currentUrl: document.getElementById("currentUrl").value,
-                movieDescription: document.getElementById("movieDescription").value,
-                startedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true }).then(() => alert("✅ تم تحديث الفيلم والوصف بنجاح!"));
         }
 
-        // 💾 حفظ إعدادات اللوجو
         function saveLogoSettings() {
             db.collection("logo_settings").doc("config").set({
                 url: document.getElementById("logoUrl").value,
@@ -263,10 +388,24 @@
                 landTop: parseInt(document.getElementById("landTop").value),
                 landRight: parseInt(document.getElementById("landRight").value),
                 landWidth: parseInt(document.getElementById("landWidth").value)
-            }, { merge: true }).then(() => alert("✅ تم حفظ إعدادات اللوجو المزدوج!"));
+            }, { merge: true }).then(() => alert("✅ تم حفظ موضع اللوجو!"));
         }
 
-        // 💾 حفظ إعدادات البنرات
+        function loadBannerSettings() {
+            db.collection("app_banners").doc("config").get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById("topBannerActive").checked = data.topBannerActive || false;
+                    document.getElementById("topBannerUrl").value = data.topBannerUrl || "";
+                    document.getElementById("topBannerAnimType").value = data.topBannerAnimType || "SLIDE_TOP";
+                    document.getElementById("topBannerWidth").value = data.topBannerWidth || 300;
+                    document.getElementById("topBannerTopPx").value = data.topBannerTopPx || 10;
+                    document.getElementById("nextMovieActive").checked = data.nextMovieActive || false;
+                    document.getElementById("nextMovieBannerUrl").value = data.nextMovieBannerUrl || "";
+                }
+            });
+        }
+
         function saveBannerSettings() {
             db.collection("app_banners").doc("config").set({
                 topBannerActive: document.getElementById("topBannerActive").checked,
@@ -274,12 +413,9 @@
                 topBannerAnimType: document.getElementById("topBannerAnimType").value,
                 topBannerWidth: parseInt(document.getElementById("topBannerWidth").value),
                 topBannerTopPx: parseInt(document.getElementById("topBannerTopPx").value),
-
                 nextMovieActive: document.getElementById("nextMovieActive").checked,
-                nextMovieBannerUrl: document.getElementById("nextMovieBannerUrl").value,
-                nextMovieAnimType: document.getElementById("nextMovieAnimType").value,
-                nextMovieDurationSec: parseInt(document.getElementById("nextMovieDurationSec").value)
-            }, { merge: true }).then(() => alert("✅ تم تحديث الإعلانات والبنرات بنجاح!"));
+                nextMovieBannerUrl: document.getElementById("nextMovieBannerUrl").value
+            }, { merge: true }).then(() => alert("✅ تم تحديث الإعلانات!"));
         }
     </script>
 </body>
