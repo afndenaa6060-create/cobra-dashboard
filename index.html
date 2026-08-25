@@ -4,57 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cobra TV Live - Control Center</title>
-    <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --bg-black: #050505;
-            --card-black: #0f172a;
-            --pink-main: #ec4899;
-            --wine-red: #881337;
-            --wine-dark: #4c0519;
-            --text-light: #f8fafc;
+            --bg-main: #0b0f17;
+            --card-bg: #151c2c;
+            --pink-accent: #ec4899;
+            --purple-glow: #8b5cf6;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --border-color: #1e293b;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg-black); color: var(--text-light); padding: 15px; direction: rtl; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding: 20px; direction: rtl; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: linear-gradient(135deg, var(--wine-dark), var(--card-black)); border: 1px solid var(--pink-main); border-radius: 10px; margin-bottom: 15px; }
-        .logo-text { font-size: 22px; font-weight: bold; color: var(--pink-main); }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .logo-text { font-size: 22px; font-weight: 800; color: var(--pink-accent); display: flex; align-items: center; gap: 8px; }
 
-        .grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+        .grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         @media (max-width: 850px) { .grid-main { grid-template-columns: 1fr; } }
 
-        .card { background: var(--card-black); border-radius: 10px; padding: 15px; border: 1px solid #334155; margin-bottom: 15px; }
-        .card-wine { border-color: var(--wine-red); background: linear-gradient(180deg, var(--card-black), var(--wine-dark)); }
-        .card-title { font-size: 16px; font-weight: bold; color: var(--pink-main); margin-bottom: 12px; }
+        .card { background: var(--card-bg); border-radius: 14px; padding: 18px; border: 1px solid var(--border-color); margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .card-ad { border-color: rgba(236, 72, 153, 0.4); background: linear-gradient(180deg, var(--card-bg), #1e1329); }
+        .card-title { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
 
-        .player-wrapper { position: relative; width: 100%; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid var(--pink-main); }
-        video { width: 100%; height: 340px; object-fit: contain; }
+        .player-wrapper { position: relative; width: 100%; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--purple-glow); }
+        video { width: 100%; height: 360px; object-fit: contain; }
         
-        #overlayLogo {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 80px;
-            z-index: 99;
-            pointer-events: none;
-        }
+        #overlayLogo { position: absolute; top: 10px; right: 10px; width: 80px; z-index: 99; pointer-events: none; }
 
-        .controls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 8px; text-align: center; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 8px; background: #050505; border: 1px solid #475569; color: #fff; border-radius: 5px; margin-bottom: 8px; font-size: 13px; }
-        label { font-size: 12px; color: #cbd5e1; margin-bottom: 2px; display: block; }
+        .controls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; text-align: center; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: #0b0f17; border: 1px solid var(--border-color); color: #fff; border-radius: 8px; margin-bottom: 10px; font-size: 13px; outline: none; }
+        input:focus { border-color: var(--pink-accent); }
+        label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; display: block; }
 
-        .btn { border: none; border-radius: 5px; padding: 8px 12px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 6px; font-size: 13px; }
-        .btn-pink { background: var(--pink-main); }
-        .btn-wine { background: var(--wine-red); }
-        .btn-dark { background: #334155; }
+        .btn { border: none; border-radius: 8px; padding: 10px 14px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 8px; font-size: 13px; transition: 0.2s; }
+        .btn-pink { background: linear-gradient(135deg, #ec4899, #d946ef); }
+        .btn-pink:hover { opacity: 0.9; }
+        .btn-dark { background: #1e293b; border: 1px solid var(--border-color); }
+        .btn-dark:hover { background: #334155; }
 
-        .playlist-box { max-height: 220px; overflow-y: auto; list-style: none; }
-        .playlist-item { background: #050505; padding: 8px 10px; border-radius: 5px; border: 1px solid #334155; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .active-movie { border-color: var(--pink-main); background: #1e1b4b; }
+        .playlist-box { max-height: 240px; overflow-y: auto; list-style: none; }
+        .playlist-item { background: #0b0f17; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .active-movie { border-color: var(--pink-accent); background: #1f132b; }
     </style>
 </head>
 <body>
@@ -62,38 +57,36 @@
 <div class="container">
     <div class="header">
         <div class="logo-text">🐍 Cobra TV - لوحة التحكم والبث المباشر</div>
-        <div style="font-size:12px; color:#4ade80;" id="statusBadge">● جاري الاتصال بالفايربيس...</div>
+        <div style="font-size:12px; color:#4ade80;" id="statusBadge">● جاري الاتصال...</div>
     </div>
 
     <div class="grid-main">
         <div>
-            <!-- شاشة المعاينة الحية -->
             <div class="card">
-                <div class="card-title">🎬 شاشة المعاينة (Live Display)</div>
+                <div class="card-title">🎬 شاشة المعاينة الحية</div>
                 <div class="player-wrapper">
                     <img id="overlayLogo" src="https://via.placeholder.com/80/ec4899/ffffff?text=Cobra" alt="Logo">
                     <video id="liveVideo" controls></video>
                 </div>
-                <div style="margin-top:8px; font-size:13px; color:#ec4899;" id="nowPlayingText">جاري الانتظار...</div>
+                <div style="margin-top:10px; font-size:13px; color:var(--pink-accent); font-weight:bold;" id="nowPlayingText">جاري الانتظار...</div>
             </div>
 
-            <!-- التحكم باللوجو بالأسهم والبكسل -->
             <div class="card">
-                <div class="card-title">🎯 تحريك اللوجو بالأسهم والبكسل (لتغطية الحقوق)</div>
+                <div class="card-title">🎯 تحريك وتعديل اللوجو</div>
                 <label>رابط صورة اللوجو:</label>
-                <input type="text" id="logoUrl" value="https://via.placeholder.com/80/ec4899/ffffff?text=Cobra" onchange="updateLogoPreview()">
+                <input type="text" id="logoUrl" value="" onchange="updateLogoPreview()">
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                     <div>
-                        <label>من الأعلى (Top px):</label>
+                        <label>من الأعلى (px):</label>
                         <input type="number" id="logoTop" value="10" oninput="updateLogoPreview()">
                     </div>
                     <div>
-                        <label>من اليمين (Right px):</label>
+                        <label>من اليمين (px):</label>
                         <input type="number" id="logoRight" value="10" oninput="updateLogoPreview()">
                     </div>
                     <div>
-                        <label>العرض (Width px):</label>
+                        <label>العرض (px):</label>
                         <input type="number" id="logoWidth" value="80" oninput="updateLogoPreview()">
                     </div>
                 </div>
@@ -107,29 +100,26 @@
                     <button class="btn btn-dark" onclick="moveLogo('right', -5)">➡️</button>
                 </div>
 
-                <button class="btn btn-pink" onclick="saveLogoToFirebase()">💾 حفظ إعدادات اللوجو للسيرفر والتطبيق</button>
+                <button class="btn btn-pink" onclick="saveLogoToFirebase()">💾 حفظ إعدادات اللوجو</button>
             </div>
         </div>
 
         <div>
-            <!-- إضافة فيلم لسلسلة البث -->
             <div class="card">
-                <div class="card-title">➕ إضافة فيديو / فيلم للقائمة المتتالية</div>
+                <div class="card-title">➕ إضافة فيديو جديد</div>
                 <input type="text" id="videoTitle" placeholder="اسم الفيلم / الحلقة">
-                <input type="text" id="videoUrl" placeholder="رابط البث المباشر (MP4 / M3U8)">
-                <button class="btn btn-pink" onclick="addToPlaylistCloud()">حفظ وإضافة القائمة</button>
+                <input type="text" id="videoUrl" placeholder="رابط البث (MP4)">
+                <button class="btn btn-pink" onclick="addToPlaylistCloud()">حفظ وإضافة للقائمة</button>
             </div>
 
-            <!-- بث إعلان عاجل -->
-            <div class="card card-wine">
-                <div class="card-title">📢 قطع البث لإعلان وإعادة تكملة الفيلم</div>
+            <div class="card card-ad">
+                <div class="card-title">📢 قطع البث لإعلان عاجل</div>
                 <input type="text" id="adUrl" placeholder="رابط فيديو الإعلان (MP4)">
-                <button class="btn btn-pink" onclick="playAdNow()">⚡ بث الإعلان الآن (حفظ مكان الفيلم)</button>
+                <button class="btn btn-pink" onclick="playAdNow()">⚡ بث الإعلان الآن</button>
             </div>
 
-            <!-- قائمة التشغيل -->
             <div class="card">
-                <div class="card-title">📜 السلسلة المرفوعة (Cloud Playlist)</div>
+                <div class="card-title">📜 قائمة الفيديوهات</div>
                 <ul class="playlist-box" id="playlistUI"></ul>
             </div>
         </div>
@@ -150,8 +140,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const statusBadge = document.getElementById('statusBadge');
-    statusBadge.innerText = "● متصل بـ Firebase بنجاح";
+    document.getElementById('statusBadge').innerText = "● متصل بـ Firebase بنجاح";
 
     const video = document.getElementById('liveVideo');
     const logo = document.getElementById('overlayLogo');
@@ -160,9 +149,7 @@
     let currentIndex = 0;
     let savedMovieTime = 0;
     let isPlayingAd = false;
-    let syncInterval = null;
 
-    // استماع لحظي للوجو
     db.collection("logo_settings").doc("config").onSnapshot(doc => {
         if(doc.exists) {
             const data = doc.data();
@@ -172,9 +159,8 @@
             document.getElementById('logoWidth').value = data.width || 80;
             updateLogoPreview();
         }
-    }, err => console.error("Logo listener error:", err));
+    });
 
-    // استماع لحظي لقائمة التشغيل
     db.collection("playlist").orderBy("createdAt", "asc").onSnapshot(snapshot => {
         const isFirstLoad = playlist.length === 0 && snapshot.docs.length > 0;
         playlist = [];
@@ -183,20 +169,16 @@
         });
         renderPlaylist();
 
-        // تشغيل الفيديو عند التحميل لأول مرة
         if (isFirstLoad && !video.src) {
             playCurrentMovie(0);
         }
-    }, err => console.error("Playlist listener error:", err));
+    });
 
-    // عند انتهاء الفيديو (إعلان أو فيلم)
     video.onended = function() {
         if (isPlayingAd) {
-            // انتهى الإعلان -> الرجوع للفيلم واستكماله تلقائياً
             isPlayingAd = false;
             playCurrentMovie(savedMovieTime);
         } else {
-            // انتهى الفيلم الحالي -> تشغيل الفيلم التالي في القائمة
             if (currentIndex + 1 < playlist.length) {
                 currentIndex++;
                 playCurrentMovie(0);
@@ -207,7 +189,7 @@
     async function addToPlaylistCloud() {
         const title = document.getElementById('videoTitle').value;
         const url = document.getElementById('videoUrl').value;
-        if (!url) return alert('برجاء إدخال رابط الفيديو!');
+        if (!url) return alert('إدخل رابط الفيديو الأول!');
 
         try {
             await db.collection("playlist").add({
@@ -218,10 +200,8 @@
 
             document.getElementById('videoTitle').value = '';
             document.getElementById('videoUrl').value = '';
-            alert("تمت الإضافة بنجاح لـ Firebase!");
         } catch (error) {
-            console.error("Firestore Write Error:", error);
-            alert("خطأ في حفظ البيانات: " + error.message);
+            alert("خطأ: " + error.message);
         }
     }
 
@@ -233,45 +213,31 @@
                 <li class="playlist-item ${index === currentIndex ? 'active-movie' : ''}">
                     <span>${index + 1}. ${item.title}</span>
                     <div>
-                        <button class="btn btn-pink" style="padding:2px 6px; font-size:11px;" onclick="playSelect(${index})">تشغيل</button>
-                        <button class="btn btn-wine" style="padding:2px 6px; font-size:11px;" onclick="removeItem('${item.id}')">حذف</button>
+                        <button class="btn btn-pink" style="padding:4px 8px; font-size:11px;" onclick="playSelect(${index})">تشغيل</button>
+                        <button class="btn btn-dark" style="padding:4px 8px; font-size:11px;" onclick="removeItem('${item.id}')">حذف</button>
                     </div>
                 </li>
             `;
         });
     }
 
-    // 🔴 دالة تشغيل الفيلم مع التزامن الحي المباشر (تمنع إعادة الفيلم من الأول)
     function playCurrentMovie(startTime = 0) {
         if (playlist.length === 0) return;
         const current = playlist[currentIndex];
         video.src = current.url;
         video.currentTime = startTime;
-        video.play().catch(e => console.log("Autoplay blocked:", e));
+        video.play().catch(e => console.log("Autoplay:", e));
         document.getElementById('nowPlayingText').innerText = "شغال الآن: " + current.title;
         renderPlaylist();
-        
-        if (syncInterval) clearInterval(syncInterval);
 
         const nowMs = Date.now();
         db.collection("live_stream").doc("current_state").set({
             currentUrl: current.url,
             title: current.title,
             isAd: false,
-            seekTime: Math.floor(startTime),
             startedAt: firebase.firestore.Timestamp.fromMillis(nowMs - (startTime * 1000)),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(err => console.error("Live Stream State Error:", err));
-
-        // 🔥 التحديث الدوري المستمر لتزامن دقيقة الفيلم مع التطبيق كل 3 ثواني
-        syncInterval = setInterval(() => {
-            if (!video.paused && !video.ended && !isPlayingAd) {
-                db.collection("live_stream").doc("current_state").update({
-                    seekTime: Math.floor(video.currentTime),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(err => console.error("Sync Error:", err));
-            }
-        }, 3000);
+        });
     }
 
     function playSelect(index) {
@@ -281,39 +247,28 @@
     }
 
     async function removeItem(id) {
-        try {
-            await db.collection("playlist").doc(id).delete();
-        } catch (error) {
-            alert("فشل الحذف: " + error.message);
-        }
+        await db.collection("playlist").doc(id).delete();
     }
 
-    // 📢 دالة بث الإعلان العاجل وقطع الفيلم ثم العودة له
     function playAdNow() {
         const adUrl = document.getElementById('adUrl').value;
-        if (!adUrl) return alert("ادخل رابط الإعلان الأول!");
+        if (!adUrl) return alert("ادخل رابط الإعلان!");
         
-        // 1. حفظ اللحظة الدقيقة التي وصل لها الفيلم
         savedMovieTime = video.currentTime;
         isPlayingAd = true;
 
-        if (syncInterval) clearInterval(syncInterval);
-
-        // 2. تشغيل الإعلان محلياً في لوحة التحكم
         video.src = adUrl;
         video.play();
-        document.getElementById('nowPlayingText').innerText = "📢 عاجل: بث إعلان تجاري...";
+        document.getElementById('nowPlayingText').innerText = "📢 بث إعلان عاجل...";
 
-        // 3. إرسال أمر الإعلان للفايربيس ليتحول التطبيق فوراً للإعلان
         const nowMs = Date.now();
         db.collection("live_stream").doc("current_state").set({
             currentUrl: adUrl,
             title: "إعلان عاجل",
             isAd: true,
-            seekTime: 0,
             startedAt: firebase.firestore.Timestamp.fromMillis(nowMs),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(err => console.error("Ad Stream Error:", err));
+        });
     }
 
     function updateLogoPreview() {
@@ -347,12 +302,11 @@
                 right: parseInt(document.getElementById('logoRight').value),
                 width: parseInt(document.getElementById('logoWidth').value)
             });
-            alert("تم حفظ إعدادات اللوجو في قاعدة البيانات بنجاح!");
+            alert("تم حفظ اللوجو بنجاح!");
         } catch (error) {
-            alert("خطأ في حفظ اللوجو: " + error.message);
+            alert("خطأ: " + error.message);
         }
     }
 </script>
-
 </body>
 </html>
