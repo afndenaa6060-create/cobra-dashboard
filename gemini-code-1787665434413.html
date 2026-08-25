@@ -137,7 +137,6 @@
 </div>
 
 <script>
-    // 🔴 بيانات مشروعك في Firebase الحقيقية والمربوطة تلقائياً
     const firebaseConfig = {
         apiKey: "AIzaSyCzZSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",
         authDomain: "cobra-tv-b1231.firebaseapp.com",
@@ -151,7 +150,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    document.getElementById('statusBadge').innerText = "● متصل بـ Firebase بنجاح";
+    const statusBadge = document.getElementById('statusBadge');
+    statusBadge.innerText = "● متصل بـ Firebase بنجاح";
 
     const video = document.getElementById('liveVideo');
     const logo = document.getElementById('overlayLogo');
@@ -161,7 +161,7 @@
     let savedMovieTime = 0;
     let isPlayingAd = false;
 
-    // استماع لحظي للقائمة الحالية واللوجو من الفايربيس
+    // استماع لحظي للوجو
     db.collection("logo_settings").doc("config").onSnapshot(doc => {
         if(doc.exists) {
             const data = doc.data();
@@ -171,15 +171,22 @@
             document.getElementById('logoWidth').value = data.width || 80;
             updateLogoPreview();
         }
-    });
+    }, err => console.error("Logo listener error:", err));
 
+    // استماع لحظي لقائمة التشغيل
     db.collection("playlist").orderBy("createdAt", "asc").onSnapshot(snapshot => {
+        const isFirstLoad = playlist.length === 0 && snapshot.docs.length > 0;
         playlist = [];
         snapshot.forEach(doc => {
             playlist.push({ id: doc.id, ...doc.data() });
         });
         renderPlaylist();
-    });
+
+        // لو دي أول مرة تزيد فيها القائمة، شغل الفيديو الأول فوراً
+        if (isFirstLoad && !video.src) {
+            playCurrentMovie(0);
+        }
+    }, err => console.error("Playlist listener error:", err));
 
     video.onended = function() {
         if (isPlayingAd) {
@@ -198,14 +205,20 @@
         const url = document.getElementById('videoUrl').value;
         if (!url) return alert('برجاء إدخال رابط الفيديو!');
 
-        await db.collection("playlist").add({
-            title: title || "فيديو " + (playlist.length + 1),
-            url: url,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        try {
+            await db.collection("playlist").add({
+                title: title || "فيديو " + (playlist.length + 1),
+                url: url,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-        document.getElementById('videoTitle').value = '';
-        document.getElementById('videoUrl').value = '';
+            document.getElementById('videoTitle').value = '';
+            document.getElementById('videoUrl').value = '';
+            alert("تمت الإضافة بنجاح لـ Firebase!");
+        } catch (error) {
+            console.error("Firestore Write Error:", error);
+            alert("خطأ في حفظ البيانات: " + error.message);
+        }
     }
 
     function renderPlaylist() {
@@ -229,18 +242,18 @@
         const current = playlist[currentIndex];
         video.src = current.url;
         video.currentTime = startTime;
-        video.play();
+        video.play().catch(e => console.log("Autoplay blocked:", e));
         document.getElementById('nowPlayingText').innerText = "شغال الآن: " + current.title;
         renderPlaylist();
         
-        // حفظ حالة البث الحي في الفايربيس للتطبيق
+        // حفظ حالة البث الحي في الفايربيس للتطبيق فوراً
         db.collection("live_stream").doc("current_state").set({
             currentUrl: current.url,
             title: current.title,
             isAd: false,
             seekTime: startTime,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }).catch(err => console.error("Live Stream State Error:", err));
     }
 
     function playSelect(index) {
@@ -250,7 +263,11 @@
     }
 
     async function removeItem(id) {
-        await db.collection("playlist").doc(id).delete();
+        try {
+            await db.collection("playlist").doc(id).delete();
+        } catch (error) {
+            alert("فشل الحذف: " + error.message);
+        }
     }
 
     function playAdNow() {
@@ -270,7 +287,7 @@
             isAd: true,
             seekTime: 0,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }).catch(err => console.error("Ad Stream Error:", err));
     }
 
     function updateLogoPreview() {
@@ -297,13 +314,17 @@
     }
 
     async function saveLogoToFirebase() {
-        await db.collection("logo_settings").doc("config").set({
-            url: document.getElementById('logoUrl').value,
-            top: parseInt(document.getElementById('logoTop').value),
-            right: parseInt(document.getElementById('logoRight').value),
-            width: parseInt(document.getElementById('logoWidth').value)
-        });
-        alert("تم حفظ إعدادات اللوجو في قاعدة البيانات بنجاح!");
+        try {
+            await db.collection("logo_settings").doc("config").set({
+                url: document.getElementById('logoUrl').value,
+                top: parseInt(document.getElementById('logoTop').value),
+                right: parseInt(document.getElementById('logoRight').value),
+                width: parseInt(document.getElementById('logoWidth').value)
+            });
+            alert("تم حفظ إعدادات اللوجو في قاعدة البيانات بنجاح!");
+        } catch (error) {
+            alert("خطأ في حفظ اللوجو: " + error.message);
+        }
     }
 </script>
 </body>
