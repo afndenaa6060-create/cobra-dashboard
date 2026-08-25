@@ -22,14 +22,14 @@
         .container { max-width: 1200px; margin: 0 auto; }
         
         .header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .logo-text { font-size: 22px; font-weight: 800; color: var(--pink-accent); display: flex; align-items: center; gap: 8px; }
+        .logo-text { font-size: 22px; font-weight: 800; color: var(--pink-accent); }
 
         .grid-main { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         @media (max-width: 850px) { .grid-main { grid-template-columns: 1fr; } }
 
         .card { background: var(--card-bg); border-radius: 14px; padding: 18px; border: 1px solid var(--border-color); margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .card-ad { border-color: rgba(236, 72, 153, 0.4); background: linear-gradient(180deg, var(--card-bg), #1e1329); }
-        .card-title { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+        .card-title { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 14px; }
 
         .player-wrapper { position: relative; width: 100%; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid var(--purple-glow); }
         video { width: 100%; height: 360px; object-fit: contain; }
@@ -43,7 +43,6 @@
 
         .btn { border: none; border-radius: 8px; padding: 10px 14px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 8px; font-size: 13px; transition: 0.2s; }
         .btn-pink { background: linear-gradient(135deg, #ec4899, #d946ef); }
-        .btn-pink:hover { opacity: 0.9; }
         .btn-dark { background: #1e293b; border: 1px solid var(--border-color); }
         .btn-dark:hover { background: #334155; }
 
@@ -57,36 +56,38 @@
 <div class="container">
     <div class="header">
         <div class="logo-text">🐍 Cobra TV - لوحة التحكم والبث المباشر</div>
-        <div style="font-size:12px; color:#4ade80;" id="statusBadge">● جاري الاتصال...</div>
+        <div style="font-size:12px; color:#4ade80;" id="statusBadge">● متصل بـ Firebase بنجاح</div>
     </div>
 
     <div class="grid-main">
         <div>
+            <!-- شاشة المعاينة -->
             <div class="card">
                 <div class="card-title">🎬 شاشة المعاينة الحية</div>
                 <div class="player-wrapper">
-                    <img id="overlayLogo" src="https://via.placeholder.com/80/ec4899/ffffff?text=Cobra" alt="Logo">
+                    <img id="overlayLogo" src="" alt="Logo">
                     <video id="liveVideo" controls></video>
                 </div>
                 <div style="margin-top:10px; font-size:13px; color:var(--pink-accent); font-weight:bold;" id="nowPlayingText">جاري الانتظار...</div>
             </div>
 
+            <!-- التحكم باللوجو لتطبيقه في الموبايل فوراً -->
             <div class="card">
-                <div class="card-title">🎯 تحريك وتعديل اللوجو</div>
+                <div class="card-title">🎯 تحريك اللوجو والتزامن مع التطبيق</div>
                 <label>رابط صورة اللوجو:</label>
                 <input type="text" id="logoUrl" value="" onchange="updateLogoPreview()">
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                     <div>
-                        <label>من الأعلى (px):</label>
+                        <label>من الأعلى (Top px):</label>
                         <input type="number" id="logoTop" value="10" oninput="updateLogoPreview()">
                     </div>
                     <div>
-                        <label>من اليمين (px):</label>
+                        <label>من اليمين (Right px):</label>
                         <input type="number" id="logoRight" value="10" oninput="updateLogoPreview()">
                     </div>
                     <div>
-                        <label>العرض (px):</label>
+                        <label>العرض (Width px):</label>
                         <input type="number" id="logoWidth" value="80" oninput="updateLogoPreview()">
                     </div>
                 </div>
@@ -100,11 +101,35 @@
                     <button class="btn btn-dark" onclick="moveLogo('right', -5)">➡️</button>
                 </div>
 
-                <button class="btn btn-pink" onclick="saveLogoToFirebase()">💾 حفظ إعدادات اللوجو</button>
+                <button class="btn btn-pink" onclick="saveLogoToFirebase()">💾 حفظ ومزامنة اللوجو فوراً مع التطبيق</button>
+            </div>
+
+            <!-- التحكم بالإعلانات والشريط السفلي للفيلم القادم -->
+            <div class="card card-ad">
+                <div class="card-title">🖼️ التحكم بشريط الإعلانات والشريط الإخباري السفلي</div>
+                
+                <label>رابط بنر الإعلان العلوي (صورة عريضة):</label>
+                <input type="text" id="topBannerUrl" placeholder="https://example.com/banner.jpg">
+                
+                <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
+                    <label style="margin:0;"><input type="checkbox" id="topBannerActive"> تفعيل عرض الإعلان العلوي في التطبيق</label>
+                </div>
+
+                <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
+
+                <label>نص "الفيلم القادم" للشريط السفلي:</label>
+                <input type="text" id="nextMovieText" placeholder="مثال: الفيلم القادم: باتمان - اليوم الساعة 9 مساءً">
+
+                <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
+                    <label style="margin:0;"><input type="checkbox" id="nextMovieActive"> تفعيل الشريط السفلي في التطبيق</label>
+                </div>
+
+                <button class="btn btn-pink" onclick="saveBannersToFirebase()">📢 حفظ وتحديث بنرات التطبيق</button>
             </div>
         </div>
 
         <div>
+            <!-- إضافة فيلم -->
             <div class="card">
                 <div class="card-title">➕ إضافة فيديو جديد</div>
                 <input type="text" id="videoTitle" placeholder="اسم الفيلم / الحلقة">
@@ -112,12 +137,14 @@
                 <button class="btn btn-pink" onclick="addToPlaylistCloud()">حفظ وإضافة للقائمة</button>
             </div>
 
+            <!-- بث إعلان -->
             <div class="card card-ad">
                 <div class="card-title">📢 قطع البث لإعلان عاجل</div>
                 <input type="text" id="adUrl" placeholder="رابط فيديو الإعلان (MP4)">
                 <button class="btn btn-pink" onclick="playAdNow()">⚡ بث الإعلان الآن</button>
             </div>
 
+            <!-- القائمة -->
             <div class="card">
                 <div class="card-title">📜 قائمة الفيديوهات</div>
                 <ul class="playlist-box" id="playlistUI"></ul>
@@ -140,8 +167,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    document.getElementById('statusBadge').innerText = "● متصل بـ Firebase بنجاح";
-
     const video = document.getElementById('liveVideo');
     const logo = document.getElementById('overlayLogo');
     
@@ -150,6 +175,7 @@
     let savedMovieTime = 0;
     let isPlayingAd = false;
 
+    // جلب إعدادات اللوجو
     db.collection("logo_settings").doc("config").onSnapshot(doc => {
         if(doc.exists) {
             const data = doc.data();
@@ -161,6 +187,18 @@
         }
     });
 
+    // جلب إعدادات الإعلانات والشريط السفلي
+    db.collection("app_banners").doc("config").onSnapshot(doc => {
+        if(doc.exists) {
+            const data = doc.data();
+            document.getElementById('topBannerUrl').value = data.topBannerUrl || '';
+            document.getElementById('topBannerActive').checked = data.topBannerActive || false;
+            document.getElementById('nextMovieText').value = data.nextMovieText || '';
+            document.getElementById('nextMovieActive').checked = data.nextMovieActive || false;
+        }
+    });
+
+    // قائمة التشغيل
     db.collection("playlist").orderBy("createdAt", "asc").onSnapshot(snapshot => {
         const isFirstLoad = playlist.length === 0 && snapshot.docs.length > 0;
         playlist = [];
@@ -302,7 +340,21 @@
                 right: parseInt(document.getElementById('logoRight').value),
                 width: parseInt(document.getElementById('logoWidth').value)
             });
-            alert("تم حفظ اللوجو بنجاح!");
+            alert("تم حفظ ونقل إعدادات اللوجو إلى التطبيق والموقع بنجاح!");
+        } catch (error) {
+            alert("خطأ: " + error.message);
+        }
+    }
+
+    async function saveBannersToFirebase() {
+        try {
+            await db.collection("app_banners").doc("config").set({
+                topBannerUrl: document.getElementById('topBannerUrl').value,
+                topBannerActive: document.getElementById('topBannerActive').checked,
+                nextMovieText: document.getElementById('nextMovieText').value,
+                nextMovieActive: document.getElementById('nextMovieActive').checked
+            });
+            alert("تم حفظ تحديثات الإعلانات والشريط الإخباري في التطبيق!");
         } catch (error) {
             alert("خطأ: " + error.message);
         }
