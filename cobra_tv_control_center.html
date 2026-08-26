@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COBRA TV Control Center</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#07080b;color:#eee;font-family:Arial,sans-serif}input,select,textarea{background:#0b0d12!important;color:white!important;border:1px solid #292d38!important}.active{border-right:3px solid #ff1744;background:#ff174415}.card{background:#111318;border:1px solid #ffffff12}.glass{background:#111318;border:1px solid #ffffff12;box-shadow:0 10px 35px #0006}
+</style>
+</head>
+<body>
+<div id="login" class="min-h-screen grid place-items-center p-5">
+<div class="glass rounded-3xl p-8 w-full max-w-md text-center">
+<div class="text-5xl">🐍</div><h1 class="text-3xl font-black mt-4">COBRA TV</h1><p class="text-gray-400 mt-2">مركز التحكم الشامل</p>
+<button id="loginBtn" class="w-full mt-7 bg-white text-black rounded-xl py-3 font-bold">الدخول بحساب Google</button>
+<p id="err" class="text-red-400 text-sm mt-4"></p>
+</div></div>
+
+<div id="app" class="hidden">
+<header class="h-16 bg-[#0b0d11] border-b border-white/10 flex items-center justify-between px-5 sticky top-0 z-50">
+<div class="font-black">🐍 COBRA TV <span class="text-xs text-gray-500">CONTROL CENTER</span></div>
+<button id="logout" class="bg-white/5 px-4 py-2 rounded-lg">خروج</button>
+</header>
+<div class="flex">
+<aside class="hidden lg:block w-64 bg-[#0b0d11] min-h-screen p-3">
+<div id="nav" class="space-y-1"></div>
+</aside>
+<main id="page" class="p-5 md:p-8 w-full max-w-7xl"></main>
+</div></div>
+<div id="toast" class="fixed bottom-5 left-5 z-50"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,deleteDoc,collection,query,orderBy,limit,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCZzSbLegF_xaVVqtFWFUCu2WFOd42cF0",authDomain:"cobra-tv-b1231.firebaseapp.com",projectId:"cobra-tv-b1231",storageBucket:"cobra-tv-b1231.firebasestorage.app",messagingSenderId:"73044924945",appId:"1:73044924945:web:4ed40ee2b6463b574e2fb0",measurementId:"G-X5JQH06QNK"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+const $=x=>document.getElementById(x);
+const navItems=[["home","🏠","الرئيسية"],["movie","🎬","الفيلم والبث"],["ads","📢","الإعلانات"],["next","🎞️","الفيلم القادم"],["logo","🐍","اللوجو"],["comments","💬","التعليقات"],["users","👥","المشاهدون"],["settings","⚙️","الإعدادات"]];
+let page="home",commentsUnsub=null;
+
+function esc(x=""){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function toast(t){$("toast").innerHTML='<div class="glass px-5 py-3 rounded-xl">✅ '+t+'</div>';setTimeout(()=>{$("toast").innerHTML=""},2500)}
+function nav(){ $("nav").innerHTML=navItems.map(x=>'<button data-p="'+x[0]+'" class="w-full text-right px-4 py-3 rounded-xl '+(page==x[0]?"active":"")+'">'+x[1]+'　'+x[2]+'</button>').join("");document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{page=b.dataset.p;render()})}
+async function get(path){let s=await getDoc(doc(db,...path.split("/")));return s.exists()?s.data():{}}
+async function save(path,data){await setDoc(doc(db,...path.split("/")),data,{merge:true});toast("تم الحفظ")}
+function field(n,id,v="",type="text"){return '<label class="block"><span class="text-gray-400 text-sm">'+n+'</span><input id="'+id+'" type="'+type+'" value="'+esc(v)+'" class="mt-2 w-full rounded-xl p-3"></label>'}
+function select(n,id,v,opts){return '<label class="block"><span class="text-gray-400 text-sm">'+n+'</span><select id="'+id+'" class="mt-2 w-full rounded-xl p-3">'+opts.map(o=>'<option value="'+o[0]+'" '+(o[0]==v?"selected":"")+'>'+o[1]+'</option>').join("")+'</select></label>'}
+function box(title,sub,body){return '<section class="glass rounded-2xl p-5 mb-5"><h2 class="text-xl font-black">'+title+'</h2><p class="text-gray-500 text-sm mt-1 mb-5">'+sub+'</p>'+body+'</section>'}
+
+async function render(){
+nav();
+if(page=="home")return home();
+if(page=="movie")return movie();
+if(page=="ads")return ads();
+if(page=="next")return next();
+if(page=="logo")return logo();
+if(page=="comments")return comments();
+if(page=="users")return users();
+if(page=="settings")return settings();
+}
+async function home(){
+let d=await get("streams/live_stream_1");
+$("page").innerHTML='<h1 class="text-3xl font-black mb-6">لوحة التحكم</h1><div class="grid md:grid-cols-4 gap-4"><div class="card p-5 rounded-2xl">الحالة<h2 class="text-2xl font-black mt-3">'+(d.playbackState||"—")+'</h2></div><div class="card p-5 rounded-2xl">المشاهدون<h2 class="text-2xl font-black mt-3">'+(d.viewers||0)+'</h2></div><div class="card p-5 rounded-2xl">الإعجابات<h2 class="text-2xl font-black mt-3">'+(d.likes||0)+'</h2></div><div class="card p-5 rounded-2xl">الفيلم<h2 class="text-xl font-black mt-3">'+esc(d.movieTitle||"لا يوجد")+'</h2></div></div>'+
+box("تحكم سريع","تشغيل وإيقاف البث",'<div class="flex gap-2"><button id="play" class="bg-green-600 px-5 py-3 rounded-xl font-bold">▶️ تشغيل</button><button id="pause" class="bg-yellow-600 px-5 py-3 rounded-xl font-bold">⏸️ إيقاف</button></div>');
+$("play").onclick=()=>save("streams/live_stream_1",{playbackState:"PLAYING",startedAt:serverTimestamp()});
+$("pause").onclick=()=>save("streams/live_stream_1",{playbackState:"PAUSED"});
+}
+async function movie(){
+let d=await get("streams/live_stream_1");
+$("page").innerHTML='<h1 class="text-3xl font-black mb-6">🎬 الفيلم والبث</h1>'+box("التحكم الكامل","الرابط، البيانات، الحالة، والدقائق",'<div class="grid md:grid-cols-2 gap-4">'+field("اسم الفيلم","title",d.movieTitle||"")+field("التصنيف","cat",d.movieCategory||"عام")+field("رابط البث","url",d.currentUrl||d.url||"")+field("الدقيقة الحالية","minute",0,"number")+field("الثانية","second",0,"number")+field("ابدأ الفيلم من الدقيقة","start",0,"number")+field("انتقل الآن إلى الدقيقة","jump",0,"number")+select("الحالة","state",d.playbackState||"PLAYING",[["PLAYING","▶️ تشغيل"],["PAUSED","⏸️ إيقاف"],["STOPPED","⏹️ متوقف"]])+'</div><div class="flex flex-wrap gap-2 mt-5"><button id="save" class="bg-red-600 px-5 py-3 rounded-xl font-bold">💾 حفظ</button><button id="go" class="bg-green-600 px-5 py-3 rounded-xl font-bold">▶️ تشغيل من دقيقة البداية</button><button id="jump" class="bg-blue-600 px-5 py-3 rounded-xl font-bold">⏩ انتقال للدقيقة</button></div>');
+$("save").onclick=()=>save("streams/live_stream_1",{movieTitle:$("title").value,movieCategory:$("cat").value,currentUrl:$("url").value,playbackState:$("state").value});
+$("go").onclick=()=>save("streams/live_stream_1",{playbackState:"PLAYING",startedAt:serverTimestamp(),playbackPositionMs:Number($("start").value||0)*60000});
+$("jump").onclick=()=>save("streams/live_stream_1",{playbackPositionMs:Number($("jump").value||0)*60000});
+}
+async function ads(){
+let d=await get("app_banners/config");
+$("page").innerHTML='<h1 class="text-3xl font-black mb-6">📢 الإعلانات</h1>'+box("الإعلان العلوي","الحجم والمكان والحركة والتشغيل",'<div class="grid md:grid-cols-2 gap-4">'+field("رابط الصورة","url",d.topBannerUrl||"")+field("العرض","width",d.topBannerWidth||300,"number")+field("من الأعلى","top",d.topBannerTopPx||10,"number")+field("من اليمين","right",d.topBannerRightPx||0,"number")+select("الحركة","anim",d.topBannerAnimType||"SLIDE_TOP",[["NONE","بدون حركة"],["SLIDE_TOP","من أعلى"],["SLIDE_RIGHT","من اليمين"],["SLIDE_LEFT","من اليسار"],["FADE","ظهور تدريجي"],["ZOOM","تكبير"]])+select("التشغيل","active",String(d.topBannerActive||false),[["true","🟢 تشغيل"],["false","🔴 إيقاف"]])+'</div><div class="mt-5">'+('<button id="save" class="bg-red-600 px-5 py-3 rounded-xl font-bold">💾 حفظ الإعلان</button>')+'</div>');
+$("save").onclick=()=>save("app_banners/config",{topBannerUrl:$("url").value,topBannerWidth:Number($("width").value),topBannerTopPx:Number($("top").value),topBannerRightPx:Number($("right").value),topBannerAnimType:$("anim").value,topBannerActive:$("active").value=="true"});
+}
+async function next(){
+let d=await get("app_banners/config");
+$("page").innerHTML='<h1 class="text-3xl font-black mb-6">🎞️ الفيلم القادم</h1>'+box("تحكم كامل","تكبير، تصغير، تحريك، وحركة الظهور",'<div class="grid md:grid-cols-2 gap-4">'+field("رابط الصورة","url",d.nextMovieBannerUrl||"")+field("العرض","width",d.nextMovieWidth||320,"number")+field("الارتفاع","height",d.nextMovieHeight||80,"number")+field("من الأسفل","bottom",d.nextMovieBottomPx||20,"number")+field("من اليمين","right",d.nextMovieRightPx||0,"number")+select("الحركة","anim",d.nextMovieAnimType||"SLIDE_RIGHT",[["NONE","بدون حركة"],["SLIDE_RIGHT","من اليمين"],["SLIDE_LEFT","من اليسار"],["SLIDE_TOP","من أعلى"],["FADE","ظهور تدريجي"],["ZOOM","تكبير"]])+select("التشغيل","active",String(d.nextMovieActive||false),[["true","🟢 تشغيل"],["false","🔴 إيقاف"]])+'</div><div class="mt-5"><button id="save" class="bg-red-600 px-5 py-3 rounded-xl font-bold">💾 حفظ الفيلم القادم</button></div>');
+$("save").onclick=()=>save("app_banners/config",{nextMovieBannerUrl:$("url").value,nextMovieWidth:Number($("width").value),nextMovieHeight:Number($("height").value),nextMovieBottomPx:Number($("bottom").value),nextMovieRightPx:Number($("right").value),nextMovieAnimType:$("anim").value,nextMovieActive:$("active").value=="true"});
+}
+async function logo(){
+let d=await get("logo_settings/config");
+$("page").innerHTML='<h1 class="text-3xl font-black mb-6">🐍 اللوجو</h1>'+box("إعدادات اللوجو","إعداد منفصل للرأسي والأفقي",'<div class="grid md:grid-cols-2 gap-6"><div class="card rounded-2xl p-5"><h3 class="font-bold mb-4">📱 Portrait</h3>'+field("رابط اللوجو","url",d.url||"")+field("الحجم","pw",d.portWidth||60,"number")+field("من الأعلى","pt",d.portTop||8,"number")+field("من اليمين","pr",d.portRight||8,"number")+'</div><div class="card rounded-2xl p-5"><h3 class="font-bold mb-4">🖥️ Landscape</h3>'+field("الحجم","lw",d.landWidth||90,"number")+field("من الأعلى","lt",d.landTop||10,"number")+field("من اليمين","lr",d.landRight||10,"number")+'</div></div><button id="save" class="bg-red-600 px-5 py-3 rounded-xl font-bold mt-5">💾 حفظ اللوجو</button>');
+$("save").onclick=()=>save("logo_settings/config",{url:$("url").value,portWidth:Number($("pw").value),portTop:Number($("pt").value),portRight:Number($("pr").value),landWidth:Number($("lw").value),landTop:Number($("lt").value),landRight:Number($("lr").value)});
+}
+function comments(){
+$("page").innerHTML='<h1 class="text-3xl font-black mb-6">💬 إدارة التعليقات</h1>'+box("حذف / كتم / حظر","التحكم في المستخدمين والتعليقات",'<div id="list" class="space-y-3">جاري التحميل...</div>');
+if(commentsUnsub)commentsUnsub();
+let q=query(collection(db,"streams/live_stream_1/comments"),orderBy("timestamp","desc"),limit(100));
+commentsUnsub=onSnapshot(q,s=>{$("list").innerHTML=s.empty?"لا توجد تعليقات":s.docs.map(x=>{let d=x.data();return '<div class="card rounded-2xl p-4 flex flex-wrap items-center gap-3"><div class="flex-1"><b>'+esc(d.username||"زائر")+'</b><div class="text-gray-400 mt-1">'+esc(d.text||"")+'</div><small class="text-gray-600">'+esc(d.userId||"")+'</small></div><button data-m="'+x.id+'" class="bg-yellow-600 px-3 py-2 rounded-lg">🔇 كتم</button><button data-b="'+x.id+'" class="bg-red-800 px-3 py-2 rounded-lg">🚫 حظر</button><button data-d="'+x.id+'" class="bg-white/10 px-3 py-2 rounded-lg">🗑️ حذف</button></div>'}).join("");s.docs.forEach(x=>{let d=x.data();$("d"+x.id)?.addEventListener("click",()=>deleteDoc(x.ref));$("m"+x.id)?.addEventListener("click",()=>moderate(d.userId,d.username,"MUTE"));$("b"+x.id)?.addEventListener("click",()=>moderate(d.userId,d.username,"BAN"));document.querySelector('[data-d="'+x.id+'"]').onclick=async()=>{await deleteDoc(x.ref);toast("تم حذف التعليق")};document.querySelector('[data-m="'+x.id+'"]').onclick=()=>moderate(d.userId,d.username,"MUTE");document.querySelector('[data-b="'+x.id+'"]').onclick=()=>moderate(d.userId,d.username,"BAN")})});
+}
+async function moderate(uid,name,status){if(!uid)return toast("التعليق لا يحتوي userId");await setDoc(doc(db,"moderation/users/"+uid),{userId:uid,username:name||"",status,updatedAt:serverTimestamp()},{merge:true});toast(status=="MUTE"?"تم كتم المستخدم":"تم حظر المستخدم")}
+async function users(){let d=await get("streams/live_stream_1");$("page").innerHTML='<h1 class="text-3xl font-black mb-6">👥 المشاهدون</h1>'+box("إحصائيات وتحكم","المعلومات القادمة من البث",'<div class="grid md:grid-cols-3 gap-4"><div class="card p-5 rounded-xl">المشاهدون<h2 class="text-3xl font-black">'+(d.viewers||0)+'</h2></div><div class="card p-5 rounded-xl">الإعجابات<h2 class="text-3xl font-black">'+(d.likes||0)+'</h2></div><div class="card p-5 rounded-xl">الحالة<h2 class="text-2xl font-black">'+(d.playbackState||"—")+'</h2></div></div>')}
+async function settings(){$("page").innerHTML='<h1 class="text-3xl font-black mb-6">⚙️ الإعدادات</h1>'+box("إعدادات عامة","بيانات الإدارة",'<div class="grid md:grid-cols-2 gap-4">'+field("اسم القناة","name","COBRA TV")+field("معرف البث","id","live_stream_1")+field("حد التعليقات","limit",25,"number")+'</div><button id="save" class="bg-red-600 px-5 py-3 rounded-xl font-bold mt-5">💾 حفظ</button>');$("save").onclick=()=>save("admin_settings/config",{channelName:$("name").value,streamId:$("id").value,commentsLimit:Number($("limit").value)})}
+
+$("loginBtn").onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){$("err").textContent=e.message}}
+$("logout").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,u=>{if(u){$("login").classList.add("hidden");$("app").classList.remove("hidden");render()}else{$("login").classList.remove("hidden");$("app").classList.add("hidden")}});
+</script>
+</body></html>
