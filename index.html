@@ -1,442 +1,2927 @@
-from pathlib import Path
-
-html = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Cobra TV — لوحة تحكم القناة</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<style>
-:root{
-  --bg:#08070b;--panel:#120b12;--panel2:#180d16;--wine:#650f2d;
-  --wine2:#8d1741;--purple:#8b3fb0;--text:#f8f7fa;--muted:#b7adb7;
-  --line:rgba(255,255,255,.09);--good:#18b981;--danger:#e5484d;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;background:
-  radial-gradient(circle at 10% 0%,rgba(141,23,65,.18),transparent 28%),
-  radial-gradient(circle at 90% 0%,rgba(139,63,176,.15),transparent 25%),var(--bg);
-  color:var(--text);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;
-  font-size:16px;
-}
-input,textarea,select{font-size:16px!important}
-.shell{max-width:1180px;margin:auto;padding:22px}
-.panel{
-  background:linear-gradient(145deg,rgba(24,13,22,.96),rgba(12,9,14,.96));
-  border:1px solid var(--line);border-radius:22px;padding:22px;
-  box-shadow:0 18px 50px rgba(0,0,0,.28)
-}
-.section-title{font-size:22px;font-weight:900;margin:0}
-.section-sub{color:var(--muted);font-size:15px;margin-top:5px;line-height:1.7}
-.field label{display:block;color:#e5dfe6;font-weight:700;font-size:15px;margin-bottom:8px}
-.field input,.field textarea,.field select{
-  width:100%;background:#09080c;color:#fff;border:1px solid #3a2937;
-  border-radius:12px;padding:12px 14px;outline:none
-}
-.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--wine2);box-shadow:0 0 0 3px rgba(141,23,65,.15)}
-.btn{
-  border:0;border-radius:12px;padding:12px 16px;color:#fff;font-weight:900;
-  cursor:pointer;transition:.2s;min-height:46px
-}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
-.btn-wine{background:linear-gradient(135deg,#741234,#a31d4c)}
-.btn-purple{background:linear-gradient(135deg,#653080,#963fb6)}
-.btn-green{background:linear-gradient(135deg,#087b58,#13a979)}
-.btn-red{background:linear-gradient(135deg,#9d2028,#d83b45)}
-.btn-dark{background:#211822;border:1px solid #3b2d39}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:13px;font-weight:800}
-.badge-live{background:rgba(24,185,129,.12);color:#52e0b1;border:1px solid rgba(24,185,129,.25)}
-.badge-off{background:rgba(229,72,77,.12);color:#ff9295;border:1px solid rgba(229,72,77,.25)}
-.stat{background:#0b090d;border:1px solid var(--line);border-radius:16px;padding:16px}
-.stat small{color:var(--muted);display:block;margin-bottom:7px;font-size:14px}
-.stat strong{font-size:20px}
-.row-card{background:rgba(8,7,11,.72);border:1px solid #2d222c;border-radius:16px;padding:15px}
-.toggle{position:relative;width:52px;height:28px;display:inline-block}
-.toggle input{display:none}
-.toggle span{position:absolute;inset:0;background:#3b3039;border-radius:30px;cursor:pointer}
-.toggle span:before{content:"";position:absolute;width:22px;height:22px;top:3px;right:3px;background:white;border-radius:50%;transition:.2s}
-.toggle input:checked+span{background:var(--wine2)}
-.toggle input:checked+span:before{transform:translateX(-24px)}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.divider{height:1px;background:var(--line);margin:20px 0}
-.notice{background:rgba(141,23,65,.10);border:1px solid rgba(141,23,65,.28);border-radius:14px;padding:13px 15px;line-height:1.8;color:#eadfe5}
-.logo-control{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.logo-control button{min-height:48px}
-.toast{position:fixed;left:20px;bottom:20px;z-index:99;background:#171017;border:1px solid #463443;
-padding:14px 18px;border-radius:14px;box-shadow:0 15px 40px #0008;display:none}
-@media(max-width:760px){.shell{padding:12px}.grid2,.grid3{grid-template-columns:1fr}.logo-control{grid-template-columns:repeat(2,1fr)}.panel{padding:16px}.section-title{font-size:20px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cobra TV | غرفة التحكم</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --bg: #09070b;
+            --panel: #120d14;
+            --panel2: #181019;
+            --wine: #681b35;
+            --wine2: #8d2848;
+            --purple: #8b5cf6;
+            --pink: #c0266d;
+            --text: #ffffff;
+            --muted: #b6aeb8;
+            --border: rgba(255,255,255,.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at top right, rgba(126,34,65,.20), transparent 35%),
+                radial-gradient(circle at bottom left, rgba(91,33,182,.12), transparent 30%),
+                var(--bg);
+            color: var(--text);
+            font-family: Tahoma, Arial, sans-serif;
+            font-size: 16px;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font-family: inherit;
+        }
+
+        .glass {
+            background: linear-gradient(
+                145deg,
+                rgba(25,16,25,.96),
+                rgba(14,10,16,.96)
+            );
+            border: 1px solid var(--border);
+            box-shadow:
+                0 18px 45px rgba(0,0,0,.35),
+                inset 0 1px 0 rgba(255,255,255,.025);
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .field-label {
+            display: block;
+            color: #ddd4dd;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .input {
+            width: 100%;
+            background: #08070a;
+            border: 1px solid #332936;
+            border-radius: 12px;
+            padding: 13px 14px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: .2s;
+        }
+
+        .input:focus {
+            border-color: #9d2d50;
+            box-shadow: 0 0 0 3px rgba(157,45,80,.12);
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 13px 18px;
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform .15s, filter .15s;
+        }
+
+        .btn:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-wine {
+            background: linear-gradient(135deg, #671b35, #982d52);
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #6337bd, #8b5cf6);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #087f5b, #10b981);
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+        }
+
+        .btn-gray {
+            background: #272129;
+        }
+
+        .status-live {
+            background: rgba(16,185,129,.12);
+            border: 1px solid rgba(16,185,129,.28);
+            color: #6ee7b7;
+        }
+
+        .status-off {
+            background: rgba(239,68,68,.10);
+            border: 1px solid rgba(239,68,68,.25);
+            color: #fca5a5;
+        }
+
+        .preview-screen {
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            background:
+                linear-gradient(135deg,#050505,#161019 55%,#2b1020);
+            border: 1px solid #3a2935;
+            min-height: 250px;
+        }
+
+        .preview-screen::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                120deg,
+                rgba(255,255,255,.04),
+                transparent 30%
+            );
+        }
+
+        .logo-preview {
+            position: absolute;
+            object-fit: contain;
+            z-index: 5;
+            max-width: 35%;
+            max-height: 35%;
+        }
+
+        .fake-tv-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: rgba(255,255,255,.7);
+        }
+
+        .fake-tv-content .big {
+            font-size: 44px;
+            font-weight: 1000;
+            letter-spacing: 2px;
+        }
+
+        .fake-tv-content .small {
+            font-size: 15px;
+            color: #8f858f;
+        }
+
+        .mini-card {
+            background: rgba(255,255,255,.025);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 15px;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,.07);
+        }
+
+        .toast {
+            position: fixed;
+            left: 25px;
+            bottom: 25px;
+            z-index: 100;
+            min-width: 280px;
+            max-width: 420px;
+            background: #171119;
+            border: 1px solid #493541;
+            box-shadow: 0 15px 40px rgba(0,0,0,.5);
+            border-radius: 14px;
+            padding: 15px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            transform: translateY(130px);
+            opacity: 0;
+            transition: .3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toggle {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .toggle input {
+            display: none;
+        }
+
+        .toggle span {
+            position: absolute;
+            inset: 0;
+            background: #39313a;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .toggle span::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 4px;
+            right: 4px;
+            background: white;
+            border-radius: 50%;
+            transition: .2s;
+        }
+
+        .toggle input:checked + span {
+            background: #8b2850;
+        }
+
+        .toggle input:checked + span::after {
+            transform: translateX(-24px);
+        }
+
+        .playlist-item {
+            background: rgba(0,0,0,.25);
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .number-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg,#611a34,#8d2850);
+            font-weight: 1000;
+            flex-shrink: 0;
+        }
+
+        .danger-zone {
+            border-color: rgba(239,68,68,.22);
+            background: rgba(80,10,20,.15);
+        }
+
+        @media(max-width: 768px) {
+            body {
+                font-size: 15px;
+            }
+
+            .section-title {
+                font-size: 19px;
+            }
+
+            .fake-tv-content .big {
+                font-size: 32px;
+            }
+        }
+    </style>
 </head>
+
 <body>
+
 <div id="toast" class="toast"></div>
 
-<div class="shell space-y-5">
+<div class="max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-8">
 
-<header class="panel">
-  <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-    <div>
-      <div class="flex items-center gap-3">
-        <div class="text-4xl">🐍</div>
-        <div>
-          <h1 class="text-3xl font-black">Cobra TV</h1>
-          <p class="text-gray-400 text-sm mt-1">لوحة تحكم القناة — تشغيل المحتوى، الجدول، الهوية، البنرات والفواصل الإعلانية</p>
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <header class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="flex flex-col lg:flex-row gap-5 items-center justify-between">
+
+            <div class="flex items-center gap-4 w-full lg:w-auto">
+
+                <div class="w-16 h-16 rounded-2xl overflow-hidden bg-black border border-white/10 flex items-center justify-center">
+                    <img
+                        id="headerLogo"
+                        src=""
+                        alt="Cobra TV"
+                        class="w-full h-full object-contain hidden"
+                    >
+
+                    <span id="headerLogoFallback"
+                          class="text-3xl">
+                        🐍
+                    </span>
+                </div>
+
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black">
+                        Cobra TV
+                    </h1>
+
+                    <p class="text-gray-400 mt-1 text-sm md:text-base">
+                        غرفة التحكم الرئيسية للبث
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="flex flex-wrap gap-3 justify-center lg:justify-end">
+
+                <div id="systemStatus"
+                     class="status-off rounded-xl px-4 py-3 font-bold">
+                    ● جاري التحقق من حالة البث
+                </div>
+
+                <button
+                    onclick="refreshAll()"
+                    class="btn btn-gray">
+                    🔄 تحديث البيانات
+                </button>
+
+            </div>
+
         </div>
-      </div>
-    </div>
-    <div id="broadcastBadge" class="badge badge-off">● البث متوقف</div>
-  </div>
-</header>
 
-<section class="grid3">
-  <div class="stat"><small>الفيلم الحالي</small><strong id="activeMovieName">جاري التحميل...</strong></div>
-  <div class="stat"><small>الوقت المتبقي</small><strong id="countdownDisplay">00:00:00</strong></div>
-  <div class="stat"><small>عدد الأفلام في السلسلة</small><strong id="queueCount">0</strong></div>
-</section>
+    </header>
 
-<section class="panel">
-  <h2 class="section-title">🎬 1 — التحكم في الفيلم الحالي</h2>
-  <p class="section-sub">اكتب بيانات الفيلم ثم اختر تشغيل الآن. البيانات تُحفظ في Firebase وتظهر للمشغل المرتبط بالقناة.</p>
-  <div class="grid2 mt-5">
-    <div class="field"><label>اسم الفيلم</label><input id="movieTitle" placeholder="مثال: اسم الفيلم"></div>
-    <div class="field"><label>التصنيف</label><input id="movieCategory" placeholder="رعب / أكشن / دراما"></div>
-  </div>
-  <div class="field mt-4"><label>رابط الفيديو</label><input id="currentUrl" onchange="detectVideoDuration()" placeholder="https://example.com/video.mp4"></div>
-  <div class="grid2 mt-4">
-    <div class="field"><label>مدة الفيلم بالثواني</label><input type="number" id="movieDurationSec" min="0" placeholder="تُحسب تلقائياً إن أمكن"></div>
-    <button class="btn btn-dark self-end" onclick="addToPlaylist()">➕ إضافة إلى السلسلة القادمة</button>
-  </div>
-  <div class="field mt-4"><label>وصف الفيلم</label><textarea id="movieDescription" rows="3" placeholder="اكتب وصفاً واضحاً للفيلم..."></textarea></div>
-  <div class="grid2 mt-4">
-    <button class="btn btn-wine" onclick="saveMovieInfo()">▶️ تشغيل الفيلم الآن</button>
-    <button class="btn btn-red" onclick="stopStream()">⛔ إيقاف البث</button>
-  </div>
-</section>
 
-<section class="panel">
-  <h2 class="section-title">📜 2 — جدول الأفلام والسلسلة</h2>
-  <p class="section-sub">الأفلام مرتبة حسب الإضافة. يمكنك تشغيل فيلم فوراً أو حذفه من الجدول.</p>
-  <div id="playlistContainer" class="space-y-3 mt-5"><div class="notice">لا توجد أفلام في السلسلة حالياً.</div></div>
-</section>
+    <!-- ========================================================= -->
+    <!-- CURRENT STATUS -->
+    <!-- ========================================================= -->
 
-<section class="panel">
-  <h2 class="section-title">🐍 3 — هوية القناة واللوجو</h2>
-  <p class="section-sub">اللوجو له إعداد مستقل للرأسي والأفقي. الإعدادات القديمة محفوظة ومستخدمة، مع إضافة أزرار تحكم أسرع.</p>
-  <div class="field mt-5"><label>رابط صورة اللوجو</label><input id="logoUrl" placeholder="رابط PNG شفاف للوجو"></div>
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
 
-  <div class="divider"></div>
-  <h3 class="font-black text-lg">📱 الشاشة الرأسية — Portrait</h3>
-  <div class="grid3 mt-4">
-    <div class="field"><label>من الأعلى (Top)</label><input type="number" id="portTop" value="8"></div>
-    <div class="field"><label>من اليمين (Right)</label><input type="number" id="portRight" value="8"></div>
-    <div class="field"><label>العرض (Width)</label><input type="number" id="portWidth" value="60"></div>
-  </div>
-  <div class="logo-control mt-4">
-    <button class="btn btn-dark" onclick="moveLogo('portTop',-2)">⬆️ لأعلى</button>
-    <button class="btn btn-dark" onclick="moveLogo('portTop',2)">⬇️ لأسفل</button>
-    <button class="btn btn-dark" onclick="moveLogo('portRight',-2)">➡️ يمين</button>
-    <button class="btn btn-dark" onclick="moveLogo('portRight',2)">⬅️ يسار</button>
-    <button class="btn btn-purple" onclick="scaleLogo('portWidth',5)">➕ تكبير</button>
-    <button class="btn btn-purple" onclick="scaleLogo('portWidth',-5)">➖ تصغير</button>
-  </div>
+        <div class="flex flex-col lg:flex-row gap-6 items-stretch">
 
-  <div class="divider"></div>
-  <h3 class="font-black text-lg">🖥️ الشاشة الأفقية — Landscape</h3>
-  <div class="grid3 mt-4">
-    <div class="field"><label>من الأعلى (Top)</label><input type="number" id="landTop" value="10"></div>
-    <div class="field"><label>من اليمين (Right)</label><input type="number" id="landRight" value="10"></div>
-    <div class="field"><label>العرض (Width)</label><input type="number" id="landWidth" value="90"></div>
-  </div>
-  <div class="logo-control mt-4">
-    <button class="btn btn-dark" onclick="moveLogo('landTop',-2)">⬆️ لأعلى</button>
-    <button class="btn btn-dark" onclick="moveLogo('landTop',2)">⬇️ لأسفل</button>
-    <button class="btn btn-dark" onclick="moveLogo('landRight',-2)">➡️ يمين</button>
-    <button class="btn btn-dark" onclick="moveLogo('landRight',2)">⬅️ يسار</button>
-    <button class="btn btn-purple" onclick="scaleLogo('landWidth',5)">➕ تكبير</button>
-    <button class="btn btn-purple" onclick="scaleLogo('landWidth',-5)">➖ تصغير</button>
-  </div>
-  <button class="btn btn-wine w-full mt-5" onclick="saveLogoSettings()">💾 حفظ إعدادات اللوجو</button>
-</section>
+            <div class="flex-1">
 
-<section class="panel">
-  <h2 class="section-title">📢 4 — البنرات والإعلانات الظاهرة</h2>
-  <p class="section-sub">هذه البنرات مستقلة عن الفواصل الإعلانية التي توقف الفيلم مؤقتاً.</p>
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-2xl">📡</span>
 
-  <div class="row-card mt-5">
-    <div class="flex justify-between items-center gap-3">
-      <div><h3 class="font-black text-lg">1. الإعلان العلوي — Top Banner</h3><p class="text-gray-400 text-sm mt-1">بنر يظهر أعلى المشغل حسب إعدادات التطبيق.</p></div>
-      <label class="toggle"><input type="checkbox" id="topBannerActive"><span></span></label>
-    </div>
-    <div class="field mt-4"><label>رابط الإعلان</label><input id="topBannerUrl" placeholder="رابط صورة أو بنر الإعلان"></div>
-    <div class="grid3 mt-4">
-      <div class="field"><label>الحركة</label><select id="topBannerAnimType"><option value="SLIDE_TOP">من الأعلى</option><option value="SLIDE_RIGHT">من اليمين</option><option value="SLIDE_LEFT">من اليسار</option></select></div>
-      <div class="field"><label>العرض</label><input type="number" id="topBannerWidth" value="300"></div>
-      <div class="field"><label>المسافة من الأعلى</label><input type="number" id="topBannerTopPx" value="10"></div>
-    </div>
-  </div>
+                    <div>
+                        <h2 class="section-title">
+                            حالة البث الآن
+                        </h2>
 
-  <div class="row-card mt-4">
-    <div class="flex justify-between items-center gap-3">
-      <div><h3 class="font-black text-lg">2. بنر الفيلم القادم — Bottom Ribbon</h3><p class="text-gray-400 text-sm mt-1">يعرض تنبيهاً أو صورة الفيلم التالي.</p></div>
-      <label class="toggle"><input type="checkbox" id="nextMovieActive"><span></span></label>
-    </div>
-    <div class="field mt-4"><label>رابط بنر الفيلم القادم</label><input id="nextMovieBannerUrl" placeholder="رابط بنر الفيلم القادم"></div>
-  </div>
+                        <p class="section-subtitle">
+                            المعلومات التي يرسلها نظام التحكم إلى السيرفر
+                        </p>
+                    </div>
+                </div>
 
-  <button class="btn btn-green w-full mt-5" onclick="saveBannerSettings()">🚀 حفظ وتحديث البنرات</button>
-</section>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-<section class="panel">
-  <h2 class="section-title">⏸️ 5 — الفواصل الإعلانية أثناء الفيلم</h2>
-  <p class="section-sub">هنا نجهز أوامر الفاصل: إيقاف مؤقت، تشغيل الإعلان، ثم طلب الاستكمال من نفس الموضع. التنفيذ الفعلي على المشغل يحتاج أن يكون المشغل/السيرفر مبرمجاً لقراءة هذه الأوامر.</p>
-  <div class="notice mt-5">
-    <b>مهم:</b> إغلاق لوحة التحكم لا يمسح الفواصل أو إعداداتها لأنها محفوظة في Firebase. أما تشغيل الفاصل تلقائياً بدون فتح الصفحة فيحتاج Worker/Cloud Function أو خدمة جدولة على السيرفر.
-  </div>
+                    <div class="mini-card p-5">
+                        <p class="text-gray-500 text-sm mb-2">
+                            المحتوى الحالي
+                        </p>
 
-  <div class="grid2 mt-5">
-    <div class="field"><label>اسم الفاصل</label><input id="breakTitle" placeholder="مثال: الفاصل الإعلاني 1"></div>
-    <div class="field"><label>رابط الإعلان</label><input id="breakUrl" placeholder="رابط الإعلان"></div>
-  </div>
-  <div class="grid3 mt-4">
-    <div class="field"><label>التشغيل كل كم دقيقة</label><input type="number" id="breakEveryMin" min="1" value="30"></div>
-    <div class="field"><label>مدة الإعلان بالثواني</label><input type="number" id="breakDurationSec" min="1" value="60"></div>
-    <div class="field"><label>حالة الفاصل</label><select id="breakEnabled"><option value="true">مفعّل</option><option value="false">متوقف</option></select></div>
-  </div>
-  <div class="grid2 mt-4">
-    <button class="btn btn-wine" onclick="saveAdBreak()">💾 حفظ الفاصل</button>
-    <button class="btn btn-purple" onclick="triggerManualBreak()">📢 تشغيل فاصل الآن</button>
-  </div>
+                        <p id="activeMovieName"
+                           class="text-lg font-black text-white">
+                            لا يوجد بث
+                        </p>
+                    </div>
 
-  <div id="adBreaksContainer" class="space-y-3 mt-5"><div class="notice">لا توجد فواصل محفوظة.</div></div>
-</section>
+                    <div class="mini-card p-5">
+                        <p class="text-gray-500 text-sm mb-2">
+                            التصنيف
+                        </p>
 
-<section class="panel">
-  <h2 class="section-title">⚙️ 6 — حالة النظام</h2>
-  <p class="section-sub">هذه الشاشة للمتابعة السريعة فقط. لا تعتمد عليها كخدمة تشغيل؛ المشغل والسيرفر هما المسؤولان عن التشغيل المستمر.</p>
-  <div class="grid3 mt-5">
-    <div class="stat"><small>Firebase</small><strong id="firebaseStatus">جارٍ الاتصال...</strong></div>
-    <div class="stat"><small>آخر تحديث للبث</small><strong id="lastUpdate">—</strong></div>
-    <div class="stat"><small>الفواصل المحفوظة</small><strong id="breakCount">0</strong></div>
-  </div>
-</section>
+                        <p id="activeMovieCategory"
+                           class="text-lg font-black text-pink-300">
+                            —
+                        </p>
+                    </div>
+
+                    <div class="mini-card p-5">
+                        <p class="text-gray-500 text-sm mb-2">
+                            الوقت المتبقي
+                        </p>
+
+                        <p id="countdownDisplay"
+                           class="text-2xl font-black font-mono text-emerald-400">
+                            00:00:00
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- CURRENT MOVIE -->
+    <!-- ========================================================= -->
+
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="flex flex-col md:flex-row gap-4 justify-between md:items-center mb-6">
+
+            <div>
+                <h2 class="section-title">
+                    🎬 تشغيل المحتوى الحالي
+                </h2>
+
+                <p class="section-subtitle">
+                    أدخل بيانات الفيلم ثم اضغط تشغيل الآن لإرسالها إلى السيرفر.
+                </p>
+            </div>
+
+            <button
+                onclick="stopStream()"
+                class="btn btn-red">
+                ⛔ إيقاف البث فورًا
+            </button>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            <div>
+                <label class="field-label">
+                    اسم الفيلم أو البرنامج
+                </label>
+
+                <input
+                    id="movieTitle"
+                    class="input"
+                    placeholder="مثال: فيلم Cobra Night"
+                >
+            </div>
+
+            <div>
+                <label class="field-label">
+                    التصنيف
+                </label>
+
+                <input
+                    id="movieCategory"
+                    class="input"
+                    placeholder="رعب / أكشن / دراما"
+                >
+            </div>
+
+        </div>
+
+
+        <div class="mt-5">
+
+            <label class="field-label">
+                رابط الفيديو
+            </label>
+
+            <input
+                id="currentUrl"
+                class="input"
+                placeholder="ضع رابط الفيديو المباشر هنا"
+                onchange="detectVideoDuration()"
+            >
+
+            <p class="text-gray-500 text-sm mt-2">
+                سيتم حفظ الرابط في سجل البث ليستخدمه السيرفر.
+            </p>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+
+            <div>
+
+                <label class="field-label">
+                    مدة المحتوى بالثواني
+                </label>
+
+                <input
+                    id="movieDurationSec"
+                    type="number"
+                    min="0"
+                    class="input"
+                    placeholder="مثال: 7200"
+                >
+
+            </div>
+
+
+            <div class="flex items-end">
+
+                <button
+                    onclick="addToPlaylist()"
+                    class="btn btn-purple w-full">
+                    ➕ إضافة إلى جدول البث
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="mt-5">
+
+            <label class="field-label">
+                وصف المحتوى
+            </label>
+
+            <textarea
+                id="movieDescription"
+                rows="4"
+                class="input resize-none"
+                placeholder="اكتب وصف الفيلم أو المعلومات التي تريد عرضها للمشاهد..."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            onclick="saveMovieInfo()"
+            class="btn btn-wine w-full mt-5 text-lg">
+            ▶️ تشغيل هذا المحتوى الآن
+        </button>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- PLAYLIST -->
+    <!-- ========================================================= -->
+
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="flex flex-col md:flex-row gap-3 justify-between md:items-center mb-6">
+
+            <div>
+                <h2 class="section-title">
+                    📋 جدول البث
+                </h2>
+
+                <p class="section-subtitle">
+                    المحتويات مرتبة حسب موعد إضافتها، وسيتم الانتقال للتالي تلقائيًا حسب نظام السيرفر.
+                </p>
+            </div>
+
+            <button
+                onclick="playNextInQueue()"
+                class="btn btn-green">
+                ⏭️ تشغيل التالي الآن
+            </button>
+
+        </div>
+
+        <div id="playlistContainer"
+             class="space-y-3">
+
+            <div class="text-center py-10 text-gray-500">
+                لا توجد محتويات في جدول البث حاليًا.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- LOGO CONTROL -->
+    <!-- ========================================================= -->
+
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="mb-6">
+
+            <h2 class="section-title">
+                🖼️ إدارة شعار Cobra TV
+            </h2>
+
+            <p class="section-subtitle">
+                اضبط رابط الشعار ومكانه وحجمه لكل وضع شاشة، وشاهد المعاينة قبل الحفظ.
+            </p>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Settings -->
+
+            <div>
+
+                <label class="field-label">
+                    رابط صورة الشعار
+                </label>
+
+                <input
+                    id="logoUrl"
+                    class="input"
+                    placeholder="https://example.com/logo.png"
+                    oninput="updateLogoPreview()"
+                >
+
+
+                <div class="divider my-6"></div>
+
+
+                <h3 class="text-lg font-black mb-4">
+                    📱 إعدادات الشاشة الرأسية
+                </h3>
+
+                <div class="grid grid-cols-3 gap-3">
+
+                    <div>
+                        <label class="field-label">
+                            المسافة من الأعلى
+                        </label>
+
+                        <input
+                            id="portTop"
+                            type="number"
+                            class="input"
+                            value="8"
+                            oninput="updateLogoPreview()"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="field-label">
+                            المسافة من اليمين
+                        </label>
+
+                        <input
+                            id="portRight"
+                            type="number"
+                            class="input"
+                            value="8"
+                            oninput="updateLogoPreview()"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="field-label">
+                            عرض الشعار
+                        </label>
+
+                        <input
+                            id="portWidth"
+                            type="number"
+                            class="input"
+                            value="60"
+                            oninput="updateLogoPreview()"
+                        >
+                    </div>
+
+                </div>
+
+
+                <div class="divider my-6"></div>
+
+
+                <h3 class="text-lg font-black mb-4">
+                    🖥️ إعدادات الشاشة الأفقية
+                </h3>
+
+                <div class="grid grid-cols-3 gap-3">
+
+                    <div>
+                        <label class="field-label">
+                            المسافة من الأعلى
+                        </label>
+
+                        <input
+                            id="landTop"
+                            type="number"
+                            class="input"
+                            value="10"
+                            oninput="updateLogoPreview()"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="field-label">
+                            المسافة من اليمين
+                        </label>
+
+                        <input
+                            id="landRight"
+                            type="number"
+                            class="input"
+                            value="10"
+                            oninput="updateLogoPreview()"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="field-label">
+                            عرض الشعار
+                        </label>
+
+                        <input
+                            id="landWidth"
+                            type="number"
+                            class="input"
+                            value="90"
+                            oninput="updateLogoPreview()"
+                        >
+                    </div>
+
+                </div>
+
+
+                <button
+                    onclick="saveLogoSettings()"
+                    class="btn btn-purple w-full mt-6">
+                    💾 حفظ إعدادات الشعار
+                </button>
+
+            </div>
+
+
+            <!-- Preview -->
+
+            <div>
+
+                <h3 class="text-lg font-black mb-3">
+                    👁️ معاينة الشعار
+                </h3>
+
+                <div class="preview-screen"
+                     id="logoPreviewScreen">
+
+                    <div class="fake-tv-content">
+
+                        <div class="big">
+                            COBRA TV
+                        </div>
+
+                        <div class="small">
+                            معاينة شكل القناة
+                        </div>
+
+                    </div>
+
+                    <img
+                        id="logoPreview"
+                        class="logo-preview hidden"
+                        src=""
+                        alt="Logo Preview"
+                    >
+
+                </div>
+
+                <p class="text-gray-500 text-sm mt-3">
+                    المعاينة للتأكد من الحجم والمكان فقط. الإعدادات المحفوظة هي التي يقرأها التطبيق.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- BANNERS -->
+    <!-- ========================================================= -->
+
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="mb-6">
+
+            <h2 class="section-title">
+                📢 البنرات والشريط التلفزيوني
+            </h2>
+
+            <p class="section-subtitle">
+                تحكم في الإعلان العلوي وشريط الفيلم القادم بشكل مستقل.
+            </p>
+
+        </div>
+
+
+        <!-- TOP BANNER -->
+
+        <div class="mini-card p-5 mb-5">
+
+            <div class="flex items-center justify-between gap-4">
+
+                <div>
+                    <h3 class="text-lg font-black">
+                        1️⃣ الإعلان العلوي
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        إعلان أو صورة تظهر أعلى شاشة المشاهدة.
+                    </p>
+                </div>
+
+                <label class="toggle">
+                    <input
+                        type="checkbox"
+                        id="topBannerActive"
+                    >
+
+                    <span></span>
+                </label>
+
+            </div>
+
+
+            <div class="mt-5">
+
+                <label class="field-label">
+                    رابط الإعلان
+                </label>
+
+                <input
+                    id="topBannerUrl"
+                    class="input"
+                    placeholder="رابط صورة أو بنر الإعلان"
+                >
+
+            </div>
+
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+
+                <div>
+
+                    <label class="field-label">
+                        طريقة الظهور
+                    </label>
+
+                    <select
+                        id="topBannerAnimType"
+                        class="input">
+
+                        <option value="SLIDE_TOP">
+                            دخول من الأعلى
+                        </option>
+
+                        <option value="SLIDE_RIGHT">
+                            دخول من اليمين
+                        </option>
+
+                        <option value="SLIDE_LEFT">
+                            دخول من اليسار
+                        </option>
+
+                        <option value="FADE">
+                            ظهور تدريجي
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div>
+
+                    <label class="field-label">
+                        عرض الإعلان
+                    </label>
+
+                    <input
+                        id="topBannerWidth"
+                        type="number"
+                        class="input"
+                        value="300"
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label class="field-label">
+                        المسافة من الأعلى
+                    </label>
+
+                    <input
+                        id="topBannerTopPx"
+                        type="number"
+                        class="input"
+                        value="10"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- NEXT MOVIE -->
+
+        <div class="mini-card p-5 mb-5">
+
+            <div class="flex items-center justify-between gap-4">
+
+                <div>
+                    <h3 class="text-lg font-black">
+                        2️⃣ شريط الفيلم القادم
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        يظهر للمشاهد اسم أو صورة المحتوى القادم.
+                    </p>
+                </div>
+
+                <label class="toggle">
+
+                    <input
+                        type="checkbox"
+                        id="nextMovieActive"
+                    >
+
+                    <span></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="mt-5">
+
+                <label class="field-label">
+                    رابط بنر الفيلم القادم
+                </label>
+
+                <input
+                    id="nextMovieBannerUrl"
+                    class="input"
+                    placeholder="ضع رابط البنر هنا"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            onclick="saveBannerSettings()"
+            class="btn btn-green w-full">
+            🚀 حفظ وتحديث إعدادات البنرات
+        </button>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- AD BREAK CONTROL -->
+    <!-- ========================================================= -->
+
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="mb-6">
+
+            <h2 class="section-title">
+                📺 إدارة الفواصل الإعلانية
+            </h2>
+
+            <p class="section-subtitle">
+                هذه المنطقة تحفظ تعليمات الفواصل في Firebase ليتمكن نظام السيرفر من تنفيذها حتى لو لوحة التحكم مغلقة.
+            </p>
+
+        </div>
+
+
+        <div class="mini-card p-5 mb-5">
+
+            <div class="flex items-center justify-between">
+
+                <div>
+                    <h3 class="text-lg font-black">
+                        تفعيل نظام الفواصل
+                    </h3>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        تشغيل أو إيقاف جدول الفواصل بالكامل.
+                    </p>
+                </div>
+
+                <label class="toggle">
+
+                    <input
+                        type="checkbox"
+                        id="adsEnabled"
+                    >
+
+                    <span></span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+            <div>
+
+                <label class="field-label">
+                    الفاصل كل كم دقيقة؟
+                </label>
+
+                <input
+                    id="adIntervalMinutes"
+                    type="number"
+                    min="1"
+                    class="input"
+                    value="30"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label class="field-label">
+                    مدة الفاصل بالدقائق
+                </label>
+
+                <input
+                    id="adDurationMinutes"
+                    type="number"
+                    min="1"
+                    class="input"
+                    value="5"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label class="field-label">
+                    رقم مجموعة الإعلان
+                </label>
+
+                <input
+                    id="adGroupNumber"
+                    type="number"
+                    min="1"
+                    class="input"
+                    value="1"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+
+            <div>
+
+                <label class="field-label">
+                    وقت بداية الجدول
+                </label>
+
+                <input
+                    id="adScheduleStart"
+                    type="datetime-local"
+                    class="input"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label class="field-label">
+                    وقت نهاية الجدول
+                </label>
+
+                <input
+                    id="adScheduleEnd"
+                    type="datetime-local"
+                    class="input"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+
+            <button
+                onclick="saveAdSchedule()"
+                class="btn btn-purple">
+                💾 حفظ جدول الفواصل
+            </button>
+
+            <button
+                onclick="triggerAdBreakNow()"
+                class="btn btn-wine">
+                📢 تشغيل فاصل إعلاني الآن
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- AD CONTROL -->
+    <!-- ========================================================= -->
+
+    <section class="glass rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="mb-6">
+
+            <h2 class="section-title">
+                🎛️ التحكم اليدوي في الفاصل
+            </h2>
+
+            <p class="section-subtitle">
+                استخدم هذه الأزرار عند الحاجة لإجبار النظام على بدء أو إنهاء الفاصل.
+            </p>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <button
+                onclick="triggerAdBreakNow()"
+                class="btn btn-wine">
+                📢 بدء الفاصل الآن
+            </button>
+
+            <button
+                onclick="endAdBreakNow()"
+                class="btn btn-green">
+                ▶️ إنهاء الفاصل والعودة للمحتوى
+            </button>
+
+            <button
+                onclick="cancelAdBreak()"
+                class="btn btn-gray">
+                ✖️ إلغاء أمر الفاصل
+            </button>
+
+        </div>
+
+
+        <div class="mini-card p-5 mt-5">
+
+            <div class="flex items-center justify-between">
+
+                <div>
+
+                    <p class="text-gray-500 text-sm">
+                        حالة الفاصل
+                    </p>
+
+                    <p
+                        id="adStatusText"
+                        class="text-lg font-black mt-1">
+                        لا يوجد فاصل نشط
+                    </p>
+
+                </div>
+
+                <span
+                    id="adStatusBadge"
+                    class="status-off px-4 py-2 rounded-xl font-bold">
+                    متوقف
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- SERVER CONTROL -->
+    <!-- ========================================================= -->
+
+    <section class="glass danger-zone rounded-3xl p-5 md:p-7 mb-6">
+
+        <div class="mb-5">
+
+            <h2 class="section-title">
+                ⚙️ أوامر النظام
+            </h2>
+
+            <p class="section-subtitle">
+                أوامر إدارية مباشرة يتم تسجيلها في Firebase ليقرأها السيرفر.
+            </p>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <button
+                onclick="sendServerCommand('PLAY')"
+                class="btn btn-green">
+                ▶️ أمر تشغيل
+            </button>
+
+            <button
+                onclick="sendServerCommand('PAUSE')"
+                class="btn btn-wine">
+                ⏸️ أمر إيقاف مؤقت
+            </button>
+
+            <button
+                onclick="sendServerCommand('STOP')"
+                class="btn btn-red">
+                ⛔ أمر إيقاف كامل
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <footer class="text-center text-gray-600 py-5 text-sm">
+        Cobra TV Control Room — جميع الإعدادات محفوظة على Firebase
+    </footer>
 
 </div>
 
+
+<!-- ============================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================= -->
+
 <script>
-const firebaseConfig={
- apiKey:"AIzaSyCzZSbLegFJ_xaVVqtFWFUcu2Wf0d42cF0",
- authDomain:"cobra-tv-b1231.firebaseapp.com",
- projectId:"cobra-tv-b1231",
- storageBucket:"cobra-tv-b1231.firebasestorage.app",
- messagingSenderId:"73044924945",
- appId:"1:73044924945:web:4ed40ee2b6463b574e2fb0",
- measurementId:"G-X5JQH06QNK"
-};
-if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
 
-let currentMovieDuration=0,streamStartedAtMs=0,countdownInterval=null;
-const $=id=>document.getElementById(id);
-function toast(msg){const t=$("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",2800)}
-function safe(n,d=0){const v=parseInt($(n).value);return Number.isFinite(v)?v:d}
+    /* ============================================================
+       FIREBASE
+    ============================================================ */
 
-window.onload=()=>{
- $("firebaseStatus").textContent="متصل";
- listenToCurrentStream();listenToPlaylist();loadLogoSettings();loadBannerSettings();listenAdBreaks();
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzZSbLegFJ_xaVVqtFWFUcu2Wf0d42cF0",
+        authDomain: "cobra-tv-b1231.firebaseapp.com",
+        projectId: "cobra-tv-b1231",
+        storageBucket: "cobra-tv-b1231.firebasestorage.app",
+        messagingSenderId: "73044924945",
+        appId: "1:73044924945:web:4ed40ee2b6463b574e2fb0",
+        measurementId: "G-X5JQH06QNK"
+    };
 
-function detectVideoDuration(){
- const url=$("currentUrl").value.trim();if(!url)return;
- const v=document.createElement("video");v.preload="metadata";v.src=url;
- v.onloadedmetadata=()=>{if(v.duration&&isFinite(v.duration)&&v.duration>0)$("movieDurationSec").value=Math.floor(v.duration)};
- v.onerror=()=>toast("تعذر قراءة مدة الرابط تلقائياً — اكتب المدة يدوياً.");
-}
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
 
-function listenToCurrentStream(){
- db.collection("streams").doc("live_stream_1").onSnapshot(doc=>{
-  if(!doc.exists)return;
-  const d=doc.data();
-  $("movieTitle").value=d.title||d.movieTitle||"";
-  $("movieCategory").value=d.category||d.movieCategory||"";
-  $("currentUrl").value=d.url||d.currentUrl||"";
-  $("movieDescription").value=d.description||d.movieDescription||"";
-  $("movieDurationSec").value=d.durationSec||0;
-  $("activeMovieName").textContent=d.title||d.movieTitle||"لا يوجد فيلم شغال حالياً";
-  currentMovieDuration=Number(d.durationSec)||0;
-  if(d.url){$("broadcastBadge").className="badge badge-live";$("broadcastBadge").textContent="● البث يعمل"}
-  else{$("broadcastBadge").className="badge badge-off";$("broadcastBadge").textContent="● البث متوقف"}
-  $("lastUpdate").textContent=new Date().toLocaleTimeString("ar-EG");
-  if(d.startedAt&&d.startedAt.toDate){streamStartedAtMs=d.startedAt.toDate().getTime();startCountdownTimer()}
-  else{$("countdownDisplay").textContent="00:00:00"}
- },e=>{$("firebaseStatus").textContent="خطأ اتصال";console.error(e)});
-}
+    const db = firebase.firestore();
 
-function startCountdownTimer(){
- clearInterval(countdownInterval);
- countdownInterval=setInterval(()=>{
-  if(!streamStartedAtMs||currentMovieDuration<=0){$("countdownDisplay").textContent="00:00:00";return}
-  const remaining=currentMovieDuration-Math.floor((Date.now()-streamStartedAtMs)/1000);
-  if(remaining<=0){
-   $("countdownDisplay").textContent="00:00:00";
-   clearInterval(countdownInterval);
-   playNextInQueue();
-   return;
-  }
-  const h=Math.floor(remaining/3600),m=Math.floor((remaining%3600)/60),s=remaining%60;
-  $("countdownDisplay").textContent=[h,m,s].map(x=>String(x).padStart(2,"0")).join(":");
- },1000);
-}
 
-async function saveMovieInfo(){
- const title=$("movieTitle").value.trim(),category=$("movieCategory").value.trim(),url=$("currentUrl").value.trim(),desc=$("movieDescription").value.trim(),duration=Math.max(0,safe("movieDurationSec"));
- if(!title||!url)return toast("⚠️ اكتب اسم الفيلم والرابط أولاً.");
- await db.collection("streams").doc("live_stream_1").set({
-  title,movieTitle:title,category,movieCategory:category,url,currentUrl:url,
-  description:desc,movieDescription:desc,durationSec:duration,
-  startedAt:firebase.firestore.FieldValue.serverTimestamp()
- },{merge:true});
- toast("✅ تم إرسال الفيلم للتشغيل.");
-}
+    /* ============================================================
+       VARIABLES
+    ============================================================ */
 
-async function stopStream(){
- await db.collection("streams").doc("live_stream_1").set({
-  url:"",currentUrl:"",title:"البث متوقف حالياً",movieTitle:"البث متوقف حالياً",
-  durationSec:0,startedAt:null
- },{merge:true});
- toast("🛑 تم إرسال أمر إيقاف البث.");
-}
+    let currentMovieDuration = 0;
+    let streamStartedAtMs = 0;
+    let countdownInterval = null;
 
-async function addToPlaylist(){
- const title=$("movieTitle").value.trim(),category=$("movieCategory").value.trim(),url=$("currentUrl").value.trim(),desc=$("movieDescription").value.trim(),duration=Math.max(0,safe("movieDurationSec"));
- if(!title||!url)return toast("⚠️ اكتب اسم الفيلم والرابط أولاً.");
- await db.collection("playlist").add({title,movieTitle:title,category,movieCategory:category,url,currentUrl:url,description:desc,movieDescription:desc,durationSec:duration,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
- toast("✅ تمت إضافة الفيلم إلى السلسلة.");
-}
+    let playlistUnsubscribe = null;
+    let streamUnsubscribe = null;
 
-function listenToPlaylist(){
- db.collection("playlist").orderBy("createdAt","asc").onSnapshot(s=>{
-  $("queueCount").textContent=s.size;
-  const c=$("playlistContainer");c.innerHTML="";
-  if(s.empty){c.innerHTML='<div class="notice">لا توجد أفلام في السلسلة حالياً.</div>';return}
-  s.docs.forEach((doc,i)=>{
-   const d=doc.data(),title=d.title||d.movieTitle||"بدون عنوان";
-   const box=document.createElement("div");box.className="row-card";
-   box.innerHTML=`<div class="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-    <div><div class="font-black text-lg">${i+1}. ${escapeHtml(title)}</div>
-    <div class="text-sm text-gray-400 mt-1">المدة: ${Number(d.durationSec)||0} ثانية</div>
-    <div class="text-xs text-gray-500 mt-1 break-all">${escapeHtml(d.url||d.currentUrl||"")}</div></div>
-    <div class="flex gap-2 shrink-0"><button class="btn btn-green" onclick="playNowFromQueue('${doc.id}')">▶️ تشغيل الآن</button>
-    <button class="btn btn-red" onclick="deleteFromQueue('${doc.id}')">🗑️ حذف</button></div></div>`;
-   c.appendChild(box);
-  });
- });
-}
-function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 
-async function playNowFromQueue(id){
- const ref=db.collection("playlist").doc(id),doc=await ref.get();if(!doc.exists)return;
- const d=doc.data(),title=d.title||d.movieTitle||"",category=d.category||d.movieCategory||"",url=d.url||d.currentUrl||"",desc=d.description||d.movieDescription||"",duration=Number(d.durationSec)||0;
- await db.collection("streams").doc("live_stream_1").set({
-  title,movieTitle:title,category,movieCategory:category,url,currentUrl:url,
-  description:desc,movieDescription:desc,durationSec:duration,
-  startedAt:firebase.firestore.FieldValue.serverTimestamp()
- },{merge:true});
- await ref.delete();toast("▶️ تم تشغيل الفيلم من السلسلة.");
-}
-async function playNextInQueue(){
- const s=await db.collection("playlist").orderBy("createdAt","asc").limit(1).get();
- if(s.empty){await stopStream();return}
- await playNowFromQueue(s.docs[0].id);
-}
-async function deleteFromQueue(id){await db.collection("playlist").doc(id).delete();toast("🗑️ تم حذف الفيلم.");}
+    /* ============================================================
+       START
+    ============================================================ */
 
-function moveLogo(id,delta){$(id).value=Math.max(0,safe(id)+delta)}
-function scaleLogo(id,delta){$(id).value=Math.max(10,safe(id)+delta)}
+    window.addEventListener("load", () => {
 
-async function loadLogoSettings(){
- const doc=await db.collection("logo_settings").doc("config").get();if(!doc.exists)return;
- const d=doc.data();
- $("logoUrl").value=d.url||"";
- $("portTop").value=d.portTop??8;$("portRight").value=d.portRight??8;$("portWidth").value=d.portWidth??60;
- $("landTop").value=d.landTop??10;$("landRight").value=d.landRight??10;$("landWidth").value=d.landWidth??90;
-}
-async function saveLogoSettings(){
- await db.collection("logo_settings").doc("config").set({
-  url:$("logoUrl").value.trim(),portTop:safe("portTop"),portRight:safe("portRight"),portWidth:safe("portWidth"),
-  landTop:safe("landTop"),landRight:safe("landRight"),landWidth:safe("landWidth")
- },{merge:true});toast("🐍 تم حفظ إعدادات اللوجو.");
-}
+        listenToCurrentStream();
+        listenToPlaylist();
 
-async function loadBannerSettings(){
- const doc=await db.collection("app_banners").doc("config").get();if(!doc.exists)return;
- const d=doc.data();
- $("topBannerActive").checked=!!d.topBannerActive;$("topBannerUrl").value=d.topBannerUrl||"";
- $("topBannerAnimType").value=d.topBannerAnimType||"SLIDE_TOP";$("topBannerWidth").value=d.topBannerWidth??300;$("topBannerTopPx").value=d.topBannerTopPx??10;
- $("nextMovieActive").checked=!!d.nextMovieActive;$("nextMovieBannerUrl").value=d.nextMovieBannerUrl||"";
-}
-async function saveBannerSettings(){
- await db.collection("app_banners").doc("config").set({
-  topBannerActive:$("topBannerActive").checked,topBannerUrl:$("topBannerUrl").value.trim(),
-  topBannerAnimType:$("topBannerAnimType").value,topBannerWidth:safe("topBannerWidth",300),topBannerTopPx:safe("topBannerTopPx",10),
-  nextMovieActive:$("nextMovieActive").checked,nextMovieBannerUrl:$("nextMovieBannerUrl").value.trim()
- },{merge:true});toast("📢 تم تحديث إعدادات البنرات.");
-}
+        loadLogoSettings();
+        loadBannerSettings();
+        loadAdSchedule();
 
-async function saveAdBreak(){
- const title=$("breakTitle").value.trim(),url=$("breakUrl").value.trim();
- if(!title||!url)return toast("⚠️ اكتب اسم الفاصل والرابط.");
- await db.collection("ad_breaks").add({
-  title,url,everyMinutes:Math.max(1,safe("breakEveryMin",30)),durationSec:Math.max(1,safe("breakDurationSec",60)),
-  enabled:$("breakEnabled").value==="true",createdAt:firebase.firestore.FieldValue.serverTimestamp()
- });
- $("breakTitle").value="";$("breakUrl").value="";toast("📢 تم حفظ الفاصل الإعلاني.");
-}
+    });
 
-function listenAdBreaks(){
- db.collection("ad_breaks").orderBy("createdAt","asc").onSnapshot(s=>{
-  $("breakCount").textContent=s.size;const c=$("adBreaksContainer");c.innerHTML="";
-  if(s.empty){c.innerHTML='<div class="notice">لا توجد فواصل محفوظة.</div>';return}
-  s.docs.forEach((doc,i)=>{
-   const d=doc.data(),box=document.createElement("div");box.className="row-card";
-   box.innerHTML=`<div class="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-    <div><div class="font-black">${i+1}. ${escapeHtml(d.title||"فاصل")}</div>
-    <div class="text-sm text-gray-400 mt-1">كل ${Number(d.everyMinutes)||0} دقيقة — مدة الإعلان ${Number(d.durationSec)||0} ثانية</div>
-    <div class="text-xs text-gray-500 mt-1 break-all">${escapeHtml(d.url||"")}</div></div>
-    <div class="flex gap-2"><button class="btn btn-purple" onclick="triggerBreak('${doc.id}')">📢 تشغيل الآن</button>
-    <button class="btn btn-red" onclick="deleteBreak('${doc.id}')">🗑️ حذف</button></div></div>`;
-   c.appendChild(box);
-  });
- });
-}
-async function triggerBreak(id){
- const doc=await db.collection("ad_breaks").doc(id).get();if(!doc.exists)return;
- const d=doc.data();
- await db.collection("control_commands").doc("live").set({
-  type:"AD_BREAK",action:"PAUSE_AND_PLAY_AD_THEN_RESUME",
-  adBreakId:id,adUrl:d.url||"",adDurationSec:Number(d.durationSec)||0,
-  issuedAt:firebase.firestore.FieldValue.serverTimestamp(),status:"pending"
- },{merge:true});
- toast("📢 تم إرسال أمر الفاصل للمشغل.");
-}
-async function triggerManualBreak(){
- const url=$("breakUrl").value.trim(),duration=Math.max(1,safe("breakDurationSec",60));
- if(!url)return toast("⚠️ اكتب رابط الإعلان أولاً.");
- await db.collection("control_commands").doc("live").set({
-  type:"AD_BREAK",action:"PAUSE_AND_PLAY_AD_THEN_RESUME",adUrl:url,adDurationSec:duration,
-  issuedAt:firebase.firestore.FieldValue.serverTimestamp(),status:"pending"
- },{merge:true});
- toast("📢 تم إرسال أمر الفاصل الآن.");
-}
-async function deleteBreak(id){await db.collection("ad_breaks").doc(id).delete();toast("🗑️ تم حذف الفاصل.");}
+
+    /* ============================================================
+       TOAST
+    ============================================================ */
+
+    function showToast(message) {
+
+        const toast = document.getElementById("toast");
+
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 3000);
+    }
+
+
+    /* ============================================================
+       VIDEO DURATION
+    ============================================================ */
+
+    function detectVideoDuration() {
+
+        const url =
+            document.getElementById("currentUrl").value.trim();
+
+        if (!url) return;
+
+        const video =
+            document.createElement("video");
+
+        video.preload = "metadata";
+
+        video.onloadedmetadata = function() {
+
+            if (
+                video.duration &&
+                !isNaN(video.duration) &&
+                video.duration > 0
+            ) {
+
+                document.getElementById(
+                    "movieDurationSec"
+                ).value = Math.floor(video.duration);
+
+                showToast("تم التعرف على مدة الفيديو تلقائيًا.");
+
+            }
+
+        };
+
+        video.onerror = function() {
+            showToast("تعذر قراءة مدة الرابط تلقائيًا، يمكنك إدخالها يدويًا.");
+        };
+
+        video.src = url;
+    }
+
+
+    /* ============================================================
+       CURRENT STREAM
+    ============================================================ */
+
+    function listenToCurrentStream() {
+
+        if (streamUnsubscribe) {
+            streamUnsubscribe();
+        }
+
+        streamUnsubscribe =
+            db.collection("streams")
+              .doc("live_stream_1")
+              .onSnapshot(doc => {
+
+                if (!doc.exists) {
+
+                    setStreamOffline();
+                    return;
+
+                }
+
+                const data = doc.data();
+
+                const title =
+                    data.title ||
+                    data.movieTitle ||
+                    "";
+
+                const category =
+                    data.category ||
+                    data.movieCategory ||
+                    "";
+
+                const url =
+                    data.url ||
+                    data.currentUrl ||
+                    "";
+
+                const description =
+                    data.description ||
+                    data.movieDescription ||
+                    "";
+
+                const duration =
+                    Number(data.durationSec) || 0;
+
+
+                document.getElementById(
+                    "activeMovieName"
+                ).textContent =
+                    title || "لا يوجد محتوى يعمل الآن";
+
+
+                document.getElementById(
+                    "activeMovieCategory"
+                ).textContent =
+                    category || "غير محدد";
+
+
+                currentMovieDuration = duration;
+
+
+                if (data.startedAt && data.startedAt.toDate) {
+
+                    streamStartedAtMs =
+                        data.startedAt.toDate().getTime();
+
+                    startCountdownTimer();
+
+                } else {
+
+                    streamStartedAtMs = 0;
+
+                    document.getElementById(
+                        "countdownDisplay"
+                    ).textContent = "00:00:00";
+
+                }
+
+
+                if (url) {
+
+                    setSystemLive();
+
+                } else {
+
+                    setStreamOffline();
+
+                }
+
+
+                // لا نغير خانات الإدخال أثناء الكتابة
+                if (
+                    document.activeElement.id !== "movieTitle"
+                ) {
+                    document.getElementById(
+                        "movieTitle"
+                    ).value = title;
+                }
+
+                if (
+                    document.activeElement.id !== "movieCategory"
+                ) {
+                    document.getElementById(
+                        "movieCategory"
+                    ).value = category;
+                }
+
+                if (
+                    document.activeElement.id !== "currentUrl"
+                ) {
+                    document.getElementById(
+                        "currentUrl"
+                    ).value = url;
+                }
+
+                if (
+                    document.activeElement.id !== "movieDescription"
+                ) {
+                    document.getElementById(
+                        "movieDescription"
+                    ).value = description;
+                }
+
+                if (
+                    document.activeElement.id !== "movieDurationSec"
+                ) {
+                    document.getElementById(
+                        "movieDurationSec"
+                    ).value = duration || "";
+                }
+
+            }, error => {
+
+                console.error(error);
+
+                document.getElementById(
+                    "systemStatus"
+                ).textContent =
+                    "● خطأ في الاتصال بـ Firebase";
+
+            });
+
+    }
+
+
+    /* ============================================================
+       STATUS
+    ============================================================ */
+
+    function setSystemLive() {
+
+        const status =
+            document.getElementById("systemStatus");
+
+        status.className =
+            "status-live rounded-xl px-4 py-3 font-bold";
+
+        status.textContent =
+            "● البث يعمل الآن";
+
+    }
+
+
+    function setStreamOffline() {
+
+        const status =
+            document.getElementById("systemStatus");
+
+        status.className =
+            "status-off rounded-xl px-4 py-3 font-bold";
+
+        status.textContent =
+            "● البث متوقف";
+
+    }
+
+
+    /* ============================================================
+       COUNTDOWN
+    ============================================================ */
+
+    function startCountdownTimer() {
+
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+
+        function update() {
+
+            if (
+                !streamStartedAtMs ||
+                !currentMovieDuration ||
+                currentMovieDuration <= 0
+            ) {
+
+                document.getElementById(
+                    "countdownDisplay"
+                ).textContent = "غير محدد";
+
+                return;
+
+            }
+
+
+            const elapsed =
+                Math.floor(
+                    (Date.now() - streamStartedAtMs) / 1000
+                );
+
+
+            const remaining =
+                currentMovieDuration - elapsed;
+
+
+            if (remaining <= 0) {
+
+                document.getElementById(
+                    "countdownDisplay"
+                ).textContent =
+                    "00:00:00";
+
+                clearInterval(countdownInterval);
+
+                // لا يتم تنفيذ الانتقال من المتصفح.
+                // السيرفر يستطيع تنفيذ الانتقال حسب بيانات Firebase.
+
+                return;
+
+            }
+
+
+            const hrs =
+                Math.floor(remaining / 3600);
+
+            const mins =
+                Math.floor((remaining % 3600) / 60);
+
+            const secs =
+                remaining % 60;
+
+
+            document.getElementById(
+                "countdownDisplay"
+            ).textContent =
+                `${String(hrs).padStart(2,"0")}:` +
+                `${String(mins).padStart(2,"0")}:` +
+                `${String(secs).padStart(2,"0")}`;
+
+        }
+
+
+        update();
+
+        countdownInterval =
+            setInterval(update, 1000);
+    }
+
+
+    /* ============================================================
+       SAVE CURRENT MOVIE
+    ============================================================ */
+
+    function saveMovieInfo() {
+
+        const title =
+            document.getElementById("movieTitle")
+            .value.trim();
+
+        const category =
+            document.getElementById("movieCategory")
+            .value.trim();
+
+        const url =
+            document.getElementById("currentUrl")
+            .value.trim();
+
+        const description =
+            document.getElementById("movieDescription")
+            .value.trim();
+
+        let duration =
+            Number(
+                document.getElementById(
+                    "movieDurationSec"
+                ).value
+            ) || 0;
+
+
+        if (!title) {
+
+            showToast("من فضلك اكتب اسم الفيلم أولًا.");
+            return;
+
+        }
+
+        if (!url) {
+
+            showToast("من فضلك ضع رابط الفيديو أولًا.");
+            return;
+
+        }
+
+
+        if (duration < 0) {
+            duration = 0;
+        }
+
+
+        db.collection("streams")
+          .doc("live_stream_1")
+          .set({
+
+              title,
+              movieTitle: title,
+
+              category,
+              movieCategory: category,
+
+              url,
+              currentUrl: url,
+
+              description,
+              movieDescription: description,
+
+              durationSec: duration,
+
+              startedAt:
+                  firebase.firestore.FieldValue.serverTimestamp(),
+
+              status: "PLAYING",
+
+              updatedAt:
+                  firebase.firestore.FieldValue.serverTimestamp()
+
+          }, { merge: true })
+
+          .then(() => {
+
+              showToast(
+                  "✅ تم إرسال الفيلم إلى البث بنجاح."
+              );
+
+          })
+
+          .catch(error => {
+
+              console.error(error);
+
+              showToast(
+                  "حدث خطأ أثناء حفظ الفيلم."
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       STOP STREAM
+    ============================================================ */
+
+    function stopStream() {
+
+        if (
+            !confirm(
+                "هل تريد إيقاف البث الحالي؟"
+            )
+        ) {
+            return;
+        }
+
+
+        db.collection("streams")
+          .doc("live_stream_1")
+          .set({
+
+              url: "",
+              currentUrl: "",
+
+              title: "البث متوقف حاليًا",
+              movieTitle: "البث متوقف حاليًا",
+
+              durationSec: 0,
+
+              startedAt: null,
+
+              status: "STOPPED",
+
+              updatedAt:
+                  firebase.firestore.FieldValue.serverTimestamp()
+
+          }, { merge: true })
+
+          .then(() => {
+
+              showToast(
+                  "🛑 تم إرسال أمر إيقاف البث."
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       PLAYLIST ADD
+    ============================================================ */
+
+    function addToPlaylist() {
+
+        const title =
+            document.getElementById("movieTitle")
+            .value.trim();
+
+        const category =
+            document.getElementById("movieCategory")
+            .value.trim();
+
+        const url =
+            document.getElementById("currentUrl")
+            .value.trim();
+
+        const description =
+            document.getElementById("movieDescription")
+            .value.trim();
+
+        let duration =
+            Number(
+                document.getElementById(
+                    "movieDurationSec"
+                ).value
+            ) || 0;
+
+
+        if (!title || !url) {
+
+            showToast(
+                "اكتب اسم الفيلم والرابط أولًا."
+            );
+
+            return;
+
+        }
+
+
+        db.collection("playlist")
+          .add({
+
+              title,
+              movieTitle: title,
+
+              category,
+              movieCategory: category,
+
+              url,
+              currentUrl: url,
+
+              description,
+              movieDescription: description,
+
+              durationSec: duration,
+
+              createdAt:
+                  firebase.firestore.FieldValue.serverTimestamp()
+
+          })
+
+          .then(() => {
+
+              showToast(
+                  "✅ تمت إضافة المحتوى إلى جدول البث."
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       PLAYLIST LISTENER
+    ============================================================ */
+
+    function listenToPlaylist() {
+
+        if (playlistUnsubscribe) {
+            playlistUnsubscribe();
+        }
+
+
+        playlistUnsubscribe =
+            db.collection("playlist")
+              .orderBy("createdAt", "asc")
+              .onSnapshot(snapshot => {
+
+                  const container =
+                      document.getElementById(
+                          "playlistContainer"
+                      );
+
+
+                  container.innerHTML = "";
+
+
+                  if (snapshot.empty) {
+
+                      container.innerHTML = `
+                        <div class="text-center py-12 text-gray-500">
+                            <div class="text-4xl mb-3">📭</div>
+                            لا توجد محتويات في جدول البث حاليًا.
+                        </div>
+                      `;
+
+                      return;
+
+                  }
+
+
+                  snapshot.docs.forEach(
+                      (doc, index) => {
+
+                          const item =
+                              doc.data();
+
+
+                          const title =
+                              item.title ||
+                              item.movieTitle ||
+                              "بدون اسم";
+
+
+                          const url =
+                              item.url ||
+                              item.currentUrl ||
+                              "";
+
+
+                          const duration =
+                              Number(
+                                  item.durationSec
+                              ) || 0;
+
+
+                          const minutes =
+                              Math.floor(
+                                  duration / 60
+                              );
+
+
+                          const seconds =
+                              duration % 60;
+
+
+                          const row =
+                              document.createElement(
+                                  "div"
+                              );
+
+
+                          row.className =
+                              "playlist-item flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between";
+
+
+                          row.innerHTML = `
+
+                            <div class="flex items-center gap-4 min-w-0">
+
+                                <div class="number-badge">
+                                    ${index + 1}
+                                </div>
+
+                                <div class="min-w-0">
+
+                                    <div class="text-lg font-black truncate">
+                                        ${escapeHtml(title)}
+                                    </div>
+
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        المدة:
+                                        ${minutes}:${String(seconds).padStart(2,"0")}
+                                    </div>
+
+                                    <div class="text-xs text-gray-600 mt-1 truncate max-w-xl">
+                                        ${escapeHtml(url)}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+
+                                <button
+                                    class="btn btn-green flex-1 lg:flex-none"
+                                    onclick="playNowFromQueue('${doc.id}')">
+                                    ▶️ تشغيل الآن
+                                </button>
+
+                                <button
+                                    class="btn btn-red flex-1 lg:flex-none"
+                                    onclick="deleteFromQueue('${doc.id}')">
+                                    🗑️ حذف
+                                </button>
+
+                            </div>
+
+                          `;
+
+
+                          container.appendChild(row);
+
+                      }
+                  );
+
+              });
+
+    }
+
+
+    /* ============================================================
+       PLAY QUEUE ITEM
+    ============================================================ */
+
+    function playNowFromQueue(docId) {
+
+        db.collection("playlist")
+          .doc(docId)
+          .get()
+          .then(doc => {
+
+              if (!doc.exists) {
+
+                  showToast(
+                      "المحتوى غير موجود."
+                  );
+
+                  return;
+
+              }
+
+
+              const data =
+                  doc.data();
+
+
+              db.collection("streams")
+                .doc("live_stream_1")
+                .set({
+
+                    title:
+                        data.title ||
+                        data.movieTitle ||
+                        "",
+
+                    movieTitle:
+                        data.title ||
+                        data.movieTitle ||
+                        "",
+
+                    category:
+                        data.category ||
+                        data.movieCategory ||
+                        "",
+
+                    movieCategory:
+                        data.category ||
+                        data.movieCategory ||
+                        "",
+
+                    url:
+                        data.url ||
+                        data.currentUrl ||
+                        "",
+
+                    currentUrl:
+                        data.url ||
+                        data.currentUrl ||
+                        "",
+
+                    description:
+                        data.description ||
+                        data.movieDescription ||
+                        "",
+
+                    movieDescription:
+                        data.description ||
+                        data.movieDescription ||
+                        "",
+
+                    durationSec:
+                        Number(
+                            data.durationSec
+                        ) || 0,
+
+                    startedAt:
+                        firebase.firestore.FieldValue.serverTimestamp(),
+
+                    status: "PLAYING",
+
+                    updatedAt:
+                        firebase.firestore.FieldValue.serverTimestamp()
+
+                }, { merge: true })
+
+                .then(() => {
+
+                    return db.collection(
+                        "playlist"
+                    ).doc(docId).delete();
+
+                })
+
+                .then(() => {
+
+                    showToast(
+                        "▶️ تم تشغيل المحتوى وحذفه من قائمة الانتظار."
+                    );
+
+                });
+
+          });
+
+    }
+
+
+    /* ============================================================
+       PLAY NEXT
+    ============================================================ */
+
+    function playNextInQueue() {
+
+        db.collection("playlist")
+          .orderBy("createdAt", "asc")
+          .limit(1)
+          .get()
+          .then(snapshot => {
+
+              if (snapshot.empty) {
+
+                  showToast(
+                      "لا يوجد محتوى آخر في جدول البث."
+                  );
+
+                  return;
+
+              }
+
+
+              playNowFromQueue(
+                  snapshot.docs[0].id
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       DELETE
+    ============================================================ */
+
+    function deleteFromQueue(docId) {
+
+        if (
+            !confirm(
+                "هل تريد حذف هذا المحتوى من جدول البث؟"
+            )
+        ) {
+            return;
+        }
+
+
+        db.collection("playlist")
+          .doc(docId)
+          .delete()
+          .then(() => {
+
+              showToast(
+                  "🗑️ تم حذف المحتوى."
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       LOGO SETTINGS
+    ============================================================ */
+
+    function loadLogoSettings() {
+
+        db.collection("logo_settings")
+          .doc("config")
+          .get()
+          .then(doc => {
+
+              if (!doc.exists) {
+                  updateLogoPreview();
+                  return;
+              }
+
+
+              const data =
+                  doc.data();
+
+
+              document.getElementById(
+                  "logoUrl"
+              ).value =
+                  data.url || "";
+
+
+              document.getElementById(
+                  "portTop"
+              ).value =
+                  data.portTop ?? 8;
+
+
+              document.getElementById(
+                  "portRight"
+              ).value =
+                  data.portRight ?? 8;
+
+
+              document.getElementById(
+                  "portWidth"
+              ).value =
+                  data.portWidth ?? 60;
+
+
+              document.getElementById(
+                  "landTop"
+              ).value =
+                  data.landTop ?? 10;
+
+
+              document.getElementById(
+                  "landRight"
+              ).value =
+                  data.landRight ?? 10;
+
+
+              document.getElementById(
+                  "landWidth"
+              ).value =
+                  data.landWidth ?? 90;
+
+
+              updateLogoPreview();
+
+          });
+
+    }
+
+
+    function saveLogoSettings() {
+
+        const data = {
+
+            url:
+                document.getElementById(
+                    "logoUrl"
+                ).value.trim(),
+
+            portTop:
+                Number(
+                    document.getElementById(
+                        "portTop"
+                    ).value
+                ) || 0,
+
+            portRight:
+                Number(
+                    document.getElementById(
+                        "portRight"
+                    ).value
+                ) || 0,
+
+            portWidth:
+                Number(
+                    document.getElementById(
+                        "portWidth"
+                    ).value
+                ) || 0,
+
+            landTop:
+                Number(
+                    document.getElementById(
+                        "landTop"
+                    ).value
+                ) || 0,
+
+            landRight:
+                Number(
+                    document.getElementById(
+                        "landRight"
+                    ).value
+                ) || 0,
+
+            landWidth:
+                Number(
+                    document.getElementById(
+                        "landWidth"
+                    ).value
+                ) || 0,
+
+            updatedAt:
+                firebase.firestore.FieldValue.serverTimestamp()
+
+        };
+
+
+        db.collection("logo_settings")
+          .doc("config")
+          .set(data, { merge: true })
+          .then(() => {
+
+              updateHeaderLogo();
+              updateLogoPreview();
+
+              showToast(
+                  "✅ تم حفظ إعدادات الشعار."
+              );
+
+          });
+
+    }
+
+
+    function updateLogoPreview() {
+
+        const url =
+            document.getElementById(
+                "logoUrl"
+            ).value.trim();
+
+
+        const logo =
+            document.getElementById(
+                "logoPreview"
+            );
+
+
+        if (!url) {
+
+            logo.classList.add("hidden");
+            return;
+
+        }
+
+
+        logo.src = url;
+
+        logo.classList.remove("hidden");
+
+
+        // المعاينة تستخدم إعدادات الوضع الأفقي
+        logo.style.top =
+            `${Number(
+                document.getElementById(
+                    "landTop"
+                ).value
+            ) || 10}px`;
+
+
+        logo.style.right =
+            `${Number(
+                document.getElementById(
+                    "landRight"
+                ).value
+            ) || 10}px`;
+
+
+        logo.style.width =
+            `${Number(
+                document.getElementById(
+                    "landWidth"
+                ).value
+            ) || 90}px`;
+
+    }
+
+
+    function updateHeaderLogo() {
+
+        const url =
+            document.getElementById(
+                "logoUrl"
+            ).value.trim();
+
+
+        const img =
+            document.getElementById(
+                "headerLogo"
+            );
+
+
+        const fallback =
+            document.getElementById(
+                "headerLogoFallback"
+            );
+
+
+        if (!url) {
+
+            img.classList.add("hidden");
+            fallback.classList.remove("hidden");
+
+            return;
+
+        }
+
+
+        img.src = url;
+
+        img.classList.remove("hidden");
+        fallback.classList.add("hidden");
+
+    }
+
+
+    /* ============================================================
+       BANNERS
+    ============================================================ */
+
+    function loadBannerSettings() {
+
+        db.collection("app_banners")
+          .doc("config")
+          .get()
+          .then(doc => {
+
+              if (!doc.exists) return;
+
+
+              const data =
+                  doc.data();
+
+
+              document.getElementById(
+                  "topBannerActive"
+              ).checked =
+                  !!data.topBannerActive;
+
+
+              document.getElementById(
+                  "topBannerUrl"
+              ).value =
+                  data.topBannerUrl || "";
+
+
+              document.getElementById(
+                  "topBannerAnimType"
+              ).value =
+                  data.topBannerAnimType ||
+                  "SLIDE_TOP";
+
+
+              document.getElementById(
+                  "topBannerWidth"
+              ).value =
+                  data.topBannerWidth ?? 300;
+
+
+              document.getElementById(
+                  "topBannerTopPx"
+              ).value =
+                  data.topBannerTopPx ?? 10;
+
+
+              document.getElementById(
+                  "nextMovieActive"
+              ).checked =
+                  !!data.nextMovieActive;
+
+
+              document.getElementById(
+                  "nextMovieBannerUrl"
+              ).value =
+                  data.nextMovieBannerUrl || "";
+
+          });
+
+    }
+
+
+    function saveBannerSettings() {
+
+        const data = {
+
+            topBannerActive:
+                document.getElementById(
+                    "topBannerActive"
+                ).checked,
+
+            topBannerUrl:
+                document.getElementById(
+                    "topBannerUrl"
+                ).value.trim(),
+
+            topBannerAnimType:
+                document.getElementById(
+                    "topBannerAnimType"
+                ).value,
+
+            topBannerWidth:
+                Number(
+                    document.getElementById(
+                        "topBannerWidth"
+                    ).value
+                ) || 300,
+
+            topBannerTopPx:
+                Number(
+                    document.getElementById(
+                        "topBannerTopPx"
+                    ).value
+                ) || 10,
+
+            nextMovieActive:
+                document.getElementById(
+                    "nextMovieActive"
+                ).checked,
+
+            nextMovieBannerUrl:
+                document.getElementById(
+                    "nextMovieBannerUrl"
+                ).value.trim(),
+
+            updatedAt:
+                firebase.firestore.FieldValue.serverTimestamp()
+
+        };
+
+
+        db.collection("app_banners")
+          .doc("config")
+          .set(data, { merge: true })
+          .then(() => {
+
+              showToast(
+                  "🚀 تم حفظ إعدادات البنرات."
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       AD SCHEDULE
+    ============================================================ */
+
+    function loadAdSchedule() {
+
+        db.collection("ad_control")
+          .doc("config")
+          .get()
+          .then(doc => {
+
+              if (!doc.exists) return;
+
+
+              const data =
+                  doc.data();
+
+
+              document.getElementById(
+                  "adsEnabled"
+              ).checked =
+                  !!data.enabled;
+
+
+              document.getElementById(
+                  "adIntervalMinutes"
+              ).value =
+                  data.intervalMinutes ?? 30;
+
+
+              document.getElementById(
+                  "adDurationMinutes"
+              ).value =
+                  data.durationMinutes ?? 5;
+
+
+              document.getElementById(
+                  "adGroupNumber"
+              ).value =
+                  data.groupNumber ?? 1;
+
+
+              if (data.scheduleStart) {
+
+                  document.getElementById(
+                      "adScheduleStart"
+                  ).value =
+                      data.scheduleStart;
+
+              }
+
+
+              if (data.scheduleEnd) {
+
+                  document.getElementById(
+                      "adScheduleEnd"
+                  ).value =
+                      data.scheduleEnd;
+
+              }
+
+
+              updateAdStatus(
+                  data.status || "IDLE"
+              );
+
+          });
+
+    }
+
+
+    function saveAdSchedule() {
+
+        const data = {
+
+            enabled:
+                document.getElementById(
+                    "adsEnabled"
+                ).checked,
+
+            intervalMinutes:
+                Number(
+                    document.getElementById(
+                        "adIntervalMinutes"
+                    ).value
+                ) || 30,
+
+            durationMinutes:
+                Number(
+                    document.getElementById(
+                        "adDurationMinutes"
+                    ).value
+                ) || 5,
+
+            groupNumber:
+                Number(
+                    document.getElementById(
+                        "adGroupNumber"
+                    ).value
+                ) || 1,
+
+            scheduleStart:
+                document.getElementById(
+                    "adScheduleStart"
+                ).value || "",
+
+            scheduleEnd:
+                document.getElementById(
+                    "adScheduleEnd"
+                ).value || "",
+
+            status: "SCHEDULED",
+
+            updatedAt:
+                firebase.firestore.FieldValue.serverTimestamp()
+
+        };
+
+
+        db.collection("ad_control")
+          .doc("config")
+          .set(data, { merge: true })
+          .then(() => {
+
+              updateAdStatus("SCHEDULED");
+
+              showToast(
+                  "📺 تم حفظ جدول الفواصل الإعلانية."
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       AD COMMANDS
+    ============================================================ */
+
+    function triggerAdBreakNow() {
+
+        db.collection("ad_control")
+          .doc("config")
+          .set({
+
+              command: "START_AD_BREAK",
+
+              status: "AD_BREAK",
+
+              commandAt:
+                  firebase.firestore.FieldValue.serverTimestamp(),
+
+              updatedAt:
+                  firebase.firestore.FieldValue.serverTimestamp()
+
+          }, { merge: true })
+
+          .then(() => {
+
+              updateAdStatus("AD_BREAK");
+
+              showToast(
+                  "📢 تم إرسال أمر بدء الفاصل للسيرفر."
+              );
+
+          });
+
+    }
+
+
+    function endAdBreakNow() {
+
+        db.collection("ad_control")
+          .doc("config")
+          .set({
+
+              command: "END_AD_BREAK",
+
+              status: "PLAYING",
+
+              commandAt:
+                  firebase.firestore.FieldValue.serverTimestamp(),
+
+              updatedAt:
+                  firebase.firestore.FieldValue.serverTimestamp()
+
+          }, { merge: true })
+
+          .then(() => {
+
+              updateAdStatus("PLAYING");
+
+              showToast(
+                  "▶️ تم إرسال أمر العودة للمحتوى."
+              );
+
+          });
+
+    }
+
+
+    function cancelAdBreak() {
+
+        db.collection("ad_control")
+          .doc("config")
+          .set({
+
+              command: "CANCEL",
+
+              status: "IDLE",
+
+              commandAt:
+                  firebase.firestore.FieldValue.serverTimestamp(),
+
+              updatedAt:
+                  firebase.firestore.FieldValue.serverTimestamp()
+
+          }, { merge: true })
+
+          .then(() => {
+
+              updateAdStatus("IDLE");
+
+              showToast(
+                  "✖️ تم إلغاء أمر الفاصل."
+              );
+
+          });
+
+    }
+
+
+    function updateAdStatus(status) {
+
+        const text =
+            document.getElementById(
+                "adStatusText"
+            );
+
+        const badge =
+            document.getElementById(
+                "adStatusBadge"
+            );
+
+
+        if (status === "AD_BREAK") {
+
+            text.textContent =
+                "الفاصل الإعلاني يعمل الآن";
+
+            badge.textContent =
+                "إعلان";
+
+            badge.className =
+                "status-live px-4 py-2 rounded-xl font-bold";
+
+        }
+
+        else if (status === "PLAYING") {
+
+            text.textContent =
+                "المحتوى يعمل — لا يوجد فاصل حاليًا";
+
+            badge.textContent =
+                "بث";
+
+            badge.className =
+                "status-live px-4 py-2 rounded-xl font-bold";
+
+        }
+
+        else if (status === "SCHEDULED") {
+
+            text.textContent =
+                "جدول الفواصل محفوظ ومفعل";
+
+            badge.textContent =
+                "مجدول";
+
+            badge.className =
+                "bg-purple-500/10 border border-purple-400/20 text-purple-300 px-4 py-2 rounded-xl font-bold";
+
+        }
+
+        else {
+
+            text.textContent =
+                "لا يوجد فاصل نشط";
+
+            badge.textContent =
+                "متوقف";
+
+            badge.className =
+                "status-off px-4 py-2 rounded-xl font-bold";
+
+        }
+
+    }
+
+
+    /* ============================================================
+       SERVER COMMANDS
+    ============================================================ */
+
+    function sendServerCommand(command) {
+
+        db.collection("server_commands")
+          .doc("control")
+          .set({
+
+              command,
+
+              sentAt:
+                  firebase.firestore.FieldValue.serverTimestamp(),
+
+              status: "PENDING"
+
+          }, { merge: true })
+
+          .then(() => {
+
+              showToast(
+                  `تم إرسال أمر ${command} إلى السيرفر.`
+              );
+
+          });
+
+    }
+
+
+    /* ============================================================
+       REFRESH
+    ============================================================ */
+
+    function refreshAll() {
+
+        loadLogoSettings();
+        loadBannerSettings();
+        loadAdSchedule();
+
+        showToast(
+            "🔄 تم تحديث إعدادات لوحة التحكم."
+        );
+
+    }
+
+
+    /* ============================================================
+       ESCAPE HTML
+    ============================================================ */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* ============================================================
+       INITIAL LOGO
+    ============================================================ */
+
+    updateHeaderLogo();
+
 </script>
+
 </body>
 </html>
-'''
-
-path = Path("/mnt/data/cobra_tv_dashboard_updated.html")
-path.write_text(html, encoding="utf-8")
-print(path)
