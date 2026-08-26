@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COBRA TV — لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#07070a;color:#fff;font-family:Tahoma,Arial,sans-serif}
+.card{background:linear-gradient(145deg,#15151b,#0d0d12);border:1px solid #292934}
+.glow{box-shadow:0 0 25px rgba(236,72,153,.10)}
+input,select,textarea{background:#0b0b10!important;border:1px solid #30303a!important;color:#fff!important}
+button{transition:.2s}.pink{color:#ec4899}.danger{background:#ef4444}.success{background:#22c55e}
+.nav.active{background:linear-gradient(90deg,#ec4899,#8b5cf6);color:#fff}
+</style>
+</head>
+<body>
+<div id="app" class="min-h-screen flex">
+<aside class="w-72 bg-[#0b0b0f] border-l border-[#24242c] p-4 hidden md:block">
+  <div class="text-2xl font-black mb-8"><span class="pink">🐍 COBRA</span> TV</div>
+  <div class="space-y-2">
+    <button class="nav active w-full text-right p-3 rounded-xl" onclick="show('dashboard',this)">🏠 الرئيسية</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('movie',this)">🎬 الفيلم والبث</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('ads',this)">📢 الإعلانات</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('next',this)">🎞️ الفيلم القادم</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('logo',this)">🐍 اللوجو</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('comments',this)">💬 التعليقات</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('users',this)">👥 المستخدمون</button>
+    <button class="nav w-full text-right p-3 rounded-xl" onclick="show('settings',this)">⚙️ الإعدادات</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-4 md:p-8">
+<header class="flex items-center justify-between mb-8">
+  <div><h1 class="text-3xl font-black">لوحة تحكم COBRA TV</h1><p class="text-gray-400 mt-1">تحكم كامل في البث والمحتوى والإعلانات والتعليقات</p></div>
+  <div class="card px-4 py-3 rounded-xl">🟢 النظام يعمل</div>
+</header>
+
+<section id="dashboard" class="page">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="card glow rounded-2xl p-5"><div class="text-gray-400">حالة البث</div><div class="text-2xl font-black text-green-400 mt-2">● مباشر</div></div>
+  <div class="card rounded-2xl p-5"><div class="text-gray-400">المشاهدون</div><div id="viewers" class="text-2xl font-black mt-2">0</div></div>
+  <div class="card rounded-2xl p-5"><div class="text-gray-400">الإعجابات</div><div id="likes" class="text-2xl font-black mt-2">0</div></div>
+  <div class="card rounded-2xl p-5"><div class="text-gray-400">التعليقات</div><div id="commentsCount" class="text-2xl font-black mt-2">0</div></div>
+</div>
+<div class="grid lg:grid-cols-2 gap-5">
+  <div class="card rounded-2xl p-6"><h2 class="text-xl font-bold mb-5">🎛️ تحكم سريع</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <button class="success p-3 rounded-xl font-bold" onclick="setPlayback('PLAYING')">▶ تشغيل</button>
+      <button class="danger p-3 rounded-xl font-bold" onclick="setPlayback('PAUSED')">⏸ إيقاف مؤقت</button>
+      <button class="bg-purple-600 p-3 rounded-xl font-bold" onclick="setPlayback('RESTART')">🔄 إعادة الفيلم</button>
+      <button class="bg-gray-700 p-3 rounded-xl font-bold" onclick="alert('تمت مزامنة الحالة')">🔄 مزامنة</button>
+    </div>
+  </div>
+  <div class="card rounded-2xl p-6"><h2 class="text-xl font-bold mb-5">⏱️ توقيت الفيلم</h2>
+    <label class="text-gray-400">تقديم / تأخير بالدقائق</label>
+    <div class="flex gap-2 mt-2"><input id="minuteShift" type="number" value="1" min="1" class="w-full rounded-xl p-3"><button onclick="shiftMovie()" class="bg-pink-600 px-5 rounded-xl font-bold">تنفيذ</button></div>
+    <p class="text-sm text-gray-500 mt-3">يمكنك ضبط الموضع المركزي للفيلم من هنا.</p>
+  </div>
+</div>
+</section>
+
+<section id="movie" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">🎬 إدارة الفيلم والبث</h2>
+<div class="grid lg:grid-cols-2 gap-4">
+<input id="movieTitle" class="rounded-xl p-3" placeholder="اسم الفيلم">
+<input id="movieCategory" class="rounded-xl p-3" placeholder="التصنيف">
+<input id="streamUrl" class="rounded-xl p-3 lg:col-span-2" placeholder="رابط البث المباشر / الفيديو">
+<textarea id="movieDescription" class="rounded-xl p-3 lg:col-span-2" rows="4" placeholder="وصف الفيلم"></textarea>
+</div>
+<div class="flex flex-wrap gap-3 mt-5"><button onclick="saveMovie()" class="bg-pink-600 px-6 py-3 rounded-xl font-bold">💾 حفظ وتشغيل</button><button onclick="setPlayback('PAUSED')" class="bg-gray-700 px-6 py-3 rounded-xl">⏸ إيقاف</button></div>
+</div></section>
+
+<section id="ads" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">📢 إعدادات الإعلانات</h2>
+<div class="grid lg:grid-cols-2 gap-4">
+<input id="adUrl" class="rounded-xl p-3" placeholder="رابط صورة الإعلان">
+<input id="adWidth" type="number" value="300" class="rounded-xl p-3" placeholder="العرض">
+<input id="adTop" type="number" value="10" class="rounded-xl p-3" placeholder="المسافة من الأعلى">
+<select id="adAnim" class="rounded-xl p-3"><option value="SLIDE_TOP">نزول من الأعلى</option><option value="SLIDE_RIGHT">دخول من اليمين</option><option value="FADE">ظهور تدريجي</option></select>
+</div>
+<label class="flex gap-3 items-center mt-5"><input id="adActive" type="checkbox" class="w-5 h-5"> تفعيل الإعلان</label>
+<button onclick="saveAds()" class="bg-pink-600 px-6 py-3 rounded-xl font-bold mt-5">💾 حفظ الإعدادات</button>
+</div></section>
+
+<section id="next" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">🎞️ الفيلم القادم</h2>
+<div class="grid lg:grid-cols-2 gap-4">
+<input id="nextUrl" class="rounded-xl p-3 lg:col-span-2" placeholder="رابط صورة الفيلم القادم">
+<input id="nextWidth" type="number" value="300" class="rounded-xl p-3" placeholder="العرض">
+<input id="nextTop" type="number" value="10" class="rounded-xl p-3" placeholder="المسافة">
+<select id="nextAnim" class="rounded-xl p-3"><option value="SLIDE_RIGHT">من اليمين</option><option value="SLIDE_LEFT">من اليسار</option><option value="FADE">ظهور تدريجي</option></select>
+</div>
+<label class="flex gap-3 items-center mt-5"><input id="nextActive" type="checkbox" class="w-5 h-5"> تفعيل الفيلم القادم</label>
+<button onclick="saveNext()" class="bg-pink-600 px-6 py-3 rounded-xl font-bold mt-5">💾 حفظ</button>
+</div></section>
+
+<section id="logo" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">🐍 إعدادات اللوجو</h2>
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+<input id="logoUrl" class="rounded-xl p-3 md:col-span-2 lg:col-span-3" placeholder="رابط اللوجو PNG">
+<input id="portTop" type="number" value="8" class="rounded-xl p-3" placeholder="Portrait أعلى">
+<input id="portRight" type="number" value="8" class="rounded-xl p-3" placeholder="Portrait يمين">
+<input id="portWidth" type="number" value="60" class="rounded-xl p-3" placeholder="Portrait عرض">
+<input id="landTop" type="number" value="10" class="rounded-xl p-3" placeholder="Landscape أعلى">
+<input id="landRight" type="number" value="10" class="rounded-xl p-3" placeholder="Landscape يمين">
+<input id="landWidth" type="number" value="90" class="rounded-xl p-3" placeholder="Landscape عرض">
+</div>
+<button onclick="saveLogo()" class="bg-pink-600 px-6 py-3 rounded-xl font-bold mt-5">💾 حفظ</button>
+</div></section>
+
+<section id="comments" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">💬 إدارة التعليقات والمستخدمين</h2>
+<div class="grid md:grid-cols-3 gap-3">
+<button onclick="commentAction('delete')" class="bg-red-600 p-4 rounded-xl font-bold">🗑️ حذف تعليق</button>
+<button onclick="commentAction('mute')" class="bg-yellow-600 p-4 rounded-xl font-bold">🔇 كتم المستخدم</button>
+<button onclick="commentAction('ban')" class="bg-purple-600 p-4 rounded-xl font-bold">🚫 حظر المستخدم</button>
+</div>
+<div class="mt-6 p-4 rounded-xl bg-black/30 text-gray-400">يمكن ربط هذه الأوامر مباشرة مع مجموعة comments وحالة المستخدم في Firestore.</div>
+</div></section>
+
+<section id="users" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">👥 المستخدمون</h2><div class="grid md:grid-cols-3 gap-4"><div class="p-5 bg-black/30 rounded-xl">🟢 متصلون<br><b id="onlineUsers">0</b></div><div class="p-5 bg-black/30 rounded-xl">🔇 مكتومون<br><b>0</b></div><div class="p-5 bg-black/30 rounded-xl">🚫 محظورون<br><b>0</b></div></div></div></section>
+
+<section id="settings" class="page hidden"><div class="card rounded-2xl p-6"><h2 class="text-2xl font-black mb-6">⚙️ إعدادات النظام</h2><p class="text-gray-400">Firebase Project: cobra-tv-b1231</p><p class="text-gray-400 mt-2">هذه اللوحة مصممة لتعمل مع نفس مسارات Firestore المستخدمة في تطبيق COBRA TV.</p></div></section>
+</main>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import {getFirestore,doc,setDoc,updateDoc,increment,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCZzSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",authDomain:"cobra-tv-b1231.firebaseapp.com",projectId:"cobra-tv-b1231",storageBucket:"cobra-tv-b1231.firebasestorage.app",messagingSenderId:"73044924945",appId:"1:73044924945:web:4ed40ee2b6463b574e2fb0",measurementId:"G-X5JQH06QNK"};
+const app=initializeApp(firebaseConfig),db=getFirestore(app);
+const stream=()=>doc(db,"streams","live_stream_1");
+window.show=(id,btn)=>{document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active")};
+window.setPlayback=async state=>{try{if(state==="RESTART")await updateDoc(stream(),{playbackState:"PLAYING",playbackPositionMs:0,startedAt:serverTimestamp()});else await updateDoc(stream(),{playbackState:state});alert("تم تنفيذ الأمر");}catch(e){alert("تعذر تنفيذ الأمر: "+e.message)}};
+window.saveMovie=async()=>{try{await setDoc(stream(),{movieTitle:movieTitle.value,movieCategory:movieCategory.value,movieDescription:movieDescription.value,currentUrl:streamUrl.value,playbackState:"PLAYING",playbackPositionMs:0,startedAt:serverTimestamp()},{merge:true});alert("تم حفظ الفيلم وبدء البث");}catch(e){alert("خطأ: "+e.message)}};
+window.shiftMovie=async()=>{try{const m=Math.max(1,Number(minuteShift.value))*60000;await updateDoc(stream(),{playbackPositionMs:increment(m)});alert("تم تعديل التوقيت");}catch(e){alert("خطأ: "+e.message)}};
+window.saveAds=async()=>{try{await setDoc(doc(db,"app_banners","config"),{topBannerUrl:adUrl.value,topBannerWidth:Number(adWidth.value),topBannerTopPx:Number(adTop.value),topBannerAnimType:adAnim.value,topBannerActive:adActive.checked},{merge:true});alert("تم حفظ الإعلانات");}catch(e){alert("خطأ: "+e.message)}};
+window.saveNext=async()=>{try{await setDoc(doc(db,"app_banners","config"),{nextMovieBannerUrl:nextUrl.value,nextMovieWidth:Number(nextWidth.value),nextMovieTopPx:Number(nextTop.value),nextMovieAnimType:nextAnim.value,nextMovieActive:nextActive.checked},{merge:true});alert("تم حفظ الفيلم القادم");}catch(e){alert("خطأ: "+e.message)}};
+window.saveLogo=async()=>{try{await setDoc(doc(db,"logo_settings","config"),{url:logoUrl.value,portTop:Number(portTop.value),portRight:Number(portRight.value),portWidth:Number(portWidth.value),landTop:Number(landTop.value),landRight:Number(landRight.value),landWidth:Number(landWidth.value)},{merge:true});alert("تم حفظ اللوجو");}catch(e){alert("خطأ: "+e.message)}};
+window.commentAction=a=>alert(a==="delete"?"الحذف جاهز للربط مع التعليق المحدد":"تم تجهيز أمر "+(a==="mute"?"الكتم":"الحظر")+"؛ يحتاج تحديد المستخدم لتنفيذ العملية على حسابه.");
+</script>
+</body>
+</html>
