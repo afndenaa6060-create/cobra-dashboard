@@ -186,33 +186,41 @@
             listenToPlaylist();
         };
 
-        // 🔍 قياس مدة الفيديو تلقائياً
+        // 🔍 قياس مدة الفيديو تلقائياً مع معالجة القيم السالبة
         function detectVideoDuration() {
             const url = document.getElementById("currentUrl").value;
             if (!url) return;
             const video = document.getElementById("hiddenVideoMeasurer");
             video.src = url;
             video.onloadedmetadata = function() {
-                if (video.duration && !isNaN(video.duration)) {
+                if (video.duration && !isNaN(video.duration) && video.duration > 0) {
                     document.getElementById("movieDurationSec").value = Math.floor(video.duration);
+                } else {
+                    document.getElementById("movieDurationSec").value = 0;
                 }
             };
         }
 
-        // 📡 الاستماع للفيلم الحالي وتكليف العداد التنازلي (مسار موحد: streams/live_stream_1)
+        // 📡 الاستماع للفيلم الحالي وتحديث الخانات (مزامنة مباشرة لـ streams/live_stream_1)
         function listenToCurrentStream() {
             db.collection("streams").doc("live_stream_1").onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
-                    document.getElementById("movieTitle").value = data.movieTitle || data.title || "";
-                    document.getElementById("movieCategory").value = data.movieCategory || data.category || "";
-                    document.getElementById("currentUrl").value = data.currentUrl || data.url || "";
-                    document.getElementById("movieDescription").value = data.movieDescription || data.description || "";
-                    document.getElementById("movieDurationSec").value = data.durationSec || 0;
+                    const titleVal = data.title || data.movieTitle || "";
+                    const categoryVal = data.category || data.movieCategory || "";
+                    const urlVal = data.url || data.currentUrl || "";
+                    const descVal = data.description || data.movieDescription || "";
+                    const durationVal = data.durationSec && data.durationSec > 0 ? data.durationSec : 0;
 
-                    document.getElementById("activeMovieName").innerText = data.movieTitle || data.title || "لا يوجد فيلم شغال حالياً";
+                    document.getElementById("movieTitle").value = titleVal;
+                    document.getElementById("movieCategory").value = categoryVal;
+                    document.getElementById("currentUrl").value = urlVal;
+                    document.getElementById("movieDescription").value = descVal;
+                    document.getElementById("movieDurationSec").value = durationVal;
+
+                    document.getElementById("activeMovieName").innerText = titleVal || "لا يوجد فيلم شغال حالياً";
                     
-                    currentMovieDuration = data.durationSec || 0;
+                    currentMovieDuration = durationVal;
                     if (data.startedAt) {
                         streamStartedAtMs = data.startedAt.toDate().getTime();
                         startCountdownTimer();
@@ -228,7 +236,7 @@
             if (countdownInterval) clearInterval(countdownInterval);
 
             countdownInterval = setInterval(() => {
-                if (!streamStartedAtMs || !currentMovieDuration) {
+                if (!streamStartedAtMs || !currentMovieDuration || currentMovieDuration <= 0) {
                     document.getElementById("countdownDisplay").innerText = "00:00:00";
                     return;
                 }
@@ -250,23 +258,24 @@
             }, 1000);
         }
 
-        // 💾 حفظ وتشغيل الفيلم فوراً (التسجيل في streams/live_stream_1)
+        // 💾 حفظ وتشغيل الفيلم فوراً (يرسل لـ streams/live_stream_1 بأسماء الحقول الموحدة)
         function saveMovieInfo() {
             const title = document.getElementById("movieTitle").value;
             const category = document.getElementById("movieCategory").value;
             const url = document.getElementById("currentUrl").value;
             const desc = document.getElementById("movieDescription").value;
-            const duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
+            let duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
+            if (duration < 0) duration = 0;
 
             db.collection("streams").doc("live_stream_1").set({
-                movieTitle: title,
                 title: title,
-                movieCategory: category,
+                movieTitle: title,
                 category: category,
-                currentUrl: url,
+                movieCategory: category,
                 url: url,
-                movieDescription: desc,
+                currentUrl: url,
                 description: desc,
+                movieDescription: desc,
                 durationSec: duration,
                 startedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true }).then(() => alert("✅ تم بدء تشغيل الفيلم وتحديث العداد بنجاح!"));
@@ -275,10 +284,10 @@
         // ⛔ إيقاف البث
         function stopStream() {
             db.collection("streams").doc("live_stream_1").set({
-                currentUrl: "",
                 url: "",
-                movieTitle: "البث متوقف حالياً",
+                currentUrl: "",
                 title: "البث متوقف حالياً",
+                movieTitle: "البث متوقف حالياً",
                 durationSec: 0,
                 startedAt: null
             }, { merge: true }).then(() => alert("🛑 تم إيقاف البث المباشر."));
@@ -290,14 +299,19 @@
             const category = document.getElementById("movieCategory").value;
             const url = document.getElementById("currentUrl").value;
             const desc = document.getElementById("movieDescription").value;
-            const duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
+            let duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
+            if (duration < 0) duration = 0;
 
             if (!title || !url) return alert("يرجى إدخال اسم الفيلم والرابط أولاً!");
 
             db.collection("playlist").add({
+                title: title,
                 movieTitle: title,
+                category: category,
                 movieCategory: category,
+                url: url,
                 currentUrl: url,
+                description: desc,
                 movieDescription: desc,
                 durationSec: duration,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -316,12 +330,14 @@
 
                 snapshot.docs.forEach((doc, index) => {
                     const item = doc.data();
+                    const titleText = item.title || item.movieTitle || "بدون عنوان";
+                    const urlText = item.url || item.currentUrl || "";
                     const div = document.createElement("div");
                     div.className = "flex items-center justify-between bg-black/40 p-3 rounded-xl border border-gray-800";
                     div.innerHTML = `
                         <div>
-                            <p class="text-sm font-bold text-gray-200">${index + 1}. ${item.movieTitle} <span class="text-xs text-pink-400">(${item.durationSec} ثانية)</span></p>
-                            <p class="text-xs text-gray-500">${item.currentUrl}</p>
+                            <p class="text-sm font-bold text-gray-200">${index + 1}. ${titleText} <span class="text-xs text-pink-400">(${item.durationSec || 0} ثانية)</span></p>
+                            <p class="text-xs text-gray-500">${urlText}</p>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="playNowFromQueue('${doc.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded text-xs font-bold">▶️ تشغيل الآن</button>
@@ -338,16 +354,22 @@
             db.collection("playlist").doc(docId).get().then(doc => {
                 if (doc.exists) {
                     const data = doc.data();
+                    const titleVal = data.title || data.movieTitle || "";
+                    const categoryVal = data.category || data.movieCategory || "";
+                    const urlVal = data.url || data.currentUrl || "";
+                    const descVal = data.description || data.movieDescription || "";
+                    const durationVal = data.durationSec && data.durationSec > 0 ? data.durationSec : 0;
+
                     db.collection("streams").doc("live_stream_1").set({
-                        movieTitle: data.movieTitle,
-                        title: data.movieTitle,
-                        movieCategory: data.movieCategory,
-                        category: data.movieCategory,
-                        currentUrl: data.currentUrl,
-                        url: data.currentUrl,
-                        movieDescription: data.movieDescription,
-                        description: data.movieDescription,
-                        durationSec: data.durationSec,
+                        title: titleVal,
+                        movieTitle: titleVal,
+                        category: categoryVal,
+                        movieCategory: categoryVal,
+                        url: urlVal,
+                        currentUrl: urlVal,
+                        description: descVal,
+                        movieDescription: descVal,
+                        durationSec: durationVal,
                         startedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true }).then(() => {
                         db.collection("playlist").doc(docId).delete();
@@ -392,12 +414,12 @@
         function saveLogoSettings() {
             db.collection("logo_settings").doc("config").set({
                 url: document.getElementById("logoUrl").value,
-                portTop: parseInt(document.getElementById("portTop").value),
-                portRight: parseInt(document.getElementById("portRight").value),
-                portWidth: parseInt(document.getElementById("portWidth").value),
-                landTop: parseInt(document.getElementById("landTop").value),
-                landRight: parseInt(document.getElementById("landRight").value),
-                landWidth: parseInt(document.getElementById("landWidth").value)
+                portTop: parseInt(document.getElementById("portTop").value) || 0,
+                portRight: parseInt(document.getElementById("portRight").value) || 0,
+                portWidth: parseInt(document.getElementById("portWidth").value) || 0,
+                landTop: parseInt(document.getElementById("landTop").value) || 0,
+                landRight: parseInt(document.getElementById("landRight").value) || 0,
+                landWidth: parseInt(document.getElementById("landWidth").value) || 0
             }, { merge: true }).then(() => alert("✅ تم حفظ موضع اللوجو!"));
         }
 
@@ -421,8 +443,8 @@
                 topBannerActive: document.getElementById("topBannerActive").checked,
                 topBannerUrl: document.getElementById("topBannerUrl").value,
                 topBannerAnimType: document.getElementById("topBannerAnimType").value,
-                topBannerWidth: parseInt(document.getElementById("topBannerWidth").value),
-                topBannerTopPx: parseInt(document.getElementById("topBannerTopPx").value),
+                topBannerWidth: parseInt(document.getElementById("topBannerWidth").value) || 300,
+                topBannerTopPx: parseInt(document.getElementById("topBannerTopPx").value) || 10,
                 nextMovieActive: document.getElementById("nextMovieActive").checked,
                 nextMovieBannerUrl: document.getElementById("nextMovieBannerUrl").value
             }, { merge: true }).then(() => alert("✅ تم تحديث الإعلانات!"));
