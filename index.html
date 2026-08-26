@@ -87,6 +87,25 @@
         .badge-live { background: #ef4444; color: #fff; }
         .badge-paused { background: #f59e0b; color: #fff; }
         
+
+        /* ✨ Professional Controls */
+        .number-control { display:flex; align-items:center; gap:8px; direction:ltr; }
+        .number-control input[type=number] { width:100%; text-align:center; font-weight:800; color:var(--neon-pink); }
+        .step-btn { width:38px; height:38px; border:none; border-radius:9px; background:#24101c; color:var(--neon-pink); font-size:20px; font-weight:900; cursor:pointer; }
+        .step-btn:hover { background:var(--burgundy-accent); color:#fff; }
+        .section-header { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:18px; flex-wrap:wrap; }
+        .queue-card { background:linear-gradient(135deg, rgba(255,42,133,.10), rgba(128,10,56,.08)); border:1px solid var(--glass-border); border-radius:14px; padding:16px; margin-bottom:12px; }
+        .queue-meta { color:var(--text-secondary); font-size:12px; margin-top:5px; }
+        .now-playing { border-right:4px solid #10b981; }
+        .empty-state { text-align:center; padding:28px; color:var(--text-secondary); }
+
+        .action-btns { display:flex; gap:8px; flex-wrap:wrap; }
+        .btn-play-now { background:linear-gradient(135deg,#059669,#047857); }
+        .queue-number { width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,42,133,.15);color:var(--neon-pink);font-weight:900;margin-left:10px; }
+        .control-note { padding:12px 15px;border:1px dashed var(--glass-border);border-radius:10px;background:rgba(255,255,255,.02);color:var(--text-secondary);font-size:12px;margin-top:14px; }
+
+        @media(max-width:700px){ .sidebar{width:75px;padding:12px}.brand{font-size:0}.brand i{font-size:24px}.nav-btn{font-size:0;justify-content:center;padding:14px}.nav-btn i{font-size:18px}.main-content{padding:14px} }
+
         .comment-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 10px; }
     </style>
 </head>
@@ -152,38 +171,36 @@
 
         <!-- 2. إدارة الأفلام وقائمة التشغيل -->
         <div id="tab-movies" class="tab-section">
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-plus-circle"></i> إضافة فيلم جديد إلى قائمة التشغيل</div>
-                <div class="form-grid">
-                    <div class="input-group"><label>عنوان الفيلم</label><input type="text" id="m-title" placeholder="اسم الفيلم"></div>
-                    <div class="input-group"><label>رابط الفيلم (URL)</label><input type="text" id="m-url" placeholder="http://..."></div>
-                    <div class="input-group"><label>التصنيف</label><input type="text" id="m-category" placeholder="أكشن/دراما"></div>
-                    <div class="input-group"><label>تقديم البداية (ثواني)</label><input type="number" id="m-trim-start" value="0"></div>
-                    <div class="input-group"><label>إلغاء النهاية (ثواني)</label><input type="number" id="m-trim-end" value="0"></div>
+            <div class="section-header">
+                <div>
+                    <h2 style="color:var(--text-white);">مركز التحكم في التشغيل 🎬</h2>
+                    <p style="color:var(--text-secondary);font-size:13px;">أضف المحتوى، راقب اللي شغال، وتحكّم في التشغيل من مكان واحد</p>
                 </div>
-                <div class="input-group" style="margin-top: 12px;">
-                    <label>وصف الفيلم</label>
-                    <textarea id="m-desc" rows="2"></textarea>
-                </div>
-                <button class="btn" style="margin-top: 15px;" onclick="addMovie()">حفظ وتعيين الفيلم في القائمة 🚀</button>
+                <button class="btn btn-success" onclick="playNextMovie()"><i class="fa-solid fa-forward-step"></i> تشغيل التالي الآن</button>
             </div>
 
-            <!-- جدول قائمة التشغيل الإداري -->
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-list-check"></i> قائمة تشغيل الأفلام الحالية</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>اسم الفيلم</th>
-                            <th>التصنيف</th>
-                            <th>الحالة</th>
-                            <th>التحكم والإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="playlist-table-body">
-                        <tr><td colspan="4">لا توجد أفلام مضافة حالياً.</td></tr>
-                    </tbody>
-                </table>
+                <div class="card-title"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى إلى قائمة الانتظار</div>
+                <div class="form-grid">
+                    <div class="input-group"><label>عنوان الفيلم</label><input type="text" id="m-title" placeholder="اسم الفيلم"></div>
+                    <div class="input-group"><label>رابط الفيلم (URL)</label><input type="text" id="m-url" placeholder="https://..."></div>
+                    <div class="input-group"><label>التصنيف</label><input type="text" id="m-category" placeholder="اكتب أي تصنيف تحبه (اختياري)"></div>
+                    <div class="input-group"><label>تخطي البداية (ثواني)</label><input type="number" id="m-trim-start" value="0" min="0"></div>
+                    <div class="input-group"><label>تخطي النهاية (ثواني)</label><input type="number" id="m-trim-end" value="0" min="0"></div>
+                </div>
+                <div class="input-group" style="margin-top:12px;"><label>الوصف</label><textarea id="m-desc" rows="2" placeholder="وصف اختياري"></textarea></div>
+                <button class="btn" style="margin-top:15px;" onclick="addMovie()"><i class="fa-solid fa-list-plus"></i> إضافة إلى قائمة التشغيل</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-circle-play"></i> يتم التشغيل الآن</div>
+                <div id="now-playing-container" class="empty-state">لا يوجد محتوى يعمل حالياً.</div>
+                <div class="control-note">تقدر تغيّر المحتوى الحالي في أي وقت من قائمة الانتظار بزر <strong style="color:var(--neon-pink)">تشغيل الآن</strong>، من غير ما تحتاج تحذف الفيلم الحالي.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-list-ol"></i> قائمة الانتظار القادمة</div>
+                <div id="playlist-table-body" class="empty-state">قائمة التشغيل فارغة.</div>
             </div>
         </div>
 
@@ -199,16 +216,16 @@
                 <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 250px;">
                         <h4 style="color: var(--neon-pink); margin-bottom: 10px;">📱 الوضع العادي (Portrait)</h4>
-                        <div class="input-group"><label>من الأعلى: <span id="v-port-top">20</span>px</label><input type="range" id="port-top" min="0" max="200" value="20" oninput="updateLogoPreviews()"></div>
-                        <div class="input-group"><label>من اليمين: <span id="v-port-right">20</span>px</label><input type="range" id="port-right" min="0" max="200" value="20" oninput="updateLogoPreviews()"></div>
-                        <div class="input-group"><label>حجم اللوجو: <span id="v-port-w">60</span>px</label><input type="range" id="port-w" min="20" max="150" value="60" oninput="updateLogoPreviews()"></div>
+                        <div class="input-group"><label>من الأعلى (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-top',-1)">−</button><input type="number" id="port-top" value="20" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-top',1)">+</button></div></div>
+                        <div class="input-group"><label>من اليمين (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-right',-1)">−</button><input type="number" id="port-right" value="20" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-right',1)">+</button></div></div>
+                        <div class="input-group"><label>حجم اللوجو (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-w',-1)">−</button><input type="number" id="port-w" value="60" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-w',1)">+</button></div></div>
                     </div>
 
                     <div style="flex: 1; min-width: 250px;">
                         <h4 style="color: var(--neon-pink); margin-bottom: 10px;">📺 ملء الشاشة (Landscape)</h4>
-                        <div class="input-group"><label>من الأعلى: <span id="v-land-top">15</span>px</label><input type="range" id="land-top" min="0" max="150" value="15" oninput="updateLogoPreviews()"></div>
-                        <div class="input-group"><label>من اليمين: <span id="v-land-right">15</span>px</label><input type="range" id="land-right" min="0" max="300" value="15" oninput="updateLogoPreviews()"></div>
-                        <div class="input-group"><label>حجم اللوجو: <span id="v-land-w">80</span>px</label><input type="range" id="land-w" min="30" max="200" value="80" oninput="updateLogoPreviews()"></div>
+                        <div class="input-group"><label>من الأعلى (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-top',-1)">−</button><input type="number" id="land-top" value="15" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-top',1)">+</button></div></div>
+                        <div class="input-group"><label>من اليمين (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-right',-1)">−</button><input type="number" id="land-right" value="15" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-right',1)">+</button></div></div>
+                        <div class="input-group"><label>حجم اللوجو (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-w',-1)">−</button><input type="number" id="land-w" value="80" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-w',1)">+</button></div></div>
                     </div>
                 </div>
 
@@ -239,13 +256,13 @@
                 <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 20px;">
                     <div style="flex: 1; min-width: 250px;">
                         <h4 style="color: var(--neon-pink); margin-bottom: 10px;">البانر العلوي</h4>
-                        <div class="input-group"><label>المسافة من الأعلى: <span id="v-tb-top">10</span>px</label><input type="range" id="tb-top" min="0" max="150" value="10" oninput="updateBannerPreviews()"></div>
-                        <div class="input-group"><label>العرض: <span id="v-tb-w">80</span>%</label><input type="range" id="tb-w" min="30" max="100" value="80" oninput="updateBannerPreviews()"></div>
+                        <div class="input-group"><label>المسافة من الأعلى (PX)</label><input type="number" id="tb-top" value="10" min="0" oninput="updateBannerPreviews()"></div>
+                        <div class="input-group"><label>العرض (%)</label><input type="number" id="tb-w" value="80" min="1" oninput="updateBannerPreviews()"></div>
                     </div>
                     <div style="flex: 1; min-width: 250px;">
                         <h4 style="color: var(--neon-pink); margin-bottom: 10px;">شريط الفيلم القادم</h4>
-                        <div class="input-group"><label>المسافة من الأسفل: <span id="v-nb-bottom">10</span>px</label><input type="range" id="nb-bottom" min="0" max="100" value="10" oninput="updateBannerPreviews()"></div>
-                        <div class="input-group"><label>العرض: <span id="v-nb-w">90</span>%</label><input type="range" id="nb-w" min="30" max="100" value="90" oninput="updateBannerPreviews()"></div>
+                        <div class="input-group"><label>المسافة من الأسفل (PX)</label><input type="number" id="nb-bottom" value="10" min="0" oninput="updateBannerPreviews()"></div>
+                        <div class="input-group"><label>العرض (%)</label><input type="number" id="nb-w" value="90" min="1" oninput="updateBannerPreviews()"></div>
                     </div>
                 </div>
 
@@ -286,7 +303,7 @@
     <!-- Firebase JS SDK Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, serverTimestamp, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCZzSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",
@@ -331,13 +348,6 @@
             const lRight = document.getElementById('land-right').value;
             const lW = document.getElementById('land-w').value;
 
-            document.getElementById('v-port-top').innerText = pTop;
-            document.getElementById('v-port-right').innerText = pRight;
-            document.getElementById('v-port-w').innerText = pW;
-            document.getElementById('v-land-top').innerText = lTop;
-            document.getElementById('v-land-right').innerText = lRight;
-            document.getElementById('v-land-w').innerText = lW;
-
             const prevPort = document.getElementById('prev-logo-port');
             prevPort.src = logoUrl;
             prevPort.style.top = (pTop / 2) + 'px';
@@ -359,11 +369,6 @@
             const tbW = document.getElementById('tb-w').value;
             const nbBottom = document.getElementById('nb-bottom').value;
             const nbW = document.getElementById('nb-w').value;
-
-            document.getElementById('v-tb-top').innerText = tbTop;
-            document.getElementById('v-tb-w').innerText = tbW;
-            document.getElementById('v-nb-bottom').innerText = nbBottom;
-            document.getElementById('v-nb-w').innerText = nbW;
 
             const pTopBanner = document.getElementById('prev-top-banner');
             pTopBanner.src = topUrl;
@@ -403,99 +408,118 @@
                         <td>${stateBadge}</td>
                     </tr>
                 `;
-
-                // 2. جدول الإدارة والتحكم الكامل في تبويب الأفلام
-                if (data.movieTitle) {
-                    document.getElementById('playlist-table-body').innerHTML = `
-                        <tr>
-                            <td><strong>${data.movieTitle}</strong></td>
-                            <td>${data.movieCategory || 'عام'}</td>
-                            <td>${stateBadge}</td>
-                            <td>
-                                <button class="btn ${data.playbackState === 'PLAYING' ? 'btn-warning' : 'btn-success'}" onclick="togglePlayback('${data.playbackState === 'PLAYING' ? 'PAUSED' : 'PLAYING'}')">
-                                    <i class="fa-solid ${data.playbackState === 'PLAYING' ? 'fa-pause' : 'fa-play'}"></i>
-                                    ${data.playbackState === 'PLAYING' ? 'إيقاف مؤقت' : 'تشغيل'}
-                                </button>
-                                <button class="btn btn-danger" onclick="deleteCurrentMovie()">
-                                    <i class="fa-solid fa-trash"></i> حذف من القائمة
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                } else {
-                    document.getElementById('playlist-table-body').innerHTML = `<tr><td colspan="4">القائمة فارغة. قم بإضافة فيلم جديد أعلاه.</td></tr>`;
-                }
-
                 updateLogoPreviews();
                 updateBannerPreviews();
             }
         });
 
-        // 🎬 إضافة فيلم وتفريغ الخانات ونزوله في الجدول
+        // 🎬 نظام قائمة التشغيل الحقيقي
+        const playlistRef = collection(db, "streams", "live_stream_1", "playlist");
+
+        window.stepNumber = (id, amount) => {
+            const input = document.getElementById(id);
+            input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
+            updateLogoPreviews();
+        };
+
         window.addMovie = async () => {
-            const title = document.getElementById('m-title').value;
-            const url = document.getElementById('m-url').value;
-            const category = document.getElementById('m-category').value;
-            const trimStart = parseInt(document.getElementById('m-trim-start').value) || 0;
-            const trimEnd = parseInt(document.getElementById('m-trim-end').value) || 0;
-            const desc = document.getElementById('m-desc').value;
-
-            if(!title || !url) {
-                alert('⚠️ برجاء أدخل اسم الفيلم ورابط الفيديو أولاً!');
-                return;
-            }
+            const title = document.getElementById('m-title').value.trim();
+            const url = document.getElementById('m-url').value.trim();
+            if(!title || !url) return alert('⚠️ برجاء إدخال اسم الفيلم والرابط أولاً.');
 
             try {
-                await setDoc(streamDocRef, {
-                    movieTitle: title,
-                    currentUrl: url,
-                    movieCategory: category,
-                    trimStart: trimStart,
-                    trimEnd: trimEnd,
-                    movieDescription: desc,
-                    startedAt: serverTimestamp(),
-                    playbackState: "PLAYING"
-                }, { merge: true });
-
-                // تفريغ المدخلات فوراً بعد الحفظ
-                document.getElementById('m-title').value = '';
-                document.getElementById('m-url').value = '';
-                document.getElementById('m-category').value = '';
-                document.getElementById('m-trim-start').value = '0';
-                document.getElementById('m-trim-end').value = '0';
-                document.getElementById('m-desc').value = '';
-
-                alert('✅ تم حفظ الفيلم ونزوله في قائمة التشغيل وبدأ بثه للتطبيق!');
-            } catch (e) {
-                alert('❌ حدث خطأ أثناء الحفظ: ' + e.message);
-            }
+                await addDoc(playlistRef, {
+                    title, url,
+                    category: document.getElementById('m-category').value.trim() || 'عام',
+                    trimStart: parseInt(document.getElementById('m-trim-start').value) || 0,
+                    trimEnd: parseInt(document.getElementById('m-trim-end').value) || 0,
+                    description: document.getElementById('m-desc').value.trim(),
+                    createdAt: serverTimestamp()
+                });
+                ['m-title','m-url','m-category','m-desc'].forEach(id => document.getElementById(id).value='');
+                document.getElementById('m-trim-start').value='0';
+                document.getElementById('m-trim-end').value='0';
+                alert('✅ تم إضافة المحتوى إلى قائمة الانتظار بدون تشغيله.');
+            } catch(e) { alert('❌ حدث خطأ أثناء الإضافة: ' + e.message); }
         };
 
-        // ⏸️ / ▶️ إيقاف وتشغيل الفيلم من الجدول
+        window.playNextMovie = async () => {
+            try {
+                const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc'), limit(1)));
+                if(snap.empty) return alert('⚠️ لا يوجد محتوى في قائمة الانتظار.');
+                const next = snap.docs[0];
+                const item = next.data();
+                await setDoc(streamDocRef, {
+                    movieTitle: item.title, currentUrl: item.url, movieCategory: item.category,
+                    movieDescription: item.description || '', trimStart: item.trimStart || 0,
+                    trimEnd: item.trimEnd || 0,
+                    startedAt: serverTimestamp(), playbackState: 'PLAYING'
+                }, {merge:true});
+                await deleteDoc(next.ref);
+            } catch(e) { alert('❌ تعذر تشغيل المحتوى التالي: ' + e.message); }
+        };
+
+        // ▶️ تشغيل أي فيلم من القائمة فوراً بدلاً من الانتظار
+        window.playPlaylistItem = async (id) => {
+            try {
+                const itemRef = doc(db, "streams", "live_stream_1", "playlist", id);
+                const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc')));
+                const target = snap.docs.find(d => d.id === id);
+                if(!target) return alert('⚠️ لم يتم العثور على هذا المحتوى.');
+                const item = target.data();
+
+                if(!confirm(`تشغيل "${item.title}" الآن بدلاً من المحتوى الحالي؟`)) return;
+
+                await setDoc(streamDocRef, {
+                    movieTitle: item.title, currentUrl: item.url, movieCategory: item.category,
+                    movieDescription: item.description || '', trimStart: item.trimStart || 0,
+                    trimEnd: item.trimEnd || 0,
+                    startedAt: serverTimestamp(), playbackState: 'PLAYING'
+                }, {merge:true});
+
+                // نحذف العنصر من الانتظار لأنه أصبح المحتوى الحالي
+                await deleteDoc(itemRef);
+                alert('▶️ تم تغيير المحتوى وتشغيل الفيلم المختار الآن.');
+            } catch(e) { alert('❌ حدث خطأ أثناء التشغيل: ' + e.message); }
+        };
+
+        window.deletePlaylistItem = async (id) => {
+            if(!confirm('حذف هذا العنصر من قائمة الانتظار؟')) return;
+            try { await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", id)); }
+            catch(e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
         window.togglePlayback = async (newState) => {
-            try {
-                await setDoc(streamDocRef, { playbackState: newState }, { merge: true });
-            } catch (e) {
-                alert('❌ حدث خطأ: ' + e.message);
-            }
+            try { await setDoc(streamDocRef, { playbackState: newState }, { merge: true }); }
+            catch(e) { alert('❌ حدث خطأ: ' + e.message); }
         };
 
-        // 🗑️ حذف الفيلم من القائمة
-        window.deleteCurrentMovie = async () => {
-            if(!confirm('هل أنت تأكد من رغبتك في حذف الفيلم الحالي إيقاف البث؟')) return;
-            try {
-                await setDoc(streamDocRef, {
-                    movieTitle: "",
-                    currentUrl: "",
-                    movieCategory: "",
-                    movieDescription: "",
-                    playbackState: "STOPPED"
-                }, { merge: true });
-                alert('🗑️ تم حذف الفيلم وإيقاف التشغيل!');
-            } catch (e) {
-                alert('❌ حدث خطأ: ' + e.message);
-            }
-        };
+        // تحديث المحتوى الحالي
+        onSnapshot(streamDocRef, (snap) => {
+            const box = document.getElementById('now-playing-container');
+            if(!box || !snap.exists() || !snap.data().movieTitle) return;
+            const d = snap.data();
+            const state = d.playbackState === 'PLAYING' ? '🔴 يعمل الآن' : '⏸️ متوقف مؤقتاً';
+            box.innerHTML = `<div class="queue-card now-playing"><strong>${d.movieTitle}</strong><div class="queue-meta">${d.movieCategory || 'بدون تصنيف'} • ${state}</div><div style="margin-top:12px"><button class="btn ${d.playbackState==='PLAYING'?'btn-warning':'btn-success'}" onclick="togglePlayback('${d.playbackState==='PLAYING'?'PAUSED':'PLAYING'}')">${d.playbackState==='PLAYING'?'إيقاف مؤقت':'استئناف التشغيل'}</button></div></div>`;
+        });
+
+        // تحديث قائمة الانتظار لحظياً
+        onSnapshot(query(playlistRef, orderBy('createdAt','asc')), (snap) => {
+            const box = document.getElementById('playlist-table-body');
+            if(!box) return;
+            if(snap.empty) { box.innerHTML='<div class="empty-state">قائمة التشغيل فارغة. أضف أفلاماً أو إعلانات لتظهر هنا.</div>'; return; }
+            box.innerHTML = '';
+            snap.docs.forEach((docSnap, index) => {
+                const d = docSnap.data();
+                const el = document.createElement('div');
+                el.className = 'queue-card';
+                el.innerHTML = `<div class="section-header" style="margin:0"><div><span class="queue-number">${index+1}</span><strong>${d.title}</strong><div class="queue-meta">${d.category || 'بدون تصنيف'}</div></div><div class="action-btns">
+                    <button class="btn btn-play-now" onclick="playPlaylistItem('${docSnap.id}')"><i class="fa-solid fa-play"></i> تشغيل الآن</button>
+                    <button class="btn btn-danger" onclick="deletePlaylistItem('${docSnap.id}')"><i class="fa-solid fa-trash"></i> حذف</button>
+                </div></div>`;
+                box.appendChild(el);
+            });
+        });
 
         // 🖼️ حفظ إعدادات اللوجو
         window.saveLogoSettings = async () => {
