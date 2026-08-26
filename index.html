@@ -1,1 +1,612 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobra TV - لوحة التحكم الاحترافية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --card-bg: rgba(20, 15, 25, 0.9);
+            --neon-pink: #ff2a85;
+            --deep-burgundy: #4a041f;
+            --burgundy-accent: #800a38;
+            --text-white: #ffffff;
+            --text-secondary: #d1d5db;
+            --glass-border: rgba(255, 42, 133, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; display: flex; overflow-x: hidden; }
+
+        /* 🔒 PIN Lock */
+        #pin-overlay {
+            position: fixed; inset: 0; background: rgba(9, 9, 11, 0.96); backdrop-filter: blur(15px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+        }
+        .pin-box {
+            background: var(--card-bg); border: 2px solid var(--neon-pink); padding: 35px; border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 42, 133, 0.4); text-align: center; width: 330px;
+        }
+        .pin-input {
+            width: 100%; padding: 12px; margin: 20px 0; text-align: center; font-size: 26px; letter-spacing: 12px;
+            background: #000; border: 1px solid var(--neon-pink); color: var(--neon-pink); border-radius: 10px; outline: none;
+        }
+
+        /* 🎛️ Sidebar */
+        .sidebar { width: 270px; background: var(--card-bg); border-left: 1px solid var(--glass-border); padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .brand { font-size: 24px; font-weight: 900; color: var(--neon-pink); text-shadow: 0 0 12px rgba(255, 42, 133, 0.6); margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        .nav-btn {
+            background: transparent; border: 1px solid transparent; color: var(--text-white); padding: 12px 16px; border-radius: 12px;
+            text-align: right; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px;
+        }
+        .nav-btn:hover, .nav-btn.active { background: linear-gradient(90deg, var(--deep-burgundy), transparent); color: var(--neon-pink); border-right: 4px solid var(--neon-pink); }
+
+        /* 🖥️ Main Content */
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; max-height: 100vh; }
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 14px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .stat-card h4 { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+        .stat-card .val { font-size: 22px; font-weight: 900; color: var(--text-white); }
+
+        .card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 700; color: var(--neon-pink); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; color: var(--text-white); font-weight: 600; }
+        input, textarea, select { background: #120d18; border: 1px solid var(--glass-border); color: #fff; padding: 10px 14px; border-radius: 8px; outline: none; font-size: 14px; }
+        input[type=range] { accent-color: var(--neon-pink); cursor: pointer; }
+
+        .btn {
+            background: linear-gradient(135deg, var(--neon-pink), var(--burgundy-accent)); color: #fff; border: none;
+            padding: 10px 18px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-danger { background: #e11d48; }
+        .btn-warning { background: #d97706; }
+        .btn-success { background: #059669; }
+
+        /* 📱 Interactive Preview */
+        .preview-container { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px; }
+        .phone-mockup { background: #000; border: 3px solid var(--neon-pink); border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(255, 42, 133, 0.3); }
+        .phone-mockup.portrait { width: 220px; height: 380px; }
+        .phone-mockup.landscape { width: 400px; height: 225px; }
+        .mockup-bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
+        .preview-element { position: absolute; transition: 0.1s ease; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; color: var(--text-white); }
+        th { color: var(--neon-pink); background: rgba(0,0,0,0.4); }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-live { background: #ef4444; color: #fff; }
+        .badge-paused { background: #f59e0b; color: #fff; }
+        
+
+        /* ✨ Professional Controls */
+        .number-control { display:flex; align-items:center; gap:8px; direction:ltr; }
+        .number-control input[type=number] { width:100%; text-align:center; font-weight:800; color:var(--neon-pink); }
+        .step-btn { width:38px; height:38px; border:none; border-radius:9px; background:#24101c; color:var(--neon-pink); font-size:20px; font-weight:900; cursor:pointer; }
+        .step-btn:hover { background:var(--burgundy-accent); color:#fff; }
+        .section-header { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:18px; flex-wrap:wrap; }
+        .queue-card { background:linear-gradient(135deg, rgba(255,42,133,.10), rgba(128,10,56,.08)); border:1px solid var(--glass-border); border-radius:14px; padding:16px; margin-bottom:12px; }
+        .queue-meta { color:var(--text-secondary); font-size:12px; margin-top:5px; }
+        .now-playing { border-right:4px solid #10b981; }
+        .empty-state { text-align:center; padding:28px; color:var(--text-secondary); }
+
+        .action-btns { display:flex; gap:8px; flex-wrap:wrap; }
+        .btn-play-now { background:linear-gradient(135deg,#059669,#047857); }
+        .queue-number { width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,42,133,.15);color:var(--neon-pink);font-weight:900;margin-left:10px; }
+        .control-note { padding:12px 15px;border:1px dashed var(--glass-border);border-radius:10px;background:rgba(255,255,255,.02);color:var(--text-secondary);font-size:12px;margin-top:14px; }
+
+        @media(max-width:700px){ .sidebar{width:75px;padding:12px}.brand{font-size:0}.brand i{font-size:24px}.nav-btn{font-size:0;justify-content:center;padding:14px}.nav-btn i{font-size:18px}.main-content{padding:14px} }
+
+        .comment-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- 🔒 PIN Overlay -->
+    <div id="pin-overlay">
+        <div class="pin-box">
+            <h2 style="color: var(--neon-pink);">Cobra TV Admin</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">أدخل رمز الدخول السرّي</p>
+            <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="••••">
+            <button class="btn" style="width: 100%; justify-content: center;" onclick="verifyPin()">دخول اللوحة</button>
+        </div>
+    </div>
+
+    <!-- 🎛️ Sidebar -->
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-staff-snake"></i> Cobra TV</div>
+        <button class="nav-btn active" onclick="switchTab('overview')"><i class="fa-solid fa-chart-line"></i> الشاشة الرئيسية</button>
+        <button class="nav-btn" onclick="switchTab('movies')"><i class="fa-solid fa-film"></i> إدارة وتعين الأفلام</button>
+        <button class="nav-btn" onclick="switchTab('logo')"><i class="fa-solid fa-image"></i> معاينة وتكبير اللوجو</button>
+        <button class="nav-btn" onclick="switchTab('banners')"><i class="fa-solid fa-rectangle-ad"></i> معاينة وتظبيط البنرات</button>
+        <button class="nav-btn" onclick="switchTab('emergency')"><i class="fa-solid fa-triangle-exclamation"></i> الإعلان المفاجئ</button>
+        <button class="nav-btn" onclick="switchTab('comments')"><i class="fa-solid fa-comments"></i> إدارة التعليقات</button>
+    </div>
+
+    <!-- 🖥️ Main View -->
+    <div class="main-content">
+
+        <!-- 1. الرئيسية -->
+        <div id="tab-overview" class="tab-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>الفيلم الشغال حالياً</h4>
+                    <div class="val" id="stat-current-movie" style="color: var(--neon-pink);">جاري التحميل...</div>
+                </div>
+                <div class="stat-card">
+                    <h4>التصنيف</h4>
+                    <div class="val" id="stat-category">-</div>
+                </div>
+                <div class="stat-card">
+                    <h4>حالة البث</h4>
+                    <div class="val" id="stat-status" style="color: #10b981;">نشط</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-tower-broadcast"></i> البث الحقيقي اللحظي</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>اسم الفيلم</th>
+                            <th>التصنيف</th>
+                            <th>الحالة الحالية</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overview-movies-table">
+                        <tr><td colspan="3">جاري جلب البيانات من فايربيس...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. إدارة الأفلام وقائمة التشغيل -->
+        <div id="tab-movies" class="tab-section">
+            <div class="section-header">
+                <div>
+                    <h2 style="color:var(--text-white);">مركز التحكم في التشغيل 🎬</h2>
+                    <p style="color:var(--text-secondary);font-size:13px;">أضف المحتوى، راقب اللي شغال، وتحكّم في التشغيل من مكان واحد</p>
+                </div>
+                <button class="btn btn-success" onclick="playNextMovie()"><i class="fa-solid fa-forward-step"></i> تشغيل التالي الآن</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى إلى قائمة الانتظار</div>
+                <div class="form-grid">
+                    <div class="input-group"><label>عنوان الفيلم</label><input type="text" id="m-title" placeholder="اسم الفيلم"></div>
+                    <div class="input-group"><label>رابط الفيلم (URL)</label><input type="text" id="m-url" placeholder="https://..."></div>
+                    <div class="input-group"><label>التصنيف</label><input type="text" id="m-category" placeholder="اكتب أي تصنيف تحبه (اختياري)"></div>
+                    <div class="input-group"><label>تخطي البداية (ثواني)</label><input type="number" id="m-trim-start" value="0" min="0"></div>
+                    <div class="input-group"><label>تخطي النهاية (ثواني)</label><input type="number" id="m-trim-end" value="0" min="0"></div>
+                </div>
+                <div class="input-group" style="margin-top:12px;"><label>الوصف</label><textarea id="m-desc" rows="2" placeholder="وصف اختياري"></textarea></div>
+                <button class="btn" style="margin-top:15px;" onclick="addMovie()"><i class="fa-solid fa-list-plus"></i> إضافة إلى قائمة التشغيل</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-circle-play"></i> يتم التشغيل الآن</div>
+                <div id="now-playing-container" class="empty-state">لا يوجد محتوى يعمل حالياً.</div>
+                <div class="control-note">تقدر تغيّر المحتوى الحالي في أي وقت من قائمة الانتظار بزر <strong style="color:var(--neon-pink)">تشغيل الآن</strong>، من غير ما تحتاج تحذف الفيلم الحالي.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-list-ol"></i> قائمة الانتظار القادمة</div>
+                <div id="playlist-table-body" class="empty-state">قائمة التشغيل فارغة.</div>
+            </div>
+        </div>
+
+        <!-- 3. معاينة وتكبير اللوجو -->
+        <div id="tab-logo" class="tab-section">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-sliders"></i> التحكم والتكبير المباشر للوجو</div>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>رابط صورة/فيديو اللوجو (الكروما)</label>
+                    <input type="text" id="logo-url" value="https://via.placeholder.com/100/ff2a85/ffffff?text=LOGO" oninput="updateLogoPreviews()">
+                </div>
+
+                <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">📱 الوضع العادي (Portrait)</h4>
+                        <div class="input-group"><label>من الأعلى (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-top',-1)">−</button><input type="number" id="port-top" value="20" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-top',1)">+</button></div></div>
+                        <div class="input-group"><label>من اليمين (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-right',-1)">−</button><input type="number" id="port-right" value="20" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-right',1)">+</button></div></div>
+                        <div class="input-group"><label>حجم اللوجو (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-w',-1)">−</button><input type="number" id="port-w" value="60" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-w',1)">+</button></div></div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">📺 ملء الشاشة (Landscape)</h4>
+                        <div class="input-group"><label>من الأعلى (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-top',-1)">−</button><input type="number" id="land-top" value="15" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-top',1)">+</button></div></div>
+                        <div class="input-group"><label>من اليمين (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-right',-1)">−</button><input type="number" id="land-right" value="15" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-right',1)">+</button></div></div>
+                        <div class="input-group"><label>حجم اللوجو (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-w',-1)">−</button><input type="number" id="land-w" value="80" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-w',1)">+</button></div></div>
+                    </div>
+                </div>
+
+                <div class="preview-container">
+                    <div class="phone-mockup portrait">
+                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" class="mockup-bg">
+                        <img id="prev-logo-port" class="preview-element" src="https://via.placeholder.com/100/ff2a85/ffffff?text=LOGO">
+                    </div>
+                    <div class="phone-mockup landscape">
+                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" class="mockup-bg">
+                        <img id="prev-logo-land" class="preview-element" src="https://via.placeholder.com/100/ff2a85/ffffff?text=LOGO">
+                    </div>
+                </div>
+
+                <button class="btn" style="margin-top: 20px;" onclick="saveLogoSettings()">حفظ إعدادات اللوجو في فايربيس 💾</button>
+            </div>
+        </div>
+
+        <!-- 4. البنرات -->
+        <div id="tab-banners" class="tab-section">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-up-down-left-right"></i> معايرة وتظبيط البنرات والإعلانات</div>
+                <div class="form-grid">
+                    <div class="input-group"><label>رابط البانر العلوي</label><input type="text" id="top-banner-url" value="https://via.placeholder.com/300x50/ff2a85/ffffff?text=Top+Banner" oninput="updateBannerPreviews()"></div>
+                    <div class="input-group"><label>رابط شريط الفيلم القادم</label><input type="text" id="next-banner-url" value="https://via.placeholder.com/300x40/800a38/ffffff?text=Next+Movie" oninput="updateBannerPreviews()"></div>
+                </div>
+
+                <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 20px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">البانر العلوي</h4>
+                        <div class="input-group"><label>المسافة من الأعلى (PX)</label><input type="number" id="tb-top" value="10" min="0" oninput="updateBannerPreviews()"></div>
+                        <div class="input-group"><label>العرض (%)</label><input type="number" id="tb-w" value="80" min="1" oninput="updateBannerPreviews()"></div>
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">شريط الفيلم القادم</h4>
+                        <div class="input-group"><label>المسافة من الأسفل (PX)</label><input type="number" id="nb-bottom" value="10" min="0" oninput="updateBannerPreviews()"></div>
+                        <div class="input-group"><label>العرض (%)</label><input type="number" id="nb-w" value="90" min="1" oninput="updateBannerPreviews()"></div>
+                    </div>
+                </div>
+
+                <div class="preview-container">
+                    <div class="phone-mockup portrait" style="width: 280px; height: 420px;">
+                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" class="mockup-bg">
+                        <img id="prev-top-banner" class="preview-element" src="https://via.placeholder.com/300x50/ff2a85/ffffff?text=Top+Banner" style="left: 50%; transform: translateX(-50%);">
+                        <img id="prev-next-banner" class="preview-element" src="https://via.placeholder.com/300x40/800a38/ffffff?text=Next+Movie" style="left: 50%; transform: translateX(-50%);">
+                    </div>
+                </div>
+
+                <button class="btn" style="margin-top: 20px;" onclick="saveBannersSettings()">حفظ أبعاد البنرات في فايربيس 💾</button>
+            </div>
+        </div>
+
+        <!-- 5. الإعلان المفاجئ -->
+        <div id="tab-emergency" class="tab-section">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-bolt"></i> إطلاق إعلان طوارئ عاجل</div>
+                <div class="input-group">
+                    <label>رابط فيديو / صورة إعلان الطوارئ</label>
+                    <input type="text" id="emergency-url" placeholder="http://...">
+                </div>
+                <button class="btn btn-danger" style="margin-top: 15px;" onclick="triggerEmergencyAd()">إطلاق الإعلان المباشر الآن ⚡</button>
+            </div>
+        </div>
+
+        <!-- 6. التعليقات -->
+        <div id="tab-comments" class="tab-section">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-comments"></i> إدارة التعليقات اللحظية</div>
+                <div id="comments-container">جاري فتح قنوات التعليقات...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase JS SDK Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, serverTimestamp, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZzSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",
+            authDomain: "cobra-tv-b1231.firebaseapp.com",
+            projectId: "cobra-tv-b1231",
+            storageBucket: "cobra-tv-b1231.firebasestorage.app",
+            messagingSenderId: "73044924945",
+            appId: "1:73044924945:web:4ed40ee2b6463b574e2fb0",
+            measurementId: "G-X5JQH06QNK"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const streamDocRef = doc(db, "streams", "live_stream_1");
+
+        // 🔐 PIN Code
+        window.verifyPin = () => {
+            const input = document.getElementById('pin-input').value;
+            if (input === '5050') {
+                document.getElementById('pin-overlay').style.display = 'none';
+            } else {
+                alert('رمز الـ PIN غير صحيح!');
+            }
+        };
+
+        // 🔄 Switch Navigation
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            if(event && event.currentTarget) event.currentTarget.classList.add('active');
+        };
+
+        // 🎨 Live Interactive Previews
+        window.updateLogoPreviews = () => {
+            const logoUrl = document.getElementById('logo-url').value;
+            const pTop = document.getElementById('port-top').value;
+            const pRight = document.getElementById('port-right').value;
+            const pW = document.getElementById('port-w').value;
+
+            const lTop = document.getElementById('land-top').value;
+            const lRight = document.getElementById('land-right').value;
+            const lW = document.getElementById('land-w').value;
+
+            const prevPort = document.getElementById('prev-logo-port');
+            prevPort.src = logoUrl;
+            prevPort.style.top = (pTop / 2) + 'px';
+            prevPort.style.right = (pRight / 2) + 'px';
+            prevPort.style.width = (pW / 2) + 'px';
+
+            const prevLand = document.getElementById('prev-logo-land');
+            prevLand.src = logoUrl;
+            prevLand.style.top = (lTop / 2) + 'px';
+            prevLand.style.right = (lRight / 2) + 'px';
+            prevLand.style.width = (lW / 2) + 'px';
+        };
+
+        window.updateBannerPreviews = () => {
+            const topUrl = document.getElementById('top-banner-url').value;
+            const nextUrl = document.getElementById('next-banner-url').value;
+
+            const tbTop = document.getElementById('tb-top').value;
+            const tbW = document.getElementById('tb-w').value;
+            const nbBottom = document.getElementById('nb-bottom').value;
+            const nbW = document.getElementById('nb-w').value;
+
+            const pTopBanner = document.getElementById('prev-top-banner');
+            pTopBanner.src = topUrl;
+            pTopBanner.style.top = tbTop + 'px';
+            pTopBanner.style.width = tbW + '%';
+
+            const pNextBanner = document.getElementById('prev-next-banner');
+            pNextBanner.src = nextUrl;
+            pNextBanner.style.bottom = nbBottom + 'px';
+            pNextBanner.style.width = nbW + '%';
+        };
+
+        // 📡 Realtime Firestore Listener
+        onSnapshot(streamDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                
+                // تحديث كروت الإحصائيات
+                document.getElementById('stat-current-movie').innerText = data.movieTitle || 'لا يوجد فيلم';
+                document.getElementById('stat-category').innerText = data.movieCategory || '-';
+                document.getElementById('stat-status').innerText = data.playbackState === "PLAYING" ? "شغال الآن 🔴" : "متوقف مؤقتاً ⏸️";
+
+                // ملء المدخلات تلقائياً عند أول فتح
+                if(data.logoUrl && !document.getElementById('logo-url').dataset.userEdited) {
+                    document.getElementById('logo-url').value = data.logoUrl;
+                }
+
+                const stateBadge = data.playbackState === "PLAYING" 
+                    ? `<span class="badge badge-live">🔴 شغال الآن على التطبيق</span>` 
+                    : `<span class="badge badge-paused">⏸️ متوقف مؤقتاً</span>`;
+
+                // 1. الجدول في الشاشة الرئيسية
+                document.getElementById('overview-movies-table').innerHTML = `
+                    <tr>
+                        <td><strong>${data.movieTitle || 'غير محدد'}</strong></td>
+                        <td>${data.movieCategory || 'عام'}</td>
+                        <td>${stateBadge}</td>
+                    </tr>
+                `;
+                updateLogoPreviews();
+                updateBannerPreviews();
+            }
+        });
+
+        // 🎬 نظام قائمة التشغيل الحقيقي
+        const playlistRef = collection(db, "streams", "live_stream_1", "playlist");
+
+        window.stepNumber = (id, amount) => {
+            const input = document.getElementById(id);
+            input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
+            updateLogoPreviews();
+        };
+
+        window.addMovie = async () => {
+            const title = document.getElementById('m-title').value.trim();
+            const url = document.getElementById('m-url').value.trim();
+            if(!title || !url) return alert('⚠️ برجاء إدخال اسم الفيلم والرابط أولاً.');
+
+            try {
+                await addDoc(playlistRef, {
+                    title, url,
+                    category: document.getElementById('m-category').value.trim() || 'عام',
+                    trimStart: parseInt(document.getElementById('m-trim-start').value) || 0,
+                    trimEnd: parseInt(document.getElementById('m-trim-end').value) || 0,
+                    description: document.getElementById('m-desc').value.trim(),
+                    createdAt: serverTimestamp()
+                });
+                ['m-title','m-url','m-category','m-desc'].forEach(id => document.getElementById(id).value='');
+                document.getElementById('m-trim-start').value='0';
+                document.getElementById('m-trim-end').value='0';
+                alert('✅ تم إضافة المحتوى إلى قائمة الانتظار بدون تشغيله.');
+            } catch(e) { alert('❌ حدث خطأ أثناء الإضافة: ' + e.message); }
+        };
+
+        window.playNextMovie = async () => {
+            try {
+                const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc'), limit(1)));
+                if(snap.empty) return alert('⚠️ لا يوجد محتوى في قائمة الانتظار.');
+                const next = snap.docs[0];
+                const item = next.data();
+                await setDoc(streamDocRef, {
+                    movieTitle: item.title, currentUrl: item.url, movieCategory: item.category,
+                    movieDescription: item.description || '', trimStart: item.trimStart || 0,
+                    trimEnd: item.trimEnd || 0,
+                    startedAt: serverTimestamp(), playbackState: 'PLAYING'
+                }, {merge:true});
+                await deleteDoc(next.ref);
+            } catch(e) { alert('❌ تعذر تشغيل المحتوى التالي: ' + e.message); }
+        };
+
+        // ▶️ تشغيل أي فيلم من القائمة فوراً بدلاً من الانتظار
+        window.playPlaylistItem = async (id) => {
+            try {
+                const itemRef = doc(db, "streams", "live_stream_1", "playlist", id);
+                const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc')));
+                const target = snap.docs.find(d => d.id === id);
+                if(!target) return alert('⚠️ لم يتم العثور على هذا المحتوى.');
+                const item = target.data();
+
+                if(!confirm(`تشغيل "${item.title}" الآن بدلاً من المحتوى الحالي؟`)) return;
+
+                await setDoc(streamDocRef, {
+                    movieTitle: item.title, currentUrl: item.url, movieCategory: item.category,
+                    movieDescription: item.description || '', trimStart: item.trimStart || 0,
+                    trimEnd: item.trimEnd || 0,
+                    startedAt: serverTimestamp(), playbackState: 'PLAYING'
+                }, {merge:true});
+
+                // نحذف العنصر من الانتظار لأنه أصبح المحتوى الحالي
+                await deleteDoc(itemRef);
+                alert('▶️ تم تغيير المحتوى وتشغيل الفيلم المختار الآن.');
+            } catch(e) { alert('❌ حدث خطأ أثناء التشغيل: ' + e.message); }
+        };
+
+        window.deletePlaylistItem = async (id) => {
+            if(!confirm('حذف هذا العنصر من قائمة الانتظار؟')) return;
+            try { await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", id)); }
+            catch(e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
+        window.togglePlayback = async (newState) => {
+            try { await setDoc(streamDocRef, { playbackState: newState }, { merge: true }); }
+            catch(e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
+        // تحديث المحتوى الحالي
+        onSnapshot(streamDocRef, (snap) => {
+            const box = document.getElementById('now-playing-container');
+            if(!box || !snap.exists() || !snap.data().movieTitle) return;
+            const d = snap.data();
+            const state = d.playbackState === 'PLAYING' ? '🔴 يعمل الآن' : '⏸️ متوقف مؤقتاً';
+            box.innerHTML = `<div class="queue-card now-playing"><strong>${d.movieTitle}</strong><div class="queue-meta">${d.movieCategory || 'بدون تصنيف'} • ${state}</div><div style="margin-top:12px"><button class="btn ${d.playbackState==='PLAYING'?'btn-warning':'btn-success'}" onclick="togglePlayback('${d.playbackState==='PLAYING'?'PAUSED':'PLAYING'}')">${d.playbackState==='PLAYING'?'إيقاف مؤقت':'استئناف التشغيل'}</button></div></div>`;
+        });
+
+        // تحديث قائمة الانتظار لحظياً
+        onSnapshot(query(playlistRef, orderBy('createdAt','asc')), (snap) => {
+            const box = document.getElementById('playlist-table-body');
+            if(!box) return;
+            if(snap.empty) { box.innerHTML='<div class="empty-state">قائمة التشغيل فارغة. أضف أفلاماً أو إعلانات لتظهر هنا.</div>'; return; }
+            box.innerHTML = '';
+            snap.docs.forEach((docSnap, index) => {
+                const d = docSnap.data();
+                const el = document.createElement('div');
+                el.className = 'queue-card';
+                el.innerHTML = `<div class="section-header" style="margin:0"><div><span class="queue-number">${index+1}</span><strong>${d.title}</strong><div class="queue-meta">${d.category || 'بدون تصنيف'}</div></div><div class="action-btns">
+                    <button class="btn btn-play-now" onclick="playPlaylistItem('${docSnap.id}')"><i class="fa-solid fa-play"></i> تشغيل الآن</button>
+                    <button class="btn btn-danger" onclick="deletePlaylistItem('${docSnap.id}')"><i class="fa-solid fa-trash"></i> حذف</button>
+                </div></div>`;
+                box.appendChild(el);
+            });
+        });
+
+        // 🖼️ حفظ إعدادات اللوجو
+        window.saveLogoSettings = async () => {
+            try {
+                await setDoc(streamDocRef, {
+                    logoUrl: document.getElementById('logo-url').value,
+                    portTop: parseInt(document.getElementById('port-top').value),
+                    portRight: parseInt(document.getElementById('port-right').value),
+                    portWidth: parseInt(document.getElementById('port-w').value),
+                    landTop: parseInt(document.getElementById('land-top').value),
+                    landRight: parseInt(document.getElementById('land-right').value),
+                    landWidth: parseInt(document.getElementById('land-w').value)
+                }, { merge: true });
+
+                alert('✅ تم حفظ وإرسال مقاسات وموقع اللوجو لفايربيس!');
+            } catch (e) {
+                alert('❌ حدث خطأ: ' + e.message);
+            }
+        };
+
+        // 📢 حفظ البنرات
+        window.saveBannersSettings = async () => {
+            try {
+                await setDoc(streamDocRef, {
+                    topBannerUrl: document.getElementById('top-banner-url').value,
+                    nextMovieBannerUrl: document.getElementById('next-banner-url').value,
+                    topBannerTopPx: parseInt(document.getElementById('tb-top').value),
+                    topBannerWidth: parseInt(document.getElementById('tb-w').value),
+                    nextMovieBottomPx: parseInt(document.getElementById('nb-bottom').value),
+                    nextMovieWidth: parseInt(document.getElementById('nb-w').value)
+                }, { merge: true });
+
+                alert('✅ تم حفظ أبعاد البنرات بنجاح!');
+            } catch (e) {
+                alert('❌ حدث خطأ: ' + e.message);
+            }
+        };
+
+        // ⚡ إعلان الطوارئ
+        window.triggerEmergencyAd = async () => {
+            const adUrl = document.getElementById('emergency-url').value;
+            if(!adUrl) return alert('⚠️ أدخل رابط إعلان الطوارئ أولاً');
+
+            try {
+                await setDoc(streamDocRef, {
+                    emergencyAdUrl: adUrl,
+                    playbackState: "EMERGENCY_AD"
+                }, { merge: true });
+
+                alert('⚡ تم إطلاق الإعلان المفاجئ!');
+            } catch (e) {
+                alert('❌ حدث خطأ: ' + e.message);
+            }
+        };
+
+        // 💬 التعليقات
+        onSnapshot(collection(db, "streams", "live_stream_1", "comments"), (snapshot) => {
+            const container = document.getElementById('comments-container');
+            container.innerHTML = '';
+            if(snapshot.empty) {
+                container.innerHTML = '<p style="font-size: 13px; color: var(--text-secondary);">لا توجد تعليقات حالياً.</p>';
+                return;
+            }
+            snapshot.forEach((docSnap) => {
+                const comment = docSnap.data();
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.innerHTML = `
+                    <div><strong style="color: var(--neon-pink);">${comment.username || 'مستخدم'}:</strong> <span>${comment.text || ''}</span></div>
+                    <button class="btn btn-danger" onclick="deleteComment('${docSnap.id}')">مسح</button>
+                `;
+                container.appendChild(div);
+            });
+        });
+
+        window.deleteComment = async (id) => {
+            await deleteDoc(doc(db, "streams", "live_stream_1", "comments", id));
+        };
+
+        // تسجيل تعديل المستخدم يدوياً للوجو
+        document.getElementById('logo-url').addEventListener('input', () => {
+            document.getElementById('logo-url').dataset.userEdited = "true";
+        });
+
+        updateLogoPreviews();
+        updateBannerPreviews();
+    </script>
+</body>
+</html>
