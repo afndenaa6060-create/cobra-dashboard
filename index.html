@@ -164,12 +164,13 @@
     <!-- Script Logic -->
     <script>
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyCzZSbLegFJ_xaVVqtFWFUcu2Wf0d42cF0",
+            authDomain: "cobra-tv-b1231.firebaseapp.com",
+            projectId: "cobra-tv-b1231",
+            storageBucket: "cobra-tv-b1231.firebasestorage.app",
+            messagingSenderId: "73044924945",
+            appId: "1:73044924945:web:4ed40ee2b6463b574e2fb0",
+            measurementId: "G-X5JQH06QNK"
         };
         
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -212,22 +213,24 @@
                     const descVal = data.description || data.movieDescription || "";
                     const durationVal = data.durationSec && data.durationSec > 0 ? data.durationSec : 0;
 
-                    document.getElementById("movieTitle").value = titleVal;
-                    document.getElementById("movieCategory").value = categoryVal;
-                    document.getElementById("currentUrl").value = urlVal;
-                    document.getElementById("movieDescription").value = descVal;
-                    document.getElementById("movieDurationSec").value = durationVal;
+                    if (document.activeElement.id !== "movieTitle") document.getElementById("movieTitle").value = titleVal;
+                    if (document.activeElement.id !== "movieCategory") document.getElementById("movieCategory").value = categoryVal;
+                    if (document.activeElement.id !== "currentUrl") document.getElementById("currentUrl").value = urlVal;
+                    if (document.activeElement.id !== "movieDescription") document.getElementById("movieDescription").value = descVal;
+                    if (document.activeElement.id !== "movieDurationSec") document.getElementById("movieDurationSec").value = durationVal;
 
                     document.getElementById("activeMovieName").innerText = titleVal || "لا يوجد فيلم شغال حالياً";
                     
                     currentMovieDuration = durationVal;
-                    if (data.startedAt) {
+                    if (data.startedAt && data.startedAt.toDate) {
                         streamStartedAtMs = data.startedAt.toDate().getTime();
                         startCountdownTimer();
                     } else {
                         document.getElementById("countdownDisplay").innerText = "00:00:00";
                     }
                 }
+            }, error => {
+                console.error("Firestore Listen Error:", error);
             });
         }
 
@@ -260,12 +263,17 @@
 
         // 💾 حفظ وتشغيل الفيلم فوراً (يرسل لـ streams/live_stream_1 بأسماء الحقول الموحدة)
         function saveMovieInfo() {
-            const title = document.getElementById("movieTitle").value;
-            const category = document.getElementById("movieCategory").value;
-            const url = document.getElementById("currentUrl").value;
-            const desc = document.getElementById("movieDescription").value;
+            const title = document.getElementById("movieTitle").value.trim();
+            const category = document.getElementById("movieCategory").value.trim();
+            const url = document.getElementById("currentUrl").value.trim();
+            const desc = document.getElementById("movieDescription").value.trim();
             let duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
             if (duration < 0) duration = 0;
+
+            if (!title || !url) {
+                alert("⚠️ يرجى إدخال اسم الفيلم ورابط الفيديو أولاً!");
+                return;
+            }
 
             db.collection("streams").doc("live_stream_1").set({
                 title: title,
@@ -278,7 +286,9 @@
                 movieDescription: desc,
                 durationSec: duration,
                 startedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true }).then(() => alert("✅ تم بدء تشغيل الفيلم وتحديث العداد بنجاح!"));
+            }, { merge: true })
+            .then(() => alert("✅ تم بدء تشغيل الفيلم وتحديث العداد بنجاح!"))
+            .catch(err => alert("❌ حدث خطأ أثناء الحفظ: " + err.message));
         }
 
         // ⛔ إيقاف البث
@@ -295,14 +305,14 @@
 
         // ➕ إضافة فيلم لقائمة الانتظار (Playlist)
         function addToPlaylist() {
-            const title = document.getElementById("movieTitle").value;
-            const category = document.getElementById("movieCategory").value;
-            const url = document.getElementById("currentUrl").value;
-            const desc = document.getElementById("movieDescription").value;
+            const title = document.getElementById("movieTitle").value.trim();
+            const category = document.getElementById("movieCategory").value.trim();
+            const url = document.getElementById("currentUrl").value.trim();
+            const desc = document.getElementById("movieDescription").value.trim();
             let duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
             if (duration < 0) duration = 0;
 
-            if (!title || !url) return alert("يرجى إدخال اسم الفيلم والرابط أولاً!");
+            if (!title || !url) return alert("⚠️ يرجى إدخال اسم الفيلم والرابط أولاً!");
 
             db.collection("playlist").add({
                 title: title,
