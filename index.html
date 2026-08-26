@@ -199,18 +199,18 @@
             };
         }
 
-        // 📡 الاستماع للفيلم الحالي وتكليف العداد التنازلي
+        // 📡 الاستماع للفيلم الحالي وتكليف العداد التنازلي (مسار موحد: streams/live_stream_1)
         function listenToCurrentStream() {
-            db.collection("live_stream").doc("current_state").onSnapshot(doc => {
+            db.collection("streams").doc("live_stream_1").onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
-                    document.getElementById("movieTitle").value = data.movieTitle || "";
-                    document.getElementById("movieCategory").value = data.movieCategory || "";
-                    document.getElementById("currentUrl").value = data.currentUrl || "";
-                    document.getElementById("movieDescription").value = data.movieDescription || "";
+                    document.getElementById("movieTitle").value = data.movieTitle || data.title || "";
+                    document.getElementById("movieCategory").value = data.movieCategory || data.category || "";
+                    document.getElementById("currentUrl").value = data.currentUrl || data.url || "";
+                    document.getElementById("movieDescription").value = data.movieDescription || data.description || "";
                     document.getElementById("movieDurationSec").value = data.durationSec || 0;
 
-                    document.getElementById("activeMovieName").innerText = data.movieTitle || "لا يوجد فيلم شغال حالياً";
+                    document.getElementById("activeMovieName").innerText = data.movieTitle || data.title || "لا يوجد فيلم شغال حالياً";
                     
                     currentMovieDuration = data.durationSec || 0;
                     if (data.startedAt) {
@@ -250,7 +250,7 @@
             }, 1000);
         }
 
-        // 💾 حفظ وتشغيل الفيلم فوراً
+        // 💾 حفظ وتشغيل الفيلم فوراً (التسجيل في streams/live_stream_1)
         function saveMovieInfo() {
             const title = document.getElementById("movieTitle").value;
             const category = document.getElementById("movieCategory").value;
@@ -258,11 +258,15 @@
             const desc = document.getElementById("movieDescription").value;
             const duration = parseInt(document.getElementById("movieDurationSec").value) || 0;
 
-            db.collection("live_stream").doc("current_state").set({
+            db.collection("streams").doc("live_stream_1").set({
                 movieTitle: title,
+                title: title,
                 movieCategory: category,
+                category: category,
                 currentUrl: url,
+                url: url,
                 movieDescription: desc,
+                description: desc,
                 durationSec: duration,
                 startedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true }).then(() => alert("✅ تم بدء تشغيل الفيلم وتحديث العداد بنجاح!"));
@@ -270,9 +274,11 @@
 
         // ⛔ إيقاف البث
         function stopStream() {
-            db.collection("live_stream").doc("current_state").set({
+            db.collection("streams").doc("live_stream_1").set({
                 currentUrl: "",
+                url: "",
                 movieTitle: "البث متوقف حالياً",
+                title: "البث متوقف حالياً",
                 durationSec: 0,
                 startedAt: null
             }, { merge: true }).then(() => alert("🛑 تم إيقاف البث المباشر."));
@@ -332,14 +338,18 @@
             db.collection("playlist").doc(docId).get().then(doc => {
                 if (doc.exists) {
                     const data = doc.data();
-                    db.collection("live_stream").doc("current_state").set({
+                    db.collection("streams").doc("live_stream_1").set({
                         movieTitle: data.movieTitle,
+                        title: data.movieTitle,
                         movieCategory: data.movieCategory,
+                        category: data.movieCategory,
                         currentUrl: data.currentUrl,
+                        url: data.currentUrl,
                         movieDescription: data.movieDescription,
+                        description: data.movieDescription,
                         durationSec: data.durationSec,
                         startedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }).then(() => {
+                    }, { merge: true }).then(() => {
                         db.collection("playlist").doc(docId).delete();
                     });
                 }
