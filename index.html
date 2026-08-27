@@ -150,6 +150,12 @@
             border-radius: 8px;
             margin-bottom: 10px;
             border-right: 4px solid var(--accent-color);
+            transition: 0.3s;
+        }
+
+        .queue-card.active-playing {
+            border-right-color: var(--success);
+            background-color: #1e3a8a;
         }
 
         .queue-meta {
@@ -239,7 +245,7 @@
             </form>
         </div>
 
-        <!-- 📋 3. قائمة الانتظار الحالية -->
+        <!-- 📋 3. قائمة الانتظار الحية -->
         <div class="card">
             <h2><i class="fa-solid fa-list-ol"></i> قائمة القادم (Queue)</h2>
             <div id="playlist-table-body" style="max-height: 320px; overflow-y: auto;">
@@ -316,12 +322,15 @@
         const commentsRef = collection(db, "streams", "live_stream_1", "comments");
 
         let countdownInterval = null;
+        let playlistItems = [];
+        let currentPlayingId = null;
 
         // 📡 1. الاستماع الحي لحالة البث الحالي + المزامنة والمؤقت
         onSnapshot(streamDocRef, (docSnap) => {
             if (!docSnap.exists()) return;
             const data = docSnap.data();
 
+            currentPlayingId = data.currentDocId || null;
             document.getElementById('current-movie-title').innerText = data.movieTitle || 'لا يوجد محتوى شغال حالياً';
             document.getElementById('current-movie-category').innerText = `التصنيف: ${data.movieCategory || 'عام'}`;
 
@@ -355,7 +364,7 @@
 
                 if (remainingSeconds <= 0) {
                     clearInterval(countdownInterval);
-                    document.getElementById('live-timer').innerText = "انتهى! جاري نقل التالي...";
+                    document.getElementById('live-timer').innerText = "انتهى! جاري تشغيل التالي...";
                     // 🔄 الأوتوميشن: تشغيل التالي تلقائياً بمجرد انتهاء الوقت!
                     window.playNextMovie();
                 } else {
@@ -393,10 +402,11 @@
             }
         });
 
-        // ⏯️ 4. تشغيل فيلم مباشر بالوقت والمدة
+        // ⏯️ 4. تشغيل فيلم مباشر بالوقت والمدة (بدون مسح)
         window.playMovieDirectly = async (docId, title, url, category, trimStart = 0, trimEnd = 0, duration = 7200) => {
             try {
                 await setDoc(streamDocRef, {
+                    currentDocId: docId || null,
                     movieTitle: title,
                     streamUrl: url,
                     movieCategory: category || 'عام',
@@ -406,40 +416,38 @@
                     playbackState: "PLAYING",
                     startedAt: serverTimestamp()
                 }, { merge: true });
-
-                if (docId) {
-                    await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", docId));
-                }
             } catch(e) {
                 alert('❌ خطأ في التشغيل المباشر: ' + e.message);
             }
         };
 
-        // ⏭️ 5. الانتقال للفيلم التالي
+        // ⏭️ 5. الانتقال للفيلم التالي (تسلسلي تكراري)
         window.playNextMovie = async () => {
             try {
-                const q = query(playlistRef, orderBy("createdAt", "asc"), limit(1));
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
+                if (playlistItems.length === 0) {
                     await setDoc(streamDocRef, { playbackState: "PAUSED" }, { merge: true });
                     return alert('⚠️ القائمة فارغة! لا يوجد فيلم تالي.');
                 }
 
-                const nextDoc = snapshot.docs[0];
-                const data = nextDoc.data();
+                let currentIndex = playlistItems.findIndex(item => item.id === currentPlayingId);
+                let nextIndex = currentIndex + 1;
 
+                if (nextIndex >= playlistItems.length) {
+                    nextIndex = 0; // العودة لأول عنصر في القائمة عند الوصول للنهاية
+                }
+
+                const nextDoc = playlistItems[nextIndex];
                 await playMovieDirectly(
-                    nextDoc.id, data.title, data.url, 
-                    data.category, data.trimStart || 0, data.trimEnd || 0, 
-                    data.duration || 7200
+                    nextDoc.id, nextDoc.title, nextDoc.url, 
+                    nextDoc.category, nextDoc.trimStart || 0, nextDoc.trimEnd || 0, 
+                    nextDoc.duration || 7200
                 );
             } catch(e) {
                 alert('❌ خطأ أثناء تشغيل التالي: ' + e.message);
             }
         };
 
-        // 🗑️ حذف من القائمة
+        // 🗑️ حذف يدوي من القائمة
         window.deleteMovie = async (docId) => {
             if(!confirm('هل أنت تأكد من الحذف؟')) return;
             await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", docId));
@@ -487,9 +495,11 @@
             alert('✅ تم حفظ إعدادات البنرات!');
         };
 
-        // 📋 6. عرض قائمة الانتظار الحية
+        // 📋 6. عرض قائمة الانتظار الحية وتتبع العناصر
         onSnapshot(query(playlistRef, orderBy("createdAt", "asc")), (snapshot) => {
             const container = document.getElementById('playlist-table-body');
+            playlistItems = [];
+
             if(snapshot.empty) {
                 container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 15px;">القائمة فارغة حالياً.</p>';
                 return;
@@ -498,11 +508,14 @@
             let html = '';
             snapshot.docs.forEach((docSnap, index) => {
                 const item = docSnap.data();
+                const isPlaying = (docSnap.id === currentPlayingId);
+                playlistItems.push({ id: docSnap.id, ...item });
+
                 html += `
-                    <div class="queue-card">
+                    <div class="queue-card ${isPlaying ? 'active-playing' : ''}">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>#${index + 1} - ${item.title}</strong>
+                                <strong>#${index + 1} - ${item.title} ${isPlaying ? '▶️ (شغال حالياً)' : ''}</strong>
                                 <div class="queue-meta">${item.category || 'عام'} • المدة: ${item.duration || 7200} ثانية</div>
                             </div>
                             <div style="display: flex; gap: 5px;">
