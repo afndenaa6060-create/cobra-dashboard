@@ -3,304 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cobra TV - لوحة التحكم الاحترافية</title>
+    <title>لوحة تحكم البث المباشر - COBRA TV</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            --bg-dark: #09090b;
-            --card-bg: rgba(20, 15, 25, 0.9);
-            --neon-pink: #ff2a85;
-            --deep-burgundy: #4a041f;
-            --burgundy-accent: #800a38;
-            --text-white: #ffffff;
-            --text-secondary: #d1d5db;
-            --glass-border: rgba(255, 42, 133, 0.3);
+            --bg-primary: #0a0d14;
+            --bg-secondary: #121824;
+            --bg-card: #1a2234;
+            --neon-blue: #00f2fe;
+            --neon-pink: #ff007f;
+            --neon-purple: #7928ca;
+            --text-primary: #ffffff;
+            --text-secondary: #8a99ad;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --warning: #ffa502;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; display: flex; overflow-x: hidden; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-        /* 🔒 PIN Lock */
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* PIN Overlay */
         #pin-overlay {
-            position: fixed; inset: 0; background: rgba(9, 9, 11, 0.96); backdrop-filter: blur(15px);
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
-        }
-        .pin-box {
-            background: var(--card-bg); border: 2px solid var(--neon-pink); padding: 35px; border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 42, 133, 0.4); text-align: center; width: 330px;
-        }
-        .pin-input {
-            width: 100%; padding: 12px; margin: 20px 0; text-align: center; font-size: 26px; letter-spacing: 12px;
-            background: #000; border: 1px solid var(--neon-pink); color: var(--neon-pink); border-radius: 10px; outline: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 13, 20, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* 🎛️ Sidebar */
-        .sidebar { width: 270px; background: var(--card-bg); border-left: 1px solid var(--glass-border); padding: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .brand { font-size: 24px; font-weight: 900; color: var(--neon-pink); text-shadow: 0 0 12px rgba(255, 42, 133, 0.6); margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        .pin-card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Top Navigation */
+        header {
+            background: var(--bg-secondary);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--bg-primary);
+            padding: 5px;
+            border-radius: 10px;
+        }
+
         .nav-btn {
-            background: transparent; border: 1px solid transparent; color: var(--text-white); padding: 12px 16px; border-radius: 12px;
-            text-align: right; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
-        .nav-btn:hover, .nav-btn.active { background: linear-gradient(90deg, var(--deep-burgundy), transparent); color: var(--neon-pink); border-right: 4px solid var(--neon-pink); }
 
-        /* 🖥️ Main Content */
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; max-height: 100vh; }
-        .tab-section { display: none; }
-        .tab-section.active { display: block; }
+        .nav-btn.active, .nav-btn:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 14px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .stat-card h4 { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
-        .stat-card .val { font-size: 22px; font-weight: 900; color: var(--text-white); }
+        /* Main Container */
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
 
-        .card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-        .card-title { font-size: 18px; font-weight: 700; color: var(--neon-pink); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .input-group { display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 13px; color: var(--text-white); font-weight: 600; }
-        input, textarea, select { background: #120d18; border: 1px solid var(--glass-border); color: #fff; padding: 10px 14px; border-radius: 8px; outline: none; font-size: 14px; }
-        input[type=range] { accent-color: var(--neon-pink); cursor: pointer; }
+        .tab-section {
+            display: none;
+        }
+
+        .tab-section.active {
+            display: block;
+        }
+
+        /* Inputs & Buttons */
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            outline: none;
+            margin-top: 6px;
+            margin-bottom: 15px;
+            transition: border 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--neon-blue);
+        }
 
         .btn {
-            background: linear-gradient(135deg, var(--neon-pink), var(--burgundy-accent)); color: #fff; border: none;
-            padding: 10px 18px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-danger { background: #e11d48; }
-        .btn-warning { background: #d97706; }
-        .btn-success { background: #059669; }
 
-        /* 📱 Interactive Preview */
-        .preview-container { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px; }
-        .phone-mockup { background: #000; border: 3px solid var(--neon-pink); border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(255, 42, 133, 0.3); }
-        .phone-mockup.portrait { width: 220px; height: 380px; }
-        .phone-mockup.landscape { width: 400px; height: 225px; }
-        .mockup-bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
-        .preview-element { position: absolute; transition: 0.1s ease; }
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; color: var(--text-white); }
-        th { color: var(--neon-pink); background: rgba(0,0,0,0.4); }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .badge-live { background: #ef4444; color: #fff; }
-        .badge-paused { background: #f59e0b; color: #fff; }
-        
+        .btn-primary { background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: black; }
+        .btn-play-now { background: var(--neon-pink); color: white; }
 
-        /* ✨ Professional Controls */
-        .number-control { display:flex; align-items:center; gap:8px; direction:ltr; }
-        .number-control input[type=number] { width:100%; text-align:center; font-weight:800; color:var(--neon-pink); }
-        .step-btn { width:38px; height:38px; border:none; border-radius:9px; background:#24101c; color:var(--neon-pink); font-size:20px; font-weight:900; cursor:pointer; }
-        .step-btn:hover { background:var(--burgundy-accent); color:#fff; }
-        .section-header { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:18px; flex-wrap:wrap; }
-        .queue-card { background:linear-gradient(135deg, rgba(255,42,133,.10), rgba(128,10,56,.08)); border:1px solid var(--glass-border); border-radius:14px; padding:16px; margin-bottom:12px; }
-        .queue-meta { color:var(--text-secondary); font-size:12px; margin-top:5px; }
-        .now-playing { border-right:4px solid #10b981; }
-        .empty-state { text-align:center; padding:28px; color:var(--text-secondary); }
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
 
-        .action-btns { display:flex; gap:8px; flex-wrap:wrap; }
-        .btn-play-now { background:linear-gradient(135deg,#059669,#047857); }
-        .queue-number { width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,42,133,.15);color:var(--neon-pink);font-weight:900;margin-left:10px; }
-        .control-note { padding:12px 15px;border:1px dashed var(--glass-border);border-radius:10px;background:rgba(255,255,255,.02);color:var(--text-secondary);font-size:12px;margin-top:14px; }
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+        }
 
-        @media(max-width:700px){ .sidebar{width:75px;padding:12px}.brand{font-size:0}.brand i{font-size:24px}.nav-btn{font-size:0;justify-content:center;padding:14px}.nav-btn i{font-size:18px}.main-content{padding:14px} }
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-        .comment-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 10px; }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Queue Cards */
+        .queue-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-right: 4px solid var(--neon-blue);
+        }
+
+        .queue-card.now-playing {
+            border-right-color: var(--success);
+            background: rgba(46, 213, 115, 0.05);
+        }
+
+        .queue-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Previews Box */
+        .preview-box {
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-top: 10px;
+        }
+
+        .preview-box.portrait { width: 180px; height: 320px; }
+        .preview-box.landscape { width: 100%; height: 200px; }
+
+        .preview-img {
+            position: absolute;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Comments List */
+        .comment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .step-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .step-btn-group input { margin: 0; text-align: center; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-live { background: rgba(255, 71, 87, 0.2); color: var(--danger); }
+        .badge-paused { background: rgba(255, 165, 0, 0.2); color: var(--warning); }
     </style>
 </head>
 <body>
 
-    <!-- 🔒 PIN Overlay -->
+    <!-- PIN Access Overlay -->
     <div id="pin-overlay">
-        <div class="pin-box">
-            <h2 style="color: var(--neon-pink);">Cobra TV Admin</h2>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">أدخل رمز الدخول السرّي</p>
-            <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="••••">
-            <button class="btn" style="width: 100%; justify-content: center;" onclick="verifyPin()">دخول اللوحة</button>
+        <div class="pin-card">
+            <i class="fa-solid fa-lock" style="font-size: 40px; color: var(--neon-blue); margin-bottom: 15px;"></i>
+            <h3>رمز الحماية المطلوب</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">أدخل رمز الـ PIN المخصص للوصول للوحة التحكم</p>
+            <input type="password" id="pin-input" placeholder="****" style="text-align: center; font-size: 20px; letter-spacing: 5px;">
+            <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="verifyPin()">دخول اللوحة</button>
         </div>
     </div>
 
-    <!-- 🎛️ Sidebar -->
-    <div class="sidebar">
-        <div class="brand"><i class="fa-solid fa-staff-snake"></i> Cobra TV</div>
-        <button class="nav-btn active" onclick="switchTab('overview')"><i class="fa-solid fa-chart-line"></i> الشاشة الرئيسية</button>
-        <button class="nav-btn" onclick="switchTab('movies')"><i class="fa-solid fa-film"></i> إدارة وتعين الأفلام</button>
-        <button class="nav-btn" onclick="switchTab('logo')"><i class="fa-solid fa-image"></i> معاينة وتكبير اللوجو</button>
-        <button class="nav-btn" onclick="switchTab('banners')"><i class="fa-solid fa-rectangle-ad"></i> معاينة وتظبيط البنرات</button>
-        <button class="nav-btn" onclick="switchTab('emergency')"><i class="fa-solid fa-triangle-exclamation"></i> الإعلان المفاجئ</button>
-        <button class="nav-btn" onclick="switchTab('comments')"><i class="fa-solid fa-comments"></i> إدارة التعليقات</button>
-    </div>
+    <!-- Navigation Header -->
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-tower-broadcast"></i> COBRA TV ADMIN
+        </div>
+        <nav class="nav-tabs">
+            <button class="nav-btn active" onclick="switchTab('overview')"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</button>
 
-    <!-- 🖥️ Main View -->
-    <div class="main-content">
+            <button class="nav-btn" onclick="switchTab('playlist')"><i class="fa-solid fa-list-check"></i> قائمة التشغيل</button>
 
-        <!-- 1. الرئيسية -->
-        <div id="tab-overview" class="tab-section active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>الفيلم الشغال حالياً</h4>
-                    <div class="val" id="stat-current-movie" style="color: var(--neon-pink);">جاري التحميل...</div>
+            <button class="nav-btn" onclick="switchTab('branding')"><i class="fa-solid fa-compass-drafting"></i> اللوجو والبنرات</button>
+
+            <button class="nav-btn" onclick="switchTab('comments')"><i class="fa-solid fa-comments"></i> التعليقات</button>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="container">
+
+        <!-- TAB 1: OVERVIEW -->
+        <section id="tab-overview" class="tab-section active">
+            <div class="grid-3">
+                <div class="card stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-film"></i></div>
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 13px;">المحتوى الحالي</div>
+                        <h4 id="stat-current-movie">جاري التحميل...</h4>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h4>التصنيف</h4>
-                    <div class="val" id="stat-category">-</div>
+                <div class="card stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 13px;">التصنيف</div>
+                        <h4 id="stat-category">-</h4>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h4>حالة البث</h4>
-                    <div class="val" id="stat-status" style="color: #10b981;">نشط</div>
+                <div class="card stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-signal"></i></div>
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 13px;">حالة البث</div>
+                        <h4 id="stat-status">-</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3><i class="fa-solid fa-play-circle" style="color: var(--neon-blue);"></i> حالة البث المباشر الحالية</h3>
+                    <div id="now-playing-container" style="margin-top: 15px;">
+                        <p style="color: var(--text-secondary);">جاري الاتصال بالخادم...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i> إعلان الطوارئ المفاجئ</h3>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; margin-bottom: 15px;">يقوم بقطع البث الحالي فوراً وتشغيل هذا الإعلان.</p>
+                    <label>رابط فيديو الإعلان (MP4/M3U8)</label>
+                    <input type="text" id="emergency-url" placeholder="https://domain.com/emergency_ad.mp4">
+                    <button class="btn btn-danger" onclick="triggerEmergencyAd()"><i class="fa-solid fa-bolt"></i> إطلاق الإعلان المفاجئ الآن</button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-tower-broadcast"></i> البث الحقيقي اللحظي</div>
-                <table>
+                <h3>جدول الحالة الحية</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px; text-align: right;">
                     <thead>
-                        <tr>
-                            <th>اسم الفيلم</th>
-                            <th>التصنيف</th>
-                            <th>الحالة الحالية</th>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);">
+                            <th style="padding: 10px;">عنوان الفيلم</th>
+                            <th style="padding: 10px;">التصنيف</th>
+                            <th style="padding: 10px;">الحالة</th>
                         </tr>
                     </thead>
                     <tbody id="overview-movies-table">
-                        <tr><td colspan="3">جاري جلب البيانات من فايربيس...</td></tr>
+                        <!-- Populated by JS -->
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
 
-        <!-- 2. إدارة الأفلام وقائمة التشغيل -->
-        <div id="tab-movies" class="tab-section">
-            <div class="section-header">
-                <div>
-                    <h2 style="color:var(--text-white);">مركز التحكم في التشغيل 🎬</h2>
-                    <p style="color:var(--text-secondary);font-size:13px;">أضف المحتوى، راقب اللي شغال، وتحكّم في التشغيل من مكان واحد</p>
-                </div>
-                <button class="btn btn-success" onclick="playNextMovie()"><i class="fa-solid fa-forward-step"></i> تشغيل التالي الآن</button>
-            </div>
+        <!-- TAB 2: PLAYLIST MANAGEMENT -->
+        <section id="tab-playlist" class="tab-section">
+            <div class="grid-2">
+                <div class="card">
+                    <h3><i class="fa-solid fa-plus-circle" style="color: var(--neon-blue);"></i> إضافة فيلم / محتوى جديد للقائمة</h3>
+                    <div style="margin-top: 15px;">
+                        <label>عنوان المحتوى</label>
+                        <input type="text" id="m-title" placeholder="مثال: فيلم Spider-Man">
 
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى إلى قائمة الانتظار</div>
-                <div class="form-grid">
-                    <div class="input-group"><label>عنوان الفيلم</label><input type="text" id="m-title" placeholder="اسم الفيلم"></div>
-                    <div class="input-group"><label>رابط الفيلم (URL)</label><input type="text" id="m-url" placeholder="https://..."></div>
-                    <div class="input-group"><label>التصنيف</label><input type="text" id="m-category" placeholder="اكتب أي تصنيف تحبه (اختياري)"></div>
-                    <div class="input-group"><label>تخطي البداية (ثواني)</label><input type="number" id="m-trim-start" value="0" min="0"></div>
-                    <div class="input-group"><label>تخطي النهاية (ثواني)</label><input type="number" id="m-trim-end" value="0" min="0"></div>
-                </div>
-                <div class="input-group" style="margin-top:12px;"><label>الوصف</label><textarea id="m-desc" rows="2" placeholder="وصف اختياري"></textarea></div>
-                <button class="btn" style="margin-top:15px;" onclick="addMovie()"><i class="fa-solid fa-list-plus"></i> إضافة إلى قائمة التشغيل</button>
-            </div>
+                        <label>رابط البث (Direct MP4 / M3U8)</label>
+                        <input type="text" id="m-url" placeholder="https://domain.com/video.m3u8">
 
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-circle-play"></i> يتم التشغيل الآن</div>
-                <div id="now-playing-container" class="empty-state">لا يوجد محتوى يعمل حالياً.</div>
-                <div class="control-note">تقدر تغيّر المحتوى الحالي في أي وقت من قائمة الانتظار بزر <strong style="color:var(--neon-pink)">تشغيل الآن</strong>، من غير ما تحتاج تحذف الفيلم الحالي.</div>
-            </div>
+                        <label>التصنيف</label>
+                        <input type="text" id="m-category" placeholder="أكشن, دراما, إعلان...">
 
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-list-ol"></i> قائمة الانتظار القادمة</div>
-                <div id="playlist-table-body" class="empty-state">قائمة التشغيل فارغة.</div>
-            </div>
-        </div>
+                        <div class="grid-2">
+                            <div>
+                                <label>قص البداية (تخطي بالثواني)</label>
+                                <input type="number" id="m-trim-start" value="0">
+                            </div>
+                            <div>
+                                <label>قص النهاية (تخطي بالثواني)</label>
+                                <input type="number" id="m-trim-end" value="0">
+                            </div>
+                        </div>
 
-        <!-- 3. معاينة وتكبير اللوجو -->
-        <div id="tab-logo" class="tab-section">
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-sliders"></i> التحكم والتكبير المباشر للوجو</div>
-                <div class="input-group" style="margin-bottom: 15px;">
-                    <label>رابط صورة/فيديو اللوجو (الكروما)</label>
-                    <input type="text" id="logo-url" value="https://via.placeholder.com/100/ff2a85/ffffff?text=LOGO" oninput="updateLogoPreviews()">
-                </div>
+                        <label>وصف الفيلم</label>
+                        <textarea id="m-desc" rows="2" placeholder="وصف قصير للمحتوى..."></textarea>
 
-                <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 250px;">
-                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">📱 الوضع العادي (Portrait)</h4>
-                        <div class="input-group"><label>من الأعلى (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-top',-1)">−</button><input type="number" id="port-top" value="20" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-top',1)">+</button></div></div>
-                        <div class="input-group"><label>من اليمين (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-right',-1)">−</button><input type="number" id="port-right" value="20" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-right',1)">+</button></div></div>
-                        <div class="input-group"><label>حجم اللوجو (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('port-w',-1)">−</button><input type="number" id="port-w" value="60" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('port-w',1)">+</button></div></div>
-                    </div>
-
-                    <div style="flex: 1; min-width: 250px;">
-                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">📺 ملء الشاشة (Landscape)</h4>
-                        <div class="input-group"><label>من الأعلى (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-top',-1)">−</button><input type="number" id="land-top" value="15" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-top',1)">+</button></div></div>
-                        <div class="input-group"><label>من اليمين (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-right',-1)">−</button><input type="number" id="land-right" value="15" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-right',1)">+</button></div></div>
-                        <div class="input-group"><label>حجم اللوجو (PX)</label><div class="number-control"><button type="button" class="step-btn" onclick="stepNumber('land-w',-1)">−</button><input type="number" id="land-w" value="80" min="0" oninput="updateLogoPreviews()"><button type="button" class="step-btn" onclick="stepNumber('land-w',1)">+</button></div></div>
+                        <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="addMovie()"><i class="fa-solid fa-list-plus"></i> إضافة إلى قائمة الانتظار</button>
                     </div>
                 </div>
 
-                <div class="preview-container">
-                    <div class="phone-mockup portrait">
-                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" class="mockup-bg">
-                        <img id="prev-logo-port" class="preview-element" src="https://via.placeholder.com/100/ff2a85/ffffff?text=LOGO">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3><i class="fa-solid fa-list-ol" style="color: var(--neon-pink);"></i> قائمة القادماً (Queue)</h3>
+                        <button class="btn btn-success" onclick="playNextMovie()"><i class="fa-solid fa-forward-step"></i> تشغيل التالي فوراً</button>
                     </div>
-                    <div class="phone-mockup landscape">
-                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" class="mockup-bg">
-                        <img id="prev-logo-land" class="preview-element" src="https://via.placeholder.com/100/ff2a85/ffffff?text=LOGO">
+                    <div id="playlist-table-body">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: BRANDING & OVERLAYS -->
+        <section id="tab-branding" class="tab-section">
+            <div class="grid-2">
+                <!-- LOGO CONTROL -->
+                <div class="card">
+                    <h3><i class="fa-solid fa-image" style="color: var(--neon-blue);"></i> إعدادات اللوجو الشفاف (Watermark)</h3>
+                    <div style="margin-top: 15px;">
+                        <label>رابط صورة اللوجو (PNG الشفاف)</label>
+                        <input type="text" id="logo-url" placeholder="https://domain.com/logo.png" oninput="updateLogoPreviews()">
+
+                        <h4 style="margin: 15px 0 10px 0; font-size: 14px; color: var(--neon-blue);">📱 النمط الطولي (Portrait)</h4>
+                        <div class="grid-3">
+                            <div>
+                                <label>من الأعلى (Px)</label>
+                                <div class="step-btn-group">
+                                    <button class="btn btn-primary" onclick="stepNumber('port-top', -5)">-</button>
+                                    <input type="number" id="port-top" value="20" oninput="updateLogoPreviews()">
+                                    <button class="btn btn-primary" onclick="stepNumber('port-top', 5)">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label>من اليمين (Px)</label>
+                                <div class="step-btn-group">
+                                    <button class="btn btn-primary" onclick="stepNumber('port-right', -5)">-</button>
+                                    <input type="number" id="port-right" value="20" oninput="updateLogoPreviews()">
+                                    <button class="btn btn-primary" onclick="stepNumber('port-right', 5)">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label>العرض (Px)</label>
+                                <div class="step-btn-group">
+                                    <button class="btn btn-primary" onclick="stepNumber('port-w', -5)">-</button>
+                                    <input type="number" id="port-w" value="80" oninput="updateLogoPreviews()">
+                                    <button class="btn btn-primary" onclick="stepNumber('port-w', 5)">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 15px 0 10px 0; font-size: 14px; color: var(--neon-blue);">📺 النمط العرضي (Landscape)</h4>
+                        <div class="grid-3">
+                            <div>
+                                <label>من الأعلى (Px)</label>
+                                <div class="step-btn-group">
+                                    <button class="btn btn-primary" onclick="stepNumber('land-top', -5)">-</button>
+                                    <input type="number" id="land-top" value="30" oninput="updateLogoPreviews()">
+                                    <button class="btn btn-primary" onclick="stepNumber('land-top', 5)">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label>من اليمين (Px)</label>
+                                <div class="step-btn-group">
+                                    <button class="btn btn-primary" onclick="stepNumber('land-right', -5)">-</button>
+                                    <input type="number" id="land-right" value="30" oninput="updateLogoPreviews()">
+                                    <button class="btn btn-primary" onclick="stepNumber('land-right', 5)">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label>العرض (Px)</label>
+                                <div class="step-btn-group">
+                                    <button class="btn btn-primary" onclick="stepNumber('land-w', -5)">-</button>
+                                    <input type="number" id="land-w" value="100" oninput="updateLogoPreviews()">
+                                    <button class="btn btn-primary" onclick="stepNumber('land-w', 5)">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; margin-top: 15px;">
+                            <div>
+                                <span style="font-size: 12px; color: var(--text-secondary);">معاينة الطولي</span>
+                                <div class="preview-box portrait">
+                                    <img id="prev-logo-port" class="preview-img" src="" alt="">
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <span style="font-size: 12px; color: var(--text-secondary);">معاينة العرضي</span>
+                                <div class="preview-box landscape">
+                                    <img id="prev-logo-land" class="preview-img" src="" alt="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 20px; justify-content: center;" onclick="saveLogoSettings()"><i class="fa-solid fa-floppy-disk"></i> حفظ مواضع ومقاسات اللوجو</button>
                     </div>
                 </div>
 
-                <button class="btn" style="margin-top: 20px;" onclick="saveLogoSettings()">حفظ إعدادات اللوجو في فايربيس 💾</button>
-            </div>
-        </div>
+                <!-- BANNERS CONTROL -->
+                <div class="card">
+                    <h3><i class="fa-solid fa-rectangle-ad" style="color: var(--neon-purple);"></i> إعدادات بنرات الإعلانات والتنويهات</h3>
+                    <div style="margin-top: 15px;">
+                        <label>رابط بنر الإعلان العلوي (Top Banner)</label>
+                        <input type="text" id="top-banner-url" placeholder="https://domain.com/banner.png" oninput="updateBannerPreviews()">
 
-        <!-- 4. البنرات -->
-        <div id="tab-banners" class="tab-section">
+                        <div class="grid-2">
+                            <div>
+                                <label>المسافة من الأعلى (Px)</label>
+                                <input type="number" id="tb-top" value="10" oninput="updateBannerPreviews()">
+                            </div>
+                            <div>
+                                <label>العرض بالنسبة المئوية (%)</label>
+                                <input type="number" id="tb-w" value="90" oninput="updateBannerPreviews()">
+                            </div>
+                        </div>
+
+                        <label>رابط بنر الفيلم القادم (Next Movie Overlay)</label>
+                        <input type="text" id="next-banner-url" placeholder="https://domain.com/next_banner.png" oninput="updateBannerPreviews()">
+
+                        <div class="grid-2">
+                            <div>
+                                <label>المسافة من الأسفل (Px)</label>
+                                <input type="number" id="nb-bottom" value="10" oninput="updateBannerPreviews()">
+                            </div>
+                            <div>
+                                <label>العرض بالنسبة المئوية (%)</label>
+                                <input type="number" id="nb-w" value="90" oninput="updateBannerPreviews()">
+                            </div>
+                        </div>
+
+                        <span style="font-size: 12px; color: var(--text-secondary);">معاينة مواقع البنرات</span>
+                        <div class="preview-box landscape" style="height: 220px;">
+                            <img id="prev-top-banner" class="preview-img" style="left: 50%; transform: translateX(-50%);" src="" alt="">
+                            <img id="prev-next-banner" class="preview-img" style="left: 50%; transform: translateX(-50%);" src="" alt="">
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 20px; justify-content: center;" onclick="saveBannersSettings()"><i class="fa-solid fa-floppy-disk"></i> حفظ مواضع البنرات</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: COMMENTS -->
+        <section id="tab-comments" class="tab-section">
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-up-down-left-right"></i> معايرة وتظبيط البنرات والإعلانات</div>
-                <div class="form-grid">
-                    <div class="input-group"><label>رابط البانر العلوي</label><input type="text" id="top-banner-url" value="https://via.placeholder.com/300x50/ff2a85/ffffff?text=Top+Banner" oninput="updateBannerPreviews()"></div>
-                    <div class="input-group"><label>رابط شريط الفيلم القادم</label><input type="text" id="next-banner-url" value="https://via.placeholder.com/300x40/800a38/ffffff?text=Next+Movie" oninput="updateBannerPreviews()"></div>
+                <h3><i class="fa-solid fa-comments" style="color: var(--neon-blue);"></i> إدارة التعليقات الحية</h3>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 15px;">يمكنك متابعة تعليقات المشاهدين المباشرة أو حذف أي تعليق مسيء.</p>
+                <div id="comments-container">
+                    <p style="color: var(--text-secondary);">جاري تحميل التعليقات...</p>
                 </div>
-
-                <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 20px;">
-                    <div style="flex: 1; min-width: 250px;">
-                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">البانر العلوي</h4>
-                        <div class="input-group"><label>المسافة من الأعلى (PX)</label><input type="number" id="tb-top" value="10" min="0" oninput="updateBannerPreviews()"></div>
-                        <div class="input-group"><label>العرض (%)</label><input type="number" id="tb-w" value="80" min="1" oninput="updateBannerPreviews()"></div>
-                    </div>
-                    <div style="flex: 1; min-width: 250px;">
-                        <h4 style="color: var(--neon-pink); margin-bottom: 10px;">شريط الفيلم القادم</h4>
-                        <div class="input-group"><label>المسافة من الأسفل (PX)</label><input type="number" id="nb-bottom" value="10" min="0" oninput="updateBannerPreviews()"></div>
-                        <div class="input-group"><label>العرض (%)</label><input type="number" id="nb-w" value="90" min="1" oninput="updateBannerPreviews()"></div>
-                    </div>
-                </div>
-
-                <div class="preview-container">
-                    <div class="phone-mockup portrait" style="width: 280px; height: 420px;">
-                        <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500" class="mockup-bg">
-                        <img id="prev-top-banner" class="preview-element" src="https://via.placeholder.com/300x50/ff2a85/ffffff?text=Top+Banner" style="left: 50%; transform: translateX(-50%);">
-                        <img id="prev-next-banner" class="preview-element" src="https://via.placeholder.com/300x40/800a38/ffffff?text=Next+Movie" style="left: 50%; transform: translateX(-50%);">
-                    </div>
-                </div>
-
-                <button class="btn" style="margin-top: 20px;" onclick="saveBannersSettings()">حفظ أبعاد البنرات في فايربيس 💾</button>
             </div>
-        </div>
-
-        <!-- 5. الإعلان المفاجئ -->
-        <div id="tab-emergency" class="tab-section">
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-bolt"></i> إطلاق إعلان طوارئ عاجل</div>
-                <div class="input-group">
-                    <label>رابط فيديو / صورة إعلان الطوارئ</label>
-                    <input type="text" id="emergency-url" placeholder="http://...">
-                </div>
-                <button class="btn btn-danger" style="margin-top: 15px;" onclick="triggerEmergencyAd()">إطلاق الإعلان المباشر الآن ⚡</button>
-            </div>
-        </div>
-
-        <!-- 6. التعليقات -->
-        <div id="tab-comments" class="tab-section">
-            <div class="card">
-                <div class="card-title"><i class="fa-solid fa-comments"></i> إدارة التعليقات اللحظية</div>
-                <div id="comments-container">جاري فتح قنوات التعليقات...</div>
-            </div>
-        </div>
+        </section>
 
     </div>
 
-    <!-- Firebase JS SDK Integration -->
+    <!-- Firebase SDK Implementation -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, serverTimestamp, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -318,6 +556,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const streamDocRef = doc(db, "streams", "live_stream_1");
+        const playlistRef = collection(db, "streams", "live_stream_1", "playlist");
 
         // 🔐 PIN Code
         window.verifyPin = () => {
@@ -334,7 +573,10 @@
             document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            if(event && event.currentTarget) event.currentTarget.classList.add('active');
+            
+            if(window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
         };
 
         // 🎨 Live Interactive Previews
@@ -349,16 +591,20 @@
             const lW = document.getElementById('land-w').value;
 
             const prevPort = document.getElementById('prev-logo-port');
-            prevPort.src = logoUrl;
-            prevPort.style.top = (pTop / 2) + 'px';
-            prevPort.style.right = (pRight / 2) + 'px';
-            prevPort.style.width = (pW / 2) + 'px';
+            if(prevPort) {
+                prevPort.src = logoUrl;
+                prevPort.style.top = (pTop / 2) + 'px';
+                prevPort.style.right = (pRight / 2) + 'px';
+                prevPort.style.width = (pW / 2) + 'px';
+            }
 
             const prevLand = document.getElementById('prev-logo-land');
-            prevLand.src = logoUrl;
-            prevLand.style.top = (lTop / 2) + 'px';
-            prevLand.style.right = (lRight / 2) + 'px';
-            prevLand.style.width = (lW / 2) + 'px';
+            if(prevLand) {
+                prevLand.src = logoUrl;
+                prevLand.style.top = (lTop / 2) + 'px';
+                prevLand.style.right = (lRight / 2) + 'px';
+                prevLand.style.width = (lW / 2) + 'px';
+            }
         };
 
         window.updateBannerPreviews = () => {
@@ -371,57 +617,74 @@
             const nbW = document.getElementById('nb-w').value;
 
             const pTopBanner = document.getElementById('prev-top-banner');
-            pTopBanner.src = topUrl;
-            pTopBanner.style.top = tbTop + 'px';
-            pTopBanner.style.width = tbW + '%';
+            if(pTopBanner) {
+                pTopBanner.src = topUrl;
+                pTopBanner.style.top = tbTop + 'px';
+                pTopBanner.style.width = tbW + '%';
+            }
 
             const pNextBanner = document.getElementById('prev-next-banner');
-            pNextBanner.src = nextUrl;
-            pNextBanner.style.bottom = nbBottom + 'px';
-            pNextBanner.style.width = nbW + '%';
+            if(pNextBanner) {
+                pNextBanner.src = nextUrl;
+                pNextBanner.style.bottom = nbBottom + 'px';
+                pNextBanner.style.width = nbW + '%';
+            }
         };
 
-        // 📡 Realtime Firestore Listener
+        window.stepNumber = (id, amount) => {
+            const input = document.getElementById(id);
+            if(input) {
+                input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
+                updateLogoPreviews();
+            }
+        };
+
+        // 📡 Realtime Firestore Listener for Stream Controls
         onSnapshot(streamDocRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 
-                // تحديث كروت الإحصائيات
-                document.getElementById('stat-current-movie').innerText = data.movieTitle || 'لا يوجد فيلم';
-                document.getElementById('stat-category').innerText = data.movieCategory || '-';
-                document.getElementById('stat-status').innerText = data.playbackState === "PLAYING" ? "شغال الآن 🔴" : "متوقف مؤقتاً ⏸️";
+                // Stat cards
+                const mTitle = document.getElementById('stat-current-movie');
+                const mCat = document.getElementById('stat-category');
+                const mStat = document.getElementById('stat-status');
+                
+                if(mTitle) mTitle.innerText = data.movieTitle || 'لا يوجد فيلم';
+                if(mCat) mCat.innerText = data.movieCategory || '-';
+                if(mStat) mStat.innerText = data.playbackState === "PLAYING" ? "شغال الآن 🔴" : "متوقف مؤقتاً ⏸️";
 
-                // ملء المدخلات تلقائياً عند أول فتح
-                if(data.logoUrl && !document.getElementById('logo-url').dataset.userEdited) {
-                    document.getElementById('logo-url').value = data.logoUrl;
+                // Auto-fill input if not actively typed in
+                const logoInput = document.getElementById('logo-url');
+                if(data.logoUrl && logoInput && !logoInput.dataset.userEdited) {
+                    logoInput.value = data.logoUrl;
                 }
 
                 const stateBadge = data.playbackState === "PLAYING" 
                     ? `<span class="badge badge-live">🔴 شغال الآن على التطبيق</span>` 
                     : `<span class="badge badge-paused">⏸️ متوقف مؤقتاً</span>`;
 
-                // 1. الجدول في الشاشة الرئيسية
-                document.getElementById('overview-movies-table').innerHTML = `
-                    <tr>
-                        <td><strong>${data.movieTitle || 'غير محدد'}</strong></td>
-                        <td>${data.movieCategory || 'عام'}</td>
-                        <td>${stateBadge}</td>
-                    </tr>
-                `;
+                const overviewTable = document.getElementById('overview-movies-table');
+                if(overviewTable) {
+                    overviewTable.innerHTML = `
+                        <tr>
+                            <td style="padding: 10px;"><strong>${data.movieTitle || 'غير محدد'}</strong></td>
+                            <td style="padding: 10px;">${data.movieCategory || 'عام'}</td>
+                            <td style="padding: 10px;">${stateBadge}</td>
+                        </tr>
+                    `;
+                }
+
+                const box = document.getElementById('now-playing-container');
+                if(box) {
+                    box.innerHTML = `<div class="queue-card now-playing"><strong>${data.movieTitle || 'بدون عنوان'}</strong><div class="queue-meta">${data.movieCategory || 'بدون تصنيف'} • ${data.playbackState === 'PLAYING' ? '🔴 يعمل الآن' : '⏸️ متوقف مؤقتاً'}</div><div style="margin-top:12px"><button class="btn ${data.playbackState==='PLAYING'?'btn-warning':'btn-success'}" onclick="togglePlayback('${data.playbackState==='PLAYING'?'PAUSED':'PLAYING'}')">${data.playbackState==='PLAYING'?'إيقاف مؤقت':'استئناف التشغيل'}</button></div></div>`;
+                }
+
                 updateLogoPreviews();
                 updateBannerPreviews();
             }
         });
 
-        // 🎬 نظام قائمة التشغيل الحقيقي
-        const playlistRef = collection(db, "streams", "live_stream_1", "playlist");
-
-        window.stepNumber = (id, amount) => {
-            const input = document.getElementById(id);
-            input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
-            updateLogoPreviews();
-        };
-
+        // 🎬 Playlist Actions
         window.addMovie = async () => {
             const title = document.getElementById('m-title').value.trim();
             const url = document.getElementById('m-url').value.trim();
@@ -459,10 +722,8 @@
             } catch(e) { alert('❌ تعذر تشغيل المحتوى التالي: ' + e.message); }
         };
 
-        // ▶️ تشغيل أي فيلم من القائمة فوراً بدلاً من الانتظار
         window.playPlaylistItem = async (id) => {
             try {
-                const itemRef = doc(db, "streams", "live_stream_1", "playlist", id);
                 const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc')));
                 const target = snap.docs.find(d => d.id === id);
                 if(!target) return alert('⚠️ لم يتم العثور على هذا المحتوى.');
@@ -477,8 +738,7 @@
                     startedAt: serverTimestamp(), playbackState: 'PLAYING'
                 }, {merge:true});
 
-                // نحذف العنصر من الانتظار لأنه أصبح المحتوى الحالي
-                await deleteDoc(itemRef);
+                await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", id));
                 alert('▶️ تم تغيير المحتوى وتشغيل الفيلم المختار الآن.');
             } catch(e) { alert('❌ حدث خطأ أثناء التشغيل: ' + e.message); }
         };
@@ -494,26 +754,17 @@
             catch(e) { alert('❌ حدث خطأ: ' + e.message); }
         };
 
-        // تحديث المحتوى الحالي
-        onSnapshot(streamDocRef, (snap) => {
-            const box = document.getElementById('now-playing-container');
-            if(!box || !snap.exists() || !snap.data().movieTitle) return;
-            const d = snap.data();
-            const state = d.playbackState === 'PLAYING' ? '🔴 يعمل الآن' : '⏸️ متوقف مؤقتاً';
-            box.innerHTML = `<div class="queue-card now-playing"><strong>${d.movieTitle}</strong><div class="queue-meta">${d.movieCategory || 'بدون تصنيف'} • ${state}</div><div style="margin-top:12px"><button class="btn ${d.playbackState==='PLAYING'?'btn-warning':'btn-success'}" onclick="togglePlayback('${d.playbackState==='PLAYING'?'PAUSED':'PLAYING'}')">${d.playbackState==='PLAYING'?'إيقاف مؤقت':'استئناف التشغيل'}</button></div></div>`;
-        });
-
-        // تحديث قائمة الانتظار لحظياً
+        // Live Playlist updates
         onSnapshot(query(playlistRef, orderBy('createdAt','asc')), (snap) => {
             const box = document.getElementById('playlist-table-body');
             if(!box) return;
-            if(snap.empty) { box.innerHTML='<div class="empty-state">قائمة التشغيل فارغة. أضف أفلاماً أو إعلانات لتظهر هنا.</div>'; return; }
+            if(snap.empty) { box.innerHTML='<div style="color: var(--text-secondary); text-align: center; padding: 20px;">قائمة التشغيل فارغة. أضف أفلاماً أو إعلانات لتظهر هنا.</div>'; return; }
             box.innerHTML = '';
             snap.docs.forEach((docSnap, index) => {
                 const d = docSnap.data();
                 const el = document.createElement('div');
                 el.className = 'queue-card';
-                el.innerHTML = `<div class="section-header" style="margin:0"><div><span class="queue-number">${index+1}</span><strong>${d.title}</strong><div class="queue-meta">${d.category || 'بدون تصنيف'}</div></div><div class="action-btns">
+                el.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><div><span style="background: var(--bg-card); padding: 2px 8px; border-radius: 4px; margin-left: 8px; font-weight: bold;">${index+1}</span><strong>${d.title}</strong><div class="queue-meta">${d.category || 'بدون تصنيف'}</div></div><div style="display: flex; gap: 8px;">
                     <button class="btn btn-play-now" onclick="playPlaylistItem('${docSnap.id}')"><i class="fa-solid fa-play"></i> تشغيل الآن</button>
                     <button class="btn btn-danger" onclick="deletePlaylistItem('${docSnap.id}')"><i class="fa-solid fa-trash"></i> حذف</button>
                 </div></div>`;
@@ -521,7 +772,7 @@
             });
         });
 
-        // 🖼️ حفظ إعدادات اللوجو
+        // 🖼️ Settings Savers
         window.saveLogoSettings = async () => {
             try {
                 await setDoc(streamDocRef, {
@@ -533,14 +784,10 @@
                     landRight: parseInt(document.getElementById('land-right').value),
                     landWidth: parseInt(document.getElementById('land-w').value)
                 }, { merge: true });
-
                 alert('✅ تم حفظ وإرسال مقاسات وموقع اللوجو لفايربيس!');
-            } catch (e) {
-                alert('❌ حدث خطأ: ' + e.message);
-            }
+            } catch (e) { alert('❌ حدث خطأ: ' + e.message); }
         };
 
-        // 📢 حفظ البنرات
         window.saveBannersSettings = async () => {
             try {
                 await setDoc(streamDocRef, {
@@ -551,33 +798,26 @@
                     nextMovieBottomPx: parseInt(document.getElementById('nb-bottom').value),
                     nextMovieWidth: parseInt(document.getElementById('nb-w').value)
                 }, { merge: true });
-
                 alert('✅ تم حفظ أبعاد البنرات بنجاح!');
-            } catch (e) {
-                alert('❌ حدث خطأ: ' + e.message);
-            }
+            } catch (e) { alert('❌ حدث خطأ: ' + e.message); }
         };
 
-        // ⚡ إعلان الطوارئ
         window.triggerEmergencyAd = async () => {
             const adUrl = document.getElementById('emergency-url').value;
             if(!adUrl) return alert('⚠️ أدخل رابط إعلان الطوارئ أولاً');
-
             try {
                 await setDoc(streamDocRef, {
                     emergencyAdUrl: adUrl,
                     playbackState: "EMERGENCY_AD"
                 }, { merge: true });
-
                 alert('⚡ تم إطلاق الإعلان المفاجئ!');
-            } catch (e) {
-                alert('❌ حدث خطأ: ' + e.message);
-            }
+            } catch (e) { alert('❌ حدث خطأ: ' + e.message); }
         };
 
-        // 💬 التعليقات
-        onSnapshot(collection(db, "streams", "live_stream_1", "comments"), (snapshot) => {
+        // 💬 Comments Realtime Listener (Limited to last 20)
+        onSnapshot(query(collection(db, "streams", "live_stream_1", "comments"), limit(20)), (snapshot) => {
             const container = document.getElementById('comments-container');
+            if(!container) return;
             container.innerHTML = '';
             if(snapshot.empty) {
                 container.innerHTML = '<p style="font-size: 13px; color: var(--text-secondary);">لا توجد تعليقات حالياً.</p>';
@@ -589,7 +829,7 @@
                 div.className = 'comment-item';
                 div.innerHTML = `
                     <div><strong style="color: var(--neon-pink);">${comment.username || 'مستخدم'}:</strong> <span>${comment.text || ''}</span></div>
-                    <button class="btn btn-danger" onclick="deleteComment('${docSnap.id}')">مسح</button>
+                    <button class="btn btn-danger" style="padding: 4px 10px; font-size: 12px;" onclick="deleteComment('${docSnap.id}')">مسح</button>
                 `;
                 container.appendChild(div);
             });
@@ -599,13 +839,16 @@
             await deleteDoc(doc(db, "streams", "live_stream_1", "comments", id));
         };
 
-        // تسجيل تعديل المستخدم يدوياً للوجو
-        document.getElementById('logo-url').addEventListener('input', () => {
-            document.getElementById('logo-url').dataset.userEdited = "true";
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoInput = document.getElementById('logo-url');
+            if(logoInput) {
+                logoInput.addEventListener('input', () => {
+                    logoInput.dataset.userEdited = "true";
+                });
+            }
+            updateLogoPreviews();
+            updateBannerPreviews();
         });
-
-        updateLogoPreviews();
-        updateBannerPreviews();
     </script>
 </body>
 </html>
