@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم البث المباشر - COBRA TV</title>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f111a;
+            --bg-card: #181b2a;
+            --bg-card-hover: #1f2438;
+            --accent-purple: #7000ff;
+            --accent-pink: #ff007f;
+            --text-primary: #ffffff;
+            --text-secondary: #9a9eb7;
+            --border-color: #2a2f4a;
+            --danger: #ff3366;
+            --success: #00e676;
+            --warning: #ffb300;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* PIN Overlay */
+        #pin-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 17, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pin-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .pin-card h2 {
+            margin-bottom: 15px;
+            color: var(--accent-pink);
+        }
+
+        .pin-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Top Bar */
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-area h1 {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--accent-pink), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--bg-dark);
+            padding: 5px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active, .nav-btn:hover {
+            background: var(--accent-purple);
+            color: #fff;
+        }
+
+        /* Main Container */
+        .main-container {
+            padding: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .tab-section {
+            display: none;
+        }
+
+        .tab-section.active {
+            display: block;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Inputs & Form Elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .input-control {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .input-control:focus {
+            border-color: var(--accent-purple);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background: var(--accent-purple); color: #fff; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-success { background: var(--success); color: #000; }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-play-now { background: #00bcd4; color: #fff; }
+
+        /* Stepper Control */
+        .stepper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-dark);
+        }
+
+        .stepper button {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stepper input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: #fff;
+        }
+
+        /* Video Player & Previews */
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .preview-box {
+            position: relative;
+            background: #000;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-box.portrait { aspect-ratio: 9/16; max-width: 200px; margin: 0 auto; }
+        .preview-box.landscape { aspect-ratio: 16/9; }
+
+        .preview-overlay-logo, .preview-overlay-banner {
+            position: absolute;
+            pointer-events: none;
+            transition: all 0.1s;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-live { background: rgba(255, 0, 127, 0.2); color: var(--accent-pink); border: 1px solid var(--accent-pink); }
+        .badge-paused { background: rgba(255, 179, 0, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+        .badge-ad { background: rgba(0, 230, 118, 0.2); color: var(--success); border: 1px solid var(--success); }
+
+        /* Queue List */
+        .queue-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .queue-number {
+            background: var(--accent-purple);
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        /* Comments List */
+        .comment-item {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🔐 PIN Verification -->
+    <div id="pin-overlay">
+        <div class="pin-card">
+            <h2><i class="fa-solid fa-lock"></i> لوحة تحكم البث</h2>
+            <p style="color: var(--text-secondary); font-size: 14px;">أدخل رمز PIN الصلاحية للوصول</p>
+            <div class="pin-input-group">
+                <input type="password" id="pin-input" class="input-control" placeholder="****" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px;">
+                <button class="btn btn-primary" onclick="verifyPin()">دخول</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌐 Header -->
+    <header>
+        <div class="logo-area">
+            <i class="fa-solid fa-tower-broadcast" style="font-size: 24px; color: var(--accent-pink);"></i>
+            <h1>COBRA TV - البث المباشر</h1>
+        </div>
+
+        <nav class="nav-tabs">
+            <button class="nav-btn active" onclick="switchTab('overview', event)"><i class="fa-solid fa-chart-pie"></i> الرئيسية</button>
+            <button class="nav-btn" onclick="switchTab('playlist', event)"><i class="fa-solid fa-list-check"></i> قائمة الانتظار</button>
+            <button class="nav-btn" onclick="switchTab('graphics', event)"><i class="fa-solid fa-palette"></i> اللوجو والبنرات</button>
+            <button class="nav-btn" onclick="switchTab('comments', event)"><i class="fa-solid fa-comments"></i> التعليقات</button>
+        </nav>
+    </header>
+
+    <!-- 🚀 Main Body -->
+    <main class="main-container">
+
+        <!-- Tab 1: Overview -->
+        <section id="tab-overview" class="tab-section active">
+            <div class="grid-2">
+                <!-- Main Control & Master Player -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-play"></i> مشغل البث الرئيسي والمعاينة</div>
+                            <span id="stat-status" class="badge badge-paused">جاري التحميل...</span>
+                        </div>
+                        <div class="video-wrapper">
+                            <video id="master-player" controls preload="metadata"></video>
+                        </div>
+
+                        <!-- Player Seek & Action Controls -->
+                        <div style="margin-top: 15px;">
+                            <input type="range" id="player-seek" min="0" max="100" value="0" oninput="seekVideo(this.value)">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
+                                <span id="player-current-time">00:00</span>
+                                <span id="player-duration">00:00</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                            <button id="btn-toggle-play" class="btn btn-success" onclick="toggleMasterPlay()"><i class="fa-solid fa-play"></i> استئناف البث</button>
+                            <button class="btn btn-warning" onclick="triggerAdBreak()"><i class="fa-solid fa-bullhorn"></i> فاصل إعلاني</button>
+                            <button class="btn btn-primary" onclick="playNextMovie()"><i class="fa-solid fa-forward"></i> الفيلم التالي</button>
+                            <button class="btn btn-danger" onclick="seekRelative(-10)"><i class="fa-solid fa-rotate-left"></i> 10- ث</button>
+                            <button class="btn btn-danger" onclick="seekRelative(10)"><i class="fa-solid fa-rotate-right"></i> 10+ ث</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats & Emergency Box -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-circle-info"></i> معلومات المحتوى الحالي</div>
+                        </div>
+                        <div class="form-group">
+                            <label>العنوان الحالي:</label>
+                            <strong id="stat-current-movie" style="color: var(--accent-pink); font-size: 16px;">--</strong>
+                        </div>
+                        <div class="form-group">
+                            <label>الوقت المتبقي:</label>
+                            <span id="stat-time-remaining" style="font-size: 18px; font-weight: bold;">--:--</span>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;" id="overview-movies-table">
+                            <!-- Dynamic Data -->
+                        </table>
+                    </div>
+
+                    <div class="card" style="border-color: var(--danger);">
+                        <div class="card-header">
+                            <div class="card-title" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> إعلان الطوارئ</div>
+                        </div>
+                        <div class="form-group">
+                            <label>رابط فيديو الطوارئ (MP4):</label>
+                            <input type="text" id="emergency-url" class="input-control" placeholder="https://domain.com/ad.mp4">
+                        </div>
+                        <button class="btn btn-danger" style="width: 100%;" onclick="triggerEmergencyAd()"><i class="fa-solid fa-bolt"></i> إطلاق فوراً على الهواء</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Playlist -->
+        <section id="tab-playlist" class="tab-section">
+            <div class="grid-2">
+                <!-- Form Add -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-plus"></i> إضافة فيلم/محتوى لجدول التشغيل</div>
+                    </div>
+                    <div class="form-group">
+                        <label>عنوان المحتوى *</label>
+                        <input type="text" id="m-title" class="input-control" placeholder="مثال: فيلم Interstellar">
+                    </div>
+                    <div class="form-group">
+                        <label>رابط MP4 / M3U8 Direct URL *</label>
+                        <input type="text" id="m-url" class="input-control" placeholder="https://...">
+                    </div>
+                    <div class="grid-2" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label>التصنيف</label>
+                            <input type="text" id="m-category" class="input-control" placeholder="أكشن / دراما">
+                        </div>
+                        <div class="form-group">
+                            <label>الوصف (اختياري)</label>
+                            <input type="text" id="m-desc" class="input-control" placeholder="نبذة مختصرة">
+                        </div>
+                    </div>
+                    <div class="grid-2" style="grid-template-columns: 1fr 1fr; margin-bottom: 15px;">
+                        <div>
+                            <label>قص البداية (ثواني)</label>
+                            <input type="number" id="m-trim-start" class="input-control" value="0">
+                        </div>
+                        <div>
+                            <label>قص النهاية (ثواني)</label>
+                            <input type="number" id="m-trim-end" class="input-control" value="0">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="addMovie()"><i class="fa-solid fa-folder-plus"></i> إضافة للقائمة</button>
+                </div>
+
+                <!-- Live Queue View -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-bars-staggered"></i> قائمة الانتظار (Playlist)</div>
+                    </div>
+                    <div id="playlist-table-body">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Logo & Banners Settings -->
+        <section id="tab-graphics" class="tab-section">
+            <div class="grid-3">
+                <!-- Logo Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-image"></i> إعدادات اللوجو</div>
+                    </div>
+                    <div class="form-group">
+                        <label>رابط اللوجو (PNG / WebP)</label>
+                        <input type="text" id="logo-url" class="input-control" oninput="updateLogoPreviews()">
+                    </div>
+
+                    <h4 style="margin: 15px 0 10px 0; font-size: 14px; color: var(--accent-pink);">الوضع الطولي (Portrait)</h4>
+                    <div class="grid-3" style="grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                        <div>
+                            <label>أعلى (px)</label>
+                            <div class="stepper">
+                                <button onclick="stepNumber('port-top', -5)">-</button>
+                                <input type="number" id="port-top" value="10" oninput="updateLogoPreviews()">
+                                <button onclick="stepNumber('port-top', 5)">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>يمين (px)</label>
+                            <div class="stepper">
+                                <button onclick="stepNumber('port-right', -5)">-</button>
+                                <input type="number" id="port-right" value="10" oninput="updateLogoPreviews()">
+                                <button onclick="stepNumber('port-right', 5)">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>العرض (px)</label>
+                            <div class="stepper">
+                                <button onclick="stepNumber('port-w', -5)">-</button>
+                                <input type="number" id="port-w" value="60" oninput="updateLogoPreviews()">
+                                <button onclick="stepNumber('port-w', 5)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 15px 0 10px 0; font-size: 14px; color: var(--accent-pink);">الوضع العرضي (Landscape)</h4>
+                    <div class="grid-3" style="grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                        <div>
+                            <label>أعلى (px)</label>
+                            <div class="stepper">
+                                <button onclick="stepNumber('land-top', -5)">-</button>
+                                <input type="number" id="land-top" value="20" oninput="updateLogoPreviews()">
+                                <button onclick="stepNumber('land-top', 5)">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>يمين (px)</label>
+                            <div class="stepper">
+                                <button onclick="stepNumber('land-right', -5)">-</button>
+                                <input type="number" id="land-right" value="20" oninput="updateLogoPreviews()">
+                                <button onclick="stepNumber('land-right', 5)">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>العرض (px)</label>
+                            <div class="stepper">
+                                <button onclick="stepNumber('land-w', -5)">-</button>
+                                <input type="number" id="land-w" value="90" oninput="updateLogoPreviews()">
+                                <button onclick="stepNumber('land-w', 5)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="saveLogoSettings()"><i class="fa-solid fa-floppy-disk"></i> حفظ أبعاد اللوجو</button>
+                </div>
+
+                <!-- Banners Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-ad"></i> إعدادات البنرات</div>
+                    </div>
+                    <div class="form-group">
+                        <label>رابط بنر الإعلان العلوي</label>
+                        <input type="text" id="top-banner-url" class="input-control" oninput="updateBannerPreviews()">
+                    </div>
+                    <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>أعلى (px)</label>
+                            <input type="number" id="tb-top" class="input-control" value="0" oninput="updateBannerPreviews()">
+                        </div>
+                        <div>
+                            <label>العرض (%)</label>
+                            <input type="number" id="tb-w" class="input-control" value="100" oninput="updateBannerPreviews()">
+                        </div>
+                    </div>
+
+                    <hr style="border-color: var(--border-color); margin: 15px 0;">
+
+                    <div class="form-group">
+                        <label>رابط بنر الفيلم القادم</label>
+                        <input type="text" id="next-banner-url" class="input-control" oninput="updateBannerPreviews()">
+                    </div>
+                    <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>أسفل (px)</label>
+                            <input type="number" id="nb-bottom" class="input-control" value="10" oninput="updateBannerPreviews()">
+                        </div>
+                        <div>
+                            <label>العرض (%)</label>
+                            <input type="number" id="nb-w" class="input-control" value="100" oninput="updateBannerPreviews()">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="saveBannersSettings()"><i class="fa-solid fa-floppy-disk"></i> حفظ إعدادات البنرات</button>
+                </div>
+
+                <!-- Previews Visual Box -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-eye"></i> المعاينة المباشرة</div>
+                    </div>
+                    <label style="font-size: 12px; color: var(--text-secondary);">وضع الشاشة الطولي (Portrait):</label>
+                    <div class="preview-box portrait" style="margin-bottom: 15px;">
+                        <img id="prev-logo-port" class="preview-overlay-logo" src="" alt="">
+                        <img id="prev-top-banner" class="preview-overlay-banner" src="" alt="">
+                        <img id="prev-next-banner" class="preview-overlay-banner" src="" alt="">
+                    </div>
+
+                    <label style="font-size: 12px; color: var(--text-secondary);">وضع الشاشة العرضي (Landscape):</label>
+                    <div class="preview-box landscape">
+                        <img id="prev-logo-land" class="preview-overlay-logo" src="" alt="">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: Comments -->
+        <section id="tab-comments" class="tab-section">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-comments"></i> إدارة التعليقات المباشرة</div>
+                </div>
+                <div id="comments-container">
+                    <!-- Dynamic Comments -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 🛠️ Firebase JS SDK v10 Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getFirestore, doc, setDoc, collection, onSnapshot, 
+            deleteDoc, serverTimestamp, addDoc, getDocs, query, orderBy, limit 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // إعدادات مشروع الفايربيس الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZzSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",
+            authDomain: "cobra-tv-b1231.firebaseapp.com",
+            projectId: "cobra-tv-b1231",
+            storageBucket: "cobra-tv-b1231.firebasestorage.app",
+            messagingSenderId: "73044924945",
+            appId: "1:73044924945:web:4ed40ee2b6463b574e2fb0",
+            measurementId: "G-X5JQH06QNK"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const streamDocRef = doc(db, "streams", "live_stream_1");
+        const playlistRef = collection(db, "streams", "live_stream_1", "playlist");
+
+        let currentStreamData = null;
+        let isAdBreakActive = false;
+        let savedMoviePosition = 0;
+        let savedMovieUrl = "";
+        let savedMovieTitle = "";
+
+        const videoPlayer = document.getElementById('master-player');
+
+        // 🔐 PIN Code
+        window.verifyPin = () => {
+            const input = document.getElementById('pin-input').value;
+            if (input === '5050') {
+                document.getElementById('pin-overlay').style.display = 'none';
+            } else {
+                alert('رمز الـ PIN غير صحيح!');
+            }
+        };
+
+        // 🔄 Navigation
+        window.switchTab = (tabId, evt) => {
+            document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if(targetTab) targetTab.classList.add('active');
+            
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            }
+        };
+
+        // 🎨 Previews
+        window.updateLogoPreviews = () => {
+            const logoUrl = document.getElementById('logo-url')?.value || '';
+            const pTop = document.getElementById('port-top')?.value || 0;
+            const pRight = document.getElementById('port-right')?.value || 0;
+            const pW = document.getElementById('port-w')?.value || 0;
+            const lTop = document.getElementById('land-top')?.value || 0;
+            const lRight = document.getElementById('land-right')?.value || 0;
+            const lW = document.getElementById('land-w')?.value || 0;
+
+            const prevPort = document.getElementById('prev-logo-port');
+            if (prevPort) {
+                prevPort.src = logoUrl;
+                prevPort.style.top = (pTop / 2) + 'px';
+                prevPort.style.right = (pRight / 2) + 'px';
+                prevPort.style.width = (pW / 2) + 'px';
+            }
+
+            const prevLand = document.getElementById('prev-logo-land');
+            if (prevLand) {
+                prevLand.src = logoUrl;
+                prevLand.style.top = (lTop / 2) + 'px';
+                prevLand.style.right = (lRight / 2) + 'px';
+                prevLand.style.width = (lW / 2) + 'px';
+            }
+        };
+
+        window.updateBannerPreviews = () => {
+            const topUrl = document.getElementById('top-banner-url')?.value || '';
+            const nextUrl = document.getElementById('next-banner-url')?.value || '';
+            const tbTop = document.getElementById('tb-top')?.value || 0;
+            const tbW = document.getElementById('tb-w')?.value || 0;
+            const nbBottom = document.getElementById('nb-bottom')?.value || 0;
+            const nbW = document.getElementById('nb-w')?.value || 0;
+
+            const pTopBanner = document.getElementById('prev-top-banner');
+            if (pTopBanner) {
+                pTopBanner.src = topUrl;
+                pTopBanner.style.top = tbTop + 'px';
+                pTopBanner.style.width = tbW + '%';
+            }
+
+            const pNextBanner = document.getElementById('prev-next-banner');
+            if (pNextBanner) {
+                pNextBanner.src = nextUrl;
+                pNextBanner.style.bottom = nbBottom + 'px';
+                pNextBanner.style.width = nbW + '%';
+            }
+        };
+
+        // ⏱️ Formatting Utilities
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return "00:00";
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            if (h > 0) {
+                return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            }
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        // 📡 Realtime Firestore Sync
+        onSnapshot(streamDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                currentStreamData = data;
+
+                const movieElem = document.getElementById('stat-current-movie');
+                if (movieElem) movieElem.innerText = data.movieTitle || 'لا يوجد فيلم';
+                
+                const statusElem = document.getElementById('stat-status');
+                if (statusElem) {
+                    statusElem.innerText = data.playbackState === "PLAYING" ? "شغال الآن 🔴" : (data.playbackState === "AD_BREAK" ? "فاصل إعلاني 📢" : "متوقف مؤقتاً ⏸️");
+                }
+
+                const logoInput = document.getElementById('logo-url');
+                if (logoInput && data.logoUrl && !logoInput.dataset.userEdited) {
+                    logoInput.value = data.logoUrl;
+                }
+
+                let stateBadge = `<span class="badge badge-paused">⏸️ متوقف مؤقتاً</span>`;
+                if(data.playbackState === "PLAYING") stateBadge = `<span class="badge badge-live">🔴 شغال الآن</span>`;
+                if(data.playbackState === "AD_BREAK") stateBadge = `<span class="badge badge-ad">📢 فاصل إعلاني</span>`;
+
+                const tableElem = document.getElementById('overview-movies-table');
+                if (tableElem) {
+                    tableElem.innerHTML = `
+                        <tr>
+                            <td><strong>${data.movieTitle || 'غير محدد'}</strong></td>
+                            <td>${data.movieCategory || 'عام'}</td>
+                            <td>${stateBadge}</td>
+                        </tr>
+                    `;
+                }
+
+                // مزامنة مشغّل المعاينة الرئيسي
+                if (data.currentUrl && videoPlayer && videoPlayer.src !== data.currentUrl && !isAdBreakActive) {
+                    videoPlayer.src = data.currentUrl;
+                    videoPlayer.currentTime = data.currentPosition || 0;
+                    if(data.playbackState === 'PLAYING') videoPlayer.play().catch(()=>{});
+                }
+
+                updateLogoPreviews();
+                updateBannerPreviews();
+            }
+        });
+
+        // 🎬 التحكم في مشغّل اللوحة الرئيسي
+        let lastSyncedTime = 0;
+        if (videoPlayer) {
+            videoPlayer.addEventListener('timeupdate', () => {
+                if (!videoPlayer.duration) return;
+                const currentTime = videoPlayer.currentTime;
+                const duration = videoPlayer.duration;
+                const remaining = duration - currentTime;
+
+                document.getElementById('player-current-time').innerText = formatTime(currentTime);
+                document.getElementById('player-duration').innerText = formatTime(duration);
+                document.getElementById('stat-time-remaining').innerText = formatTime(remaining);
+                
+                document.getElementById('player-seek').value = (currentTime / duration) * 100;
+
+                // تحديث السيرفر كل ثانيتين مع تقليل عمليات الكتابة الفائضة
+                const roundedTime = Math.floor(currentTime);
+                if (roundedTime % 2 === 0 && roundedTime !== lastSyncedTime && currentStreamData && currentStreamData.playbackState === "PLAYING") {
+                    lastSyncedTime = roundedTime;
+                    setDoc(streamDocRef, {
+                        currentPosition: roundedTime,
+                        duration: Math.floor(duration),
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                }
+            });
+
+            // 🔄 تشغيل تلقائي عند الانتهاء
+            videoPlayer.addEventListener('ended', async () => {
+                if (isAdBreakActive) {
+                    isAdBreakActive = false;
+                    alert('✅ انتهى الفاصل الإعلاني، جاري استئناف الفيلم تلقائياً...');
+                    await setDoc(streamDocRef, {
+                        currentUrl: savedMovieUrl,
+                        movieTitle: savedMovieTitle,
+                        currentPosition: savedMoviePosition,
+                        playbackState: 'PLAYING'
+                    }, { merge: true });
+                    videoPlayer.src = savedMovieUrl;
+                    videoPlayer.currentTime = savedMoviePosition;
+                    videoPlayer.play();
+                } else {
+                    console.log("انتهى الفيلم الحالي، جاري تشغيل التالي تلقائياً...");
+                    await playNextMovie();
+                }
+            });
+        }
+
+        window.seekVideo = (percent) => {
+            if (videoPlayer && videoPlayer.duration) {
+                const targetTime = (percent / 100) * videoPlayer.duration;
+                videoPlayer.currentTime = targetTime;
+                setDoc(streamDocRef, { currentPosition: Math.floor(targetTime) }, { merge: true });
+            }
+        };
+
+        window.seekRelative = (seconds) => {
+            if (videoPlayer) {
+                videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime + seconds);
+                setDoc(streamDocRef, { currentPosition: Math.floor(videoPlayer.currentTime) }, { merge: true });
+            }
+        };
+
+        window.toggleMasterPlay = async () => {
+            const btn = document.getElementById('btn-toggle-play');
+            if (!videoPlayer) return;
+            
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+                if(btn) {
+                    btn.innerHTML = `<i class="fa-solid fa-pause"></i> إيقاف مؤقت`;
+                    btn.className = "btn btn-warning";
+                }
+                await setDoc(streamDocRef, { playbackState: 'PLAYING' }, { merge: true });
+            } else {
+                videoPlayer.pause();
+                if(btn) {
+                    btn.innerHTML = `<i class="fa-solid fa-play"></i> استئناف`;
+                    btn.className = "btn btn-success";
+                }
+                await setDoc(streamDocRef, { playbackState: 'PAUSED' }, { merge: true });
+            }
+        };
+
+        // 📢 فاصل إعلاني
+        window.triggerAdBreak = async () => {
+            const adUrl = prompt('أدخل رابط فيديو الفاصل الإعلاني (MP4 / Direct URL):');
+            if (!adUrl) return;
+
+            savedMoviePosition = videoPlayer ? videoPlayer.currentTime : 0;
+            savedMovieUrl = videoPlayer ? videoPlayer.src : "";
+            savedMovieTitle = currentStreamData?.movieTitle || "الفيلم الرئيسي";
+            isAdBreakActive = true;
+
+            await setDoc(streamDocRef, {
+                currentUrl: adUrl,
+                movieTitle: "📢 فاصل إعلاني",
+                playbackState: "AD_BREAK",
+                savedPosition: Math.floor(savedMoviePosition)
+            }, { merge: true });
+
+            if (videoPlayer) {
+                videoPlayer.src = adUrl;
+                videoPlayer.play();
+            }
+        };
+
+        // 🎬 إضافة وتمرير عناصر Playlist
+        window.stepNumber = (id, amount) => {
+            const input = document.getElementById(id);
+            if(input) {
+                input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
+                updateLogoPreviews();
+            }
+        };
+
+        window.addMovie = async () => {
+            const title = document.getElementById('m-title').value.trim();
+            const url = document.getElementById('m-url').value.trim();
+            if(!title || !url) return alert('⚠️ برجاء إدخال اسم الفيلم والرابط أولاً.');
+
+            try {
+                await addDoc(playlistRef, {
+                    title, url,
+                    category: document.getElementById('m-category').value.trim() || 'عام',
+                    trimStart: parseInt(document.getElementById('m-trim-start').value) || 0,
+                    trimEnd: parseInt(document.getElementById('m-trim-end').value) || 0,
+                    description: document.getElementById('m-desc').value.trim(),
+                    createdAt: serverTimestamp()
+                });
+                ['m-title','m-url','m-category','m-desc'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = '';
+                });
+                document.getElementById('m-trim-start').value = '0';
+                document.getElementById('m-trim-end').value = '0';
+                alert('✅ تم إضافة المحتوى إلى جدول التشغيل.');
+            } catch(e) { alert('❌ حدث خطأ أثناء الإضافة: ' + e.message); }
+        };
+
+        window.playNextMovie = async () => {
+            try {
+                const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc'), limit(1)));
+                if(snap.empty) return alert('⚠️ لا يوجد محتوى في قائمة الانتظار.');
+                const next = snap.docs[0];
+                const item = next.data();
+
+                await setDoc(streamDocRef, {
+                    movieTitle: item.title,
+                    currentUrl: item.url,
+                    movieCategory: item.category,
+                    movieDescription: item.description || '',
+                    trimStart: item.trimStart || 0,
+                    trimEnd: item.trimEnd || 0,
+                    currentPosition: item.trimStart || 0,
+                    startedAt: serverTimestamp(),
+                    playbackState: 'PLAYING'
+                }, {merge:true});
+
+                await deleteDoc(next.ref);
+            } catch(e) { alert('❌ تعذر تشغيل المحتوى التالي: ' + e.message); }
+        };
+
+        window.playPlaylistItem = async (id) => {
+            try {
+                const snap = await getDocs(query(playlistRef, orderBy('createdAt','asc')));
+                const target = snap.docs.find(d => d.id === id);
+                if(!target) return alert('⚠️ لم يتم العثور على هذا المحتوى.');
+                const item = target.data();
+
+                if(!confirm(`تشغيل "${item.title}" الآن بدلاً من المحتوى الحالي؟`)) return;
+
+                await setDoc(streamDocRef, {
+                    movieTitle: item.title, 
+                    currentUrl: item.url, 
+                    movieCategory: item.category,
+                    movieDescription: item.description || '', 
+                    trimStart: item.trimStart || 0,
+                    trimEnd: item.trimEnd || 0, 
+                    currentPosition: item.trimStart || 0,
+                    startedAt: serverTimestamp(), 
+                    playbackState: 'PLAYING'
+                }, {merge:true});
+
+                await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", id));
+            } catch(e) { alert('❌ حدث خطأ أثناء التشغيل: ' + e.message); }
+        };
+
+        window.deletePlaylistItem = async (id) => {
+            if(!confirm('حذف هذا العنصر من قائمة الانتظار؟')) return;
+            try { await deleteDoc(doc(db, "streams", "live_stream_1", "playlist", id)); }
+            catch(e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
+        // تحديث قائمة الانتظار لحظياً
+        onSnapshot(query(playlistRef, orderBy('createdAt','asc')), (snap) => {
+            const box = document.getElementById('playlist-table-body');
+            if(!box) return;
+            if(snap.empty) { 
+                box.innerHTML = '<div style="font-size: 13px; color: var(--text-secondary); text-align: center; padding: 20px;">جدول التشغيل فارغ. أضف أفلاماً لتشغيلها تلقائياً بالترتيب.</div>'; 
+                return; 
+            }
+            box.innerHTML = '';
+            snap.docs.forEach((docSnap, index) => {
+                const d = docSnap.data();
+                const el = document.createElement('div');
+                el.className = 'queue-card';
+                el.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="queue-number">${index + 1}</span>
+                        <div>
+                            <strong>${d.title}</strong>
+                            <div style="font-size: 12px; color: var(--text-secondary);">${d.category || 'بدون تصنيف'}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn btn-play-now" style="padding: 5px 10px; font-size: 12px;" onclick="playPlaylistItem('${docSnap.id}')"><i class="fa-solid fa-play"></i> تشغيل الآن</button>
+                        <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="deletePlaylistItem('${docSnap.id}')"><i class="fa-solid fa-trash"></i> حذف</button>
+                    </div>`;
+                box.appendChild(el);
+            });
+        });
+
+        // 🖼️ حفظ الإعدادات
+        window.saveLogoSettings = async () => {
+            try {
+                await setDoc(streamDocRef, {
+                    logoUrl: document.getElementById('logo-url').value,
+                    portTop: parseInt(document.getElementById('port-top').value) || 0,
+                    portRight: parseInt(document.getElementById('port-right').value) || 0,
+                    portWidth: parseInt(document.getElementById('port-w').value) || 0,
+                    landTop: parseInt(document.getElementById('land-top').value) || 0,
+                    landRight: parseInt(document.getElementById('land-right').value) || 0,
+                    landWidth: parseInt(document.getElementById('land-w').value) || 0
+                }, { merge: true });
+                alert('✅ تم حفظ مقاسات وموقع اللوجو لفايربيس!');
+            } catch (e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
+        window.saveBannersSettings = async () => {
+            try {
+                await setDoc(streamDocRef, {
+                    topBannerUrl: document.getElementById('top-banner-url').value,
+                    nextMovieBannerUrl: document.getElementById('next-banner-url').value,
+                    topBannerTopPx: parseInt(document.getElementById('tb-top').value) || 0,
+                    topBannerWidth: parseInt(document.getElementById('tb-w').value) || 0,
+                    nextMovieBottomPx: parseInt(document.getElementById('nb-bottom').value) || 0,
+                    nextMovieWidth: parseInt(document.getElementById('nb-w').value) || 0
+                }, { merge: true });
+                alert('✅ تم حفظ أبعاد البنرات بنجاح!');
+            } catch (e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
+        window.triggerEmergencyAd = async () => {
+            const adUrl = document.getElementById('emergency-url').value;
+            if(!adUrl) return alert('⚠️ أدخل رابط إعلان الطوارئ أولاً');
+            try {
+                await setDoc(streamDocRef, {
+                    emergencyAdUrl: adUrl,
+                    playbackState: "EMERGENCY_AD"
+                }, { merge: true });
+                alert('⚡ تم إطلاق الإعلان المفاجئ!');
+            } catch (e) { alert('❌ حدث خطأ: ' + e.message); }
+        };
+
+        // 💬 التعليقات
+        onSnapshot(collection(db, "streams", "live_stream_1", "comments"), (snapshot) => {
+            const container = document.getElementById('comments-container');
+            if(!container) return;
+            container.innerHTML = '';
+            if(snapshot.empty) {
+                container.innerHTML = '<p style="font-size: 13px; color: var(--text-secondary);">لا توجد تعليقات حالياً.</p>';
+                return;
+            }
+            snapshot.forEach((docSnap) => {
+                const comment = docSnap.data();
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.innerHTML = `
+                    <div><strong style="color: var(--accent-pink);">${comment.username || 'مستخدم'}:</strong> <span>${comment.text || ''}</span></div>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteComment('${docSnap.id}')">مسح</button>
+                `;
+                container.appendChild(div);
+            });
+        });
+
+        window.deleteComment = async (id) => {
+            await deleteDoc(doc(db, "streams", "live_stream_1", "comments", id));
+        };
+
+        document.getElementById('logo-url')?.addEventListener('input', () => {
+            document.getElementById('logo-url').dataset.userEdited = "true";
+        });
+
+        updateLogoPreviews();
+        updateBannerPreviews();
+    </script>
+</body>
+</html>
