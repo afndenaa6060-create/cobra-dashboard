@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COBRA TV — Broadcast Master Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080d;--side:#0b0d13;--card:#11141c;--card2:#171a23;--line:#2a2f3b;--text:#f7f8fb;--muted:#9299aa;--pink:#ff2a85;--pink2:#a30d4e;--green:#19d58a;--red:#ff465c;--gold:#e9c66c;--blue:#42b8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1000px 600px at 70% -10%,#3b1025 0,transparent 60%),var(--bg);color:var(--text);font-family:Cairo,Tahoma,Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:285px 1fr;min-height:100vh}
+aside{background:linear-gradient(180deg,#0e1017,#090a0f);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:100vh;overflow:auto}.brand{padding:8px 12px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}.brand b{font-size:25px}.brand b span{color:var(--pink)}.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:2px;margin-top:4px}
+.group{color:#5f6675;font-size:10px;margin:16px 9px 6px}.nav button{width:100%;border:0;background:transparent;color:#aeb4c2;text-align:right;padding:12px 13px;border-radius:10px;margin:2px 0;transition:.2s}.nav button:hover,.nav button.active{background:linear-gradient(90deg,#2b101e,#17141a);color:#fff;box-shadow:inset -3px 0 var(--pink)}
+.connection{margin-top:16px;padding:12px;border:1px solid var(--line);border-radius:13px;background:#11131a;font-size:11px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:6px}
+main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}.top h1{font-size:25px;margin:0}.top p{margin:4px 0;color:var(--muted);font-size:11px}.actions{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #363c49;background:#20242e;color:#fff;border-radius:9px;padding:9px 13px;font-weight:800}.primary{background:linear-gradient(135deg,#dd1f6e,#ff4a97);border:0}.green{background:#126d4d;border-color:#1b9669}.danger{background:#67212e;border-color:#8e3343}.blue{background:#124e70;border-color:#277ba6}.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:13px}.stat{background:linear-gradient(145deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:13px}.stat span{display:block;color:var(--muted);font-size:10px}.stat b{display:block;font-size:18px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:13px}.card{background:linear-gradient(145deg,#151821,#0e1016);border:1px solid var(--line);border-radius:16px;margin-bottom:13px;overflow:hidden}.head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.head h2{margin:0;font-size:15px}.body{padding:16px}.monitor{aspect-ratio:16/9;background:#000;border:6px solid #1c2029;border-radius:12px;position:relative;overflow:hidden}.monitor video{width:100%;height:100%;object-fit:contain}.badge-live{position:absolute;right:10px;top:10px;background:var(--red);padding:4px 7px;border-radius:6px;font-size:9px;font-weight:900}.logo-screen{position:absolute;right:4%;top:7%;color:var(--pink);font-weight:900;font-size:18px;text-shadow:0 2px 10px #000}.next-screen{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);background:#10131bd9;padding:6px 13px;border-radius:7px;font-size:10px}
+.controlbar{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.notice{padding:11px;border:1px dashed #414755;background:#11141b;border-radius:9px;color:#b8bfcb;font-size:11px;line-height:1.7}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.form3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.field label{display:block;color:#aeb5c3;font-size:10px;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;background:#090b10;color:#fff;border:1px solid #343a48;border-radius:8px;padding:9px;outline:0}.field textarea{min-height:85px;resize:vertical}.full{grid-column:1/-1}
+.schedule{display:flex;flex-direction:column;gap:8px}.slot{display:grid;grid-template-columns:44px 100px 1fr 90px 95px 240px;align-items:center;gap:9px;padding:10px;background:#0b0d12;border:1px solid var(--line);border-radius:11px}.slot.current{border-color:var(--green);box-shadow:inset -4px 0 var(--green)}.num{width:31px;height:31px;border-radius:8px;background:#2a101d;color:var(--pink);display:grid;place-items:center;font-weight:900}.time{color:#ff73a9;font-weight:900;font-size:11px}.slottitle{font-weight:800;font-size:12px}.meta{font-size:9px;color:var(--muted);margin-top:3px}.tag{display:inline-block;padding:4px 6px;border-radius:5px;background:#252a34;font-size:9px;text-align:center}.age18{background:#651c29;color:#ffb0ba}.slot-actions{display:flex;gap:4px;justify-content:flex-end}.slot-actions .btn{padding:6px 8px;font-size:9px}
+.library{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.media{background:#0b0d12;border:1px solid var(--line);border-radius:12px;padding:10px}.poster{height:170px;border-radius:8px;background:#171a22;display:grid;place-items:center;overflow:hidden;color:#616979;margin-bottom:8px}.poster img{width:100%;height:100%;object-fit:cover}.media h3{font-size:13px;margin:0 0 3px}.badge{font-size:9px;padding:3px 5px;border-radius:5px;background:#282d37}.badge18{background:#681c2b;color:#ffadb8}.mini{font-size:9px;color:var(--muted)}
+.logo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.logo-card{background:#0b0d12;border:1px solid var(--line);border-radius:12px;padding:11px}.preview{height:190px;border-radius:8px;position:relative;overflow:hidden;background:repeating-conic-gradient(#1a1d25 0 25%,#101218 0 50%) 50%/18px 18px;margin-bottom:9px}.preview img{position:absolute;max-width:none}.range{display:grid;grid-template-columns:80px 1fr 55px;align-items:center;gap:7px;margin:7px 0;font-size:9px}.range input{padding:0;border:0}.range output{background:#090b10;border:1px solid var(--line);padding:5px;border-radius:6px;text-align:center}
+.prayer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.prayer{padding:12px;border:1px solid var(--line);border-radius:11px;background:#0b0d12}.prayer h3{font-size:13px;margin:0 0 8px}.prayer.friday{border-color:var(--gold)}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:right;font-size:10px;white-space:nowrap}th{color:var(--pink);background:#0c0e13}.switch{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid var(--line);border-radius:9px;background:#0b0d12}.switch input{width:auto}.empty{text-align:center;padding:25px;color:var(--muted)}
+@media(max-width:1200px){.stats{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}.logo-grid{grid-template-columns:1fr 1fr}.slot{grid-template-columns:40px 85px 1fr 80px 80px}}
+@media(max-width:800px){.app{grid-template-columns:1fr}aside{height:auto;position:relative}.form,.form3,.prayer-grid,.library,.logo-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.slot{grid-template-columns:35px 70px 1fr}.slot>*:nth-child(4),.slot>*:nth-child(5){display:none}main{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+<div class="brand"><b>🐍 COBRA <span>TV</span></b><small>BROADCAST MASTER CONTROL</small></div>
+<div class="group">ON AIR</div>
+<nav class="nav">
+<button class="active" data-page="dashboard">📡 غرفة البث الرئيسية</button>
+<button data-page="schedule">📋 جدول القناة</button>
+</nav>
+<div class="group">CONTENT</div>
+<nav class="nav">
+<button data-page="movies">🎬 الأفلام</button>
+<button data-page="series">📺 المسلسلات والحلقات</button>
+<button data-page="ads">📢 الإعلانات والفواصل</button>
+</nav>
+<div class="group">CHANNEL</div>
+<nav class="nav">
+<button data-page="prayer">☾ الأذان وصلاة الجمعة</button>
+<button data-page="branding">◆ اللوجو والـ +18</button>
+<button data-page="banners">▰ البنرات</button>
+<button data-page="emergency">⚡ الطوارئ</button>
+<button data-page="comments">💬 التعليقات</button>
+</nav>
+<div class="group">SYSTEM</div>
+<nav class="nav"><button data-page="settings">⚙️ إعدادات القناة</button></nav>
+<div class="connection"><span class="dot"></span><b id="conn">جاري الاتصال...</b><div class="mini" style="margin-top:5px">streams / live_stream_1</div></div>
+</aside>
+
+<main>
+<div class="top">
+<div><h1 id="title">غرفة البث الرئيسية</h1><p>كل شيء من مكان واحد — الجدول محفوظ في Firebase والمشغل يقرأه من جهاز المشاهد.</p></div>
+<div class="actions"><button class="btn primary" id="publish">💾 نشر الجدول</button><button class="btn" id="minus">− دقيقة</button><button class="btn" id="plus">+ دقيقة</button><button class="btn danger" id="liveToggle">إيقاف القناة</button></div>
+</div>
+
+<section id="dashboard" class="page active">
+<div class="stats">
+<div class="stat"><span>حالة القناة</span><b id="state">—</b></div>
+<div class="stat"><span>المحتوى الحالي</span><b id="current">—</b></div>
+<div class="stat"><span>التالي</span><b id="next">—</b></div>
+<div class="stat"><span>المشاهدون</span><b id="viewers">0</b></div>
+<div class="stat"><span>التصحيح الزمني</span><b id="offset">0 ث</b></div>
+<div class="stat"><span>Firebase</span><b id="fb">—</b></div>
+</div>
+<div class="layout">
+<div class="card"><div class="head"><h2>📺 معاينة غرفة البث</h2><span class="mini">لوحة التحكم لا تحتاج أن تبقى مفتوحة لتحديد الجدول</span></div><div class="body"><div class="monitor"><video id="preview" controls></video><span class="badge-live">🔴 ON AIR</span><span class="logo-screen" id="screenLogo">COBRA TV</span><span class="next-screen" id="screenNext">التالي: —</span></div><div class="controlbar"><button class="btn green" id="play">▶ تشغيل</button><button class="btn" id="pause">⏸ إيقاف</button><button class="btn blue" id="skip">⏭ التالي</button><button class="btn" id="reload">↻ إعادة تحميل</button></div></div></div>
+<div class="card"><div class="head"><h2>🎛️ البرنامج الحالي</h2></div><div class="body"><div class="field"><label>العنوان</label><input id="nowTitle"></div><div class="field" style="margin-top:9px"><label>الرابط</label><input id="nowUrl" dir="ltr"></div><div class="form" style="margin-top:9px"><div class="field"><label>التصنيف</label><input id="nowCat"></div><div class="field"><label>العمر</label><select id="nowAge"><option value="general">عام</option><option value="12">+12</option><option value="16">+16</option><option value="18">+18</option></select></div></div><div class="field" style="margin-top:9px"><label>الوصف</label><textarea id="nowDesc"></textarea></div><div class="field" style="margin-top:9px"><label>رابط البوستر</label><input id="nowPoster" dir="ltr"></div><div class="controlbar"><button class="btn primary" id="saveNow">حفظ وتشغيل الآن</button></div></div></div>
+</div>
+<div class="card"><div class="head"><h2>📋 الجدول القادم — رقم 1، 2، 3...</h2><button class="btn" onclick="show('schedule')">فتح الجدول</button></div><div class="body" id="dashSchedule"></div></div>
+<div class="notice">⚠️ مهم: Firebase يحفظ الجدول والأوامر حتى بعد إغلاق لوحة التحكم. الاستمرار الفعلي على أجهزة المشاهدين يتم من خلال Player التطبيق/الموقع الذي يقرأ <b>playlist + startedAt</b>. كود المشغل القديم عندك بالفعل يستخدم هذه الفكرة ويحسب العنصر الحالي من الوقت.</div>
+</section>
+
+<section id="schedule" class="page">
+<div class="card"><div class="head"><h2>📋 جدولة القناة</h2><button class="btn primary" id="saveSchedule">💾 حفظ الجدول</button></div><div class="body">
+<div class="form3">
+<div class="field"><label>النوع</label><select id="st"><option value="movie">🎬 فيلم</option><option value="series">📺 حلقة مسلسل</option><option value="ad">📢 إعلان/فاصل</option><option value="prayer">☾ أذان</option></select></div>
+<div class="field"><label>العنوان</label><input id="sn" placeholder="مثال: الفيلم رقم 1"></div>
+<div class="field"><label>وقت البداية</label><input id="ss" type="datetime-local"></div>
+<div class="field"><label>المدة — دقيقة</label><input id="sd" type="number" value="120"></div>
+<div class="field"><label>رابط التشغيل</label><input id="su" dir="ltr" placeholder="https://..."></div>
+<div class="field"><label>التصنيف العمري</label><select id="sa"><option value="general">عام</option><option value="12">+12</option><option value="16">+16</option><option value="18">+18</option></select></div>
+<div class="field"><label>تقديم البداية — ثانية</label><input id="sk" type="number" value="0"></div>
+<div class="field"><label>تخطي النهاية — ثانية</label><input id="se" type="number" value="0"></div>
+<div class="field"><label>تصحيح التوقيت — ثانية</label><input id="so" type="number" value="0"></div>
+<div class="field full"><label>الوصف</label><textarea id="sdesc"></textarea></div>
+<div class="field"><label>رابط البوستر</label><input id="sp" dir="ltr"></div>
+<div class="field"><label>علامة +18</label><select id="s18"><option value="false">لا</option><option value="true">نعم</option></select></div>
+<div class="field full"><button class="btn primary" id="addSchedule">＋ إضافة للجدول</button></div>
+</div>
+<div style="margin-top:15px" id="scheduleList" class="schedule"></div>
+</div></div>
+</section>
+
+<section id="movies" class="page">
+<div class="card"><div class="head"><h2>🎬 مكتبة الأفلام</h2><button class="btn primary" id="addMovie">حفظ الفيلم</button></div><div class="body"><div class="form3">
+<div class="field"><label>اسم الفيلم</label><input id="mn"></div><div class="field"><label>التصنيف</label><input id="mc"></div><div class="field"><label>المدة — دقيقة</label><input id="md" type="number" value="120"></div>
+<div class="field full"><label>الوصف</label><textarea id="mde"></textarea></div><div class="field"><label>رابط البوستر</label><input id="mp" dir="ltr"></div><div class="field"><label>رابط الفيلم</label><input id="mu" dir="ltr"></div><div class="field"><label>التصنيف العمري</label><select id="ma"><option value="general">عام</option><option value="12">+12</option><option value="16">+16</option><option value="18">+18</option></select></div>
+<div class="field"><label>+18</label><select id="m18"><option value="false">لا</option><option value="true">نعم</option></select></div><div class="field"><label>تقديم البداية — ثانية</label><input id="mk" type="number" value="0"></div><div class="field"><label>تخطي النهاية — ثانية</label><input id="mke" type="number" value="0"></div>
+</div></div></div>
+<div class="card"><div class="head"><h2>المكتبة</h2></div><div class="body"><div id="movieLib" class="library"></div></div></div>
+</section>
+
+<section id="series" class="page">
+<div class="card"><div class="head"><h2>📺 مكتبة المسلسلات والحلقات</h2><button class="btn primary" id="addSeries">حفظ الحلقة</button></div><div class="body"><div class="form3">
+<div class="field"><label>اسم المسلسل</label><input id="serName"></div><div class="field"><label>الموسم</label><input id="serSeason" type="number" value="1"></div><div class="field"><label>رقم الحلقة</label><input id="serEp" type="number" value="1"></div>
+<div class="field"><label>عنوان الحلقة</label><input id="serTitle"></div><div class="field"><label>المدة — دقيقة</label><input id="serDur" type="number" value="45"></div><div class="field"><label>التصنيف العمري</label><select id="serAge"><option value="general">عام</option><option value="12">+12</option><option value="16">+16</option><option value="18">+18</option></select></div>
+<div class="field full"><label>الوصف</label><textarea id="serDesc"></textarea></div><div class="field"><label>رابط البوستر</label><input id="serPoster" dir="ltr"></div><div class="field"><label>رابط الحلقة</label><input id="serUrl" dir="ltr"></div>
+</div></div></div>
+<div class="card"><div class="head"><h2>الحلقات</h2></div><div class="body"><div id="seriesLib" class="library"></div></div></div>
+</section>
+
+<section id="prayer" class="page">
+<div class="card"><div class="head"><h2>☾ الأذان وصلاة الجمعة</h2><button class="btn primary" id="savePrayer">💾 حفظ</button></div><div class="body"><div class="notice">كل صلاة لها وقت ورابط تشغيل مستقل. الجمعة منفصلة عن الظهر كما طلبت.</div><div class="prayer-grid" id="prayerGrid" style="margin-top:10px"></div></div></div>
+</section>
+
+<section id="ads" class="page">
+<div class="card"><div class="head"><h2>📢 الإعلانات والفواصل</h2><button class="btn primary" id="addAd">حفظ الفاصل</button></div><div class="body"><div class="form3"><div class="field"><label>اسم الإعلان</label><input id="adName"></div><div class="field"><label>وقت البداية</label><input id="adStart" type="datetime-local"></div><div class="field"><label>المدة — دقيقة</label><input id="adDur" type="number" value="2"></div><div class="field"><label>التكرار</label><select id="adRepeat"><option value="once">مرة واحدة</option><option value="hourly">كل ساعة</option><option value="daily">يومي</option><option value="weekly">أسبوعي</option></select></div><div class="field"><label>رابط التشغيل</label><input id="adUrl" dir="ltr"></div><div class="field"><label>الحالة</label><select id="adActive"><option value="true">فعال</option><option value="false">متوقف</option></select></div></div></div></div>
+<div class="card"><div class="head"><h2>الفواصل المحفوظة</h2></div><div class="body" id="adList"></div></div>
+</section>
+
+<section id="branding" class="page">
+<div class="card"><div class="head"><h2>◆ اللوجوهات — كل لوجو بتحكم مستقل</h2><button class="btn primary" id="saveBrand">💾 حفظ الكل</button></div><div class="body">
+<div class="logo-grid">
+<div class="logo-card"><h3>📱 لوجو Portrait</h3><div class="preview"><img id="pvP"></div><div class="field"><label>الرابط</label><input id="pUrl" dir="ltr"></div><div class="range"><span>يمين</span><input id="pR" type="range" min="0" max="100" value="5"><output id="pRO">5%</output></div><div class="range"><span>أعلى</span><input id="pT" type="range" min="0" max="100" value="5"><output id="pTO">5%</output></div><div class="range"><span>الحجم</span><input id="pW" type="range" min="20" max="260" value="80"><output id="pWO">80px</output></div><label class="switch">إظهار <input id="pOn" type="checkbox" checked></label></div>
+<div class="logo-card"><h3>🖥️ لوجو Landscape</h3><div class="preview"><img id="pvL"></div><div class="field"><label>الرابط</label><input id="lUrl" dir="ltr"></div><div class="range"><span>يمين</span><input id="lR" type="range" min="0" max="100" value="5"><output id="lRO">5%</output></div><div class="range"><span>أعلى</span><input id="lT" type="range" min="0" max="100" value="5"><output id="lTO">5%</output></div><div class="range"><span>الحجم</span><input id="lW" type="range" min="20" max="320" value="100"><output id="lWO">100px</output></div><label class="switch">إظهار <input id="lOn" type="checkbox" checked></label></div>
+<div class="logo-card"><h3>🔞 علامة +18</h3><div class="preview"><img id="pv18"></div><div class="field"><label>رابط صورة/شارة +18</label><input id="e18Url" dir="ltr"></div><div class="range"><span>يمين</span><input id="e18R" type="range" min="0" max="100" value="5"><output id="e18RO">5%</output></div><div class="range"><span>أعلى</span><input id="e18T" type="range" min="0" max="100" value="10"><output id="e18TO">10%</output></div><div class="range"><span>الحجم</span><input id="e18W" type="range" min="20" max="180" value="55"><output id="e18WO">55px</output></div><label class="switch">إظهار عند +18 <input id="e18On" type="checkbox" checked></label></div>
+</div>
+<div class="notice" style="margin-top:12px">التحكم هنا يحفظ نفس أسماء الحقول التي يقرأها مشغل Cobra TV القديم: <b>logoUrl / portTop / portRight / portWidth / landTop / landRight / landWidth</b>. أما +18 فتمت إضافته كطبقة مستقلة.</div>
+</div></div>
+</section>
+
+<section id="banners" class="page">
+<div class="card"><div class="head"><h2>▰ البنرات والحركات</h2><button class="btn primary" id="saveBanners">💾 حفظ البنرات</button></div><div class="body"><div class="form">
+<div class="field full"><label>البانر العلوي — الرابط</label><input id="tbUrl" dir="ltr"></div><div class="field"><label>الحركة</label><select id="tbAnim"><option>SLIDE_TOP</option><option>FADE</option><option>SLIDE_RIGHT</option></select></div><div class="field"><label>العرض PX</label><input id="tbW" type="number" value="300"></div><div class="field"><label>المسافة من الأعلى PX</label><input id="tbT" type="number" value="10"></div><div class="field"><label>تشغيل البانر</label><select id="tbOn"><option value="true">نعم</option><option value="false">لا</option></select></div>
+<div class="field full"><label>شريط الفيلم القادم — الرابط</label><input id="nbUrl" dir="ltr"></div><div class="field"><label>الحركة</label><select id="nbAnim"><option>SLIDE_RIGHT</option><option>SLIDE_TOP</option><option>FADE</option></select></div><div class="field"><label>العرض</label><input id="nbW" type="number" value="90"></div><div class="field"><label>تشغيل الشريط</label><select id="nbOn"><option value="true">نعم</option><option value="false">لا</option></select></div>
+</div></div></div>
+</section>
+
+<section id="emergency" class="page">
+<div class="card"><div class="head"><h2>⚡ الإعلان المفاجئ / الطوارئ</h2></div><div class="body"><div class="notice">هذا الأمر يكتب حالة طوارئ في Firebase ليقرأها المشغل. استخدمه فقط عند الحاجة.</div><div class="field" style="margin-top:10px"><label>رابط فيديو/صورة الطوارئ</label><input id="emUrl" dir="ltr"></div><div class="controlbar"><button class="btn danger" id="emStart">⚡ إطلاق الآن</button><button class="btn" id="emStop">إلغاء الطوارئ</button></div></div></div>
+</section>
+
+<section id="comments" class="page">
+<div class="card"><div class="head"><h2>💬 التعليقات المباشرة</h2><button class="btn danger" id="clearComments">مسح الظاهر</button></div><div class="body"><div class="tablewrap"><table><thead><tr><th>المستخدم</th><th>التعليق</th><th>الوقت</th><th></th></tr></thead><tbody id="comments"></tbody></table></div></div></div>
+</section>
+
+<section id="settings" class="page">
+<div class="card"><div class="head"><h2>⚙️ إعدادات القناة</h2><button class="btn primary" id="saveSettings">حفظ</button></div><div class="body"><div class="form">
+<div class="field"><label>اسم القناة</label><input id="channelName" value="Cobra TV"></div><div class="field"><label>المنطقة الزمنية</label><input id="timezone" value="Africa/Cairo"></div>
+<div class="field full"><label>رسالة التوقف</label><textarea id="offlineMsg">القناة متوقفة مؤقتًا.</textarea></div>
+<label class="switch full">التشغيل التلقائي <input id="autoPlay" type="checkbox" checked></label>
+</div></div></div>
+<div class="card"><div class="head"><h2>🧭 بنية Firebase المستخدمة</h2></div><div class="body"><div class="notice">
+<b>streams/live_stream_1</b> = الحالة الحالية + playlist + startedAt + اللوجو + البنرات + أوامر التشغيل.<br>
+<b>cobra_admin/movies</b> = مكتبة الأفلام.<br>
+<b>cobra_admin/series</b> = مكتبة المسلسلات.<br>
+<b>cobra_admin/schedule</b> = الجدول الكامل.<br>
+<b>cobra_admin/prayer</b> = مواعيد وروابط الأذان والجمعة.<br>
+<b>cobra_admin/ads</b> = الإعلانات والفواصل.<br>
+<b>cobra_admin/settings</b> = إعدادات القناة.
+</div></div></div>
+</section>
+</main>
+</div>
+<div id="toast" style="position:fixed;bottom:18px;left:18px;background:#191c24;border:1px solid #3a3f4b;padding:11px 14px;border-radius:9px;display:none;z-index:99"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getFirestore,doc,setDoc,getDoc,onSnapshot,collection,query,orderBy,limit,deleteDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCZzSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",authDomain:"cobra-tv-b1231.firebaseapp.com",projectId:"cobra-tv-b1231",storageBucket:"cobra-tv-b1231.firebasestorage.app",messagingSenderId:"73044924945",appId:"1:73044924945:web:4ed40ee2b6463b574e2fb0",measurementId:"G-X5JQH06QNK"};
+const db=getFirestore(initializeApp(firebaseConfig));
+const refs={
+ stream:doc(db,"streams","live_stream_1"),movies:doc(db,"cobra_admin","movies"),series:doc(db,"cobra_admin","series"),
+ schedule:doc(db,"cobra_admin","schedule"),prayer:doc(db,"cobra_admin","prayer"),ads:doc(db,"cobra_admin","ads"),
+ settings:doc(db,"cobra_admin","settings"),logo:doc(db,"logo_settings","config"),banner:doc(db,"app_banners","config")
+};
+let S={stream:{},movies:[],series:[],schedule:[],prayer:{},ads:[],logo:{},banner:{}};
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+function toast(x){let t=$("toast");t.textContent=x;t.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display="none",2300)}
+function show(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));$("title").textContent=document.querySelector(`[data-page="${id}"]`)?.textContent.trim()||"Cobra TV"}
+window.show=show;
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>show(b.dataset.page));
+setInterval(()=>{document.querySelector(".top p").textContent=new Intl.DateTimeFormat("ar-EG",{dateStyle:"full",timeStyle:"medium",timeZone:"Africa/Cairo"}).format(new Date())+" • الجدول محفوظ في Firebase"},1000);
+
+function render(){
+ const d=S.stream||{}, a=S.schedule||[];
+ $("state").textContent=d.isLive===false?"OFFLINE":(d.playbackState==="PAUSED"?"PAUSED":"🔴 LIVE");
+ $("current").textContent=d.movieTitle||"—"; $("next").textContent=a[1]?.title||a[0]?.title||"—";
+ $("viewers").textContent=Number(d.viewers||0).toLocaleString("ar-EG"); $("offset").textContent=(d.timeOffsetSec||0)+" ث";
+ $("fb").textContent="متصل";
+ $("nowTitle").value=d.movieTitle||"";$("nowUrl").value=d.currentUrl||d.url||"";$("nowCat").value=d.movieCategory||d.category||"";
+ $("nowDesc").value=d.movieDescription||d.description||"";$("nowPoster").value=d.posterUrl||d.moviePoster||"";$("nowAge").value=d.is18Plus?"18":(d.age||"general");
+ $("screenNext").textContent="التالي: "+(a[1]?.title||a[0]?.title||"—");
+ renderSchedule();renderDashSchedule();renderMovies();renderSeries();renderAds();renderPrayer();
+}
+function slotHTML(x,i){
+ return `<div class="slot ${i===0?"current":""}">
+ <div class="num">${i+1}</div><div class="time">${esc((x.start||"").replace("T"," "))}</div>
+ <div><div class="slottitle">${esc(x.title||"بدون عنوان")}</div><div class="meta">${esc(x.type||"movie")} • ${esc(x.durationMin??Math.round((x.durationSec||0)/60))} دقيقة • ${x.url?"رابط ✓":"بدون رابط"}</div></div>
+ <div class="tag ${x.age==="18"||x.is18Plus?"age18":""}">${x.age==="18"||x.is18Plus?"+18":esc(x.age||"عام")}</div>
+ <div class="tag">بداية +${esc(x.skipStartSec||0)}ث</div>
+ <div class="slot-actions"><button class="btn green" onclick="runSlot(${i})">▶ تشغيل</button><button class="btn" onclick="moveSlot(${i},-1)">↑</button><button class="btn" onclick="moveSlot(${i},1)">↓</button><button class="btn danger" onclick="delSlot(${i})">حذف</button></div>
+ </div>`
+}
+function renderSchedule(){$("scheduleList").innerHTML=S.schedule.length?S.schedule.map(slotHTML).join(""):'<div class="empty">الجدول فارغ — أضف رقم 1 من النموذج.</div>'}
+function renderDashSchedule(){$("dashSchedule").innerHTML=S.schedule.slice(0,7).map(slotHTML).join("")||'<div class="empty">لا يوجد جدول.</div>'}
+function renderMovies(){$("movieLib").innerHTML=S.movies.length?S.movies.map((m,i)=>`<div class="media"><div class="poster">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:"🎬"}</div><h3>${esc(m.title)}</h3><div class="mini">${esc(m.category||"عام")} • ${esc(m.durationMin||Math.round((m.durationSec||0)/60))} دقيقة</div>${m.is18Plus||m.age==="18"?'<span class="badge badge18">+18</span>':""}<div class="controlbar"><button class="btn green" onclick="movieToSchedule(${i})">＋ للجدول</button></div></div>`).join(""):'<div class="empty">لا توجد أفلام.</div>'}
+function renderSeries(){$("seriesLib").innerHTML=S.series.length?S.series.map((m,i)=>`<div class="media"><div class="poster">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:"📺"}</div><h3>${esc(m.name)} — ${esc(m.title||"الحلقة")}</h3><div class="mini">موسم ${esc(m.season)} • حلقة ${esc(m.episode)} • ${esc(m.durationMin||0)} دقيقة</div>${m.age==="18"?'<span class="badge badge18">+18</span>':""}<div class="controlbar"><button class="btn green" onclick="seriesToSchedule(${i})">＋ للجدول</button></div></div>`).join(""):'<div class="empty">لا توجد حلقات.</div>'}
+function renderAds(){$("adList").innerHTML=S.ads.length?S.ads.map((a,i)=>`<div class="slot"><div class="num">📢</div><div class="time">${esc((a.start||"").slice(11,16)||"—")}</div><div><div class="slottitle">${esc(a.title||a.name)}</div><div class="meta">${esc(a.repeat||"once")} • ${esc(a.durationMin||a.duration||0)} دقيقة</div></div><div class="tag">${a.active===false?"متوقف":"فعال"}</div><div></div><div class="slot-actions"><button class="btn danger" onclick="delAd(${i})">حذف</button></div></div>`).join(""):'<div class="empty">لا توجد فواصل.</div>'}
+const prayerKeys=[["fajr","الفجر"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"],["friday","الجمعة — صلاة الجمعة"]];
+function renderPrayer(){$("prayerGrid").innerHTML=prayerKeys.map(([k,n])=>`<div class="prayer ${k==="friday"?"friday":""}"><h3>${n}</h3><div class="field"><label>الوقت</label><input id="pt_${k}" type="time" value="${esc(S.prayer[k]?.time||"")}"></div><div class="field" style="margin-top:8px"><label>رابط التشغيل</label><input id="pu_${k}" dir="ltr" value="${esc(S.prayer[k]?.url||"")}"></div><div class="field" style="margin-top:8px"><label>المدة — دقيقة</label><input id="pd_${k}" type="number" value="${esc(S.prayer[k]?.durationMin||10)}"></div></div>`).join("")}
+function renderLogo(){
+ const x=S.logo||{};$("pUrl").value=x.url||x.portUrl||"";$("lUrl").value=x.landUrl||"";$("e18Url").value=x.e18Url||"";
+ $("pR").value=x.portRight??5;$("pT").value=x.portTop??5;$("pW").value=x.portWidth??80;$("pOn").checked=x.portVisible!==false;
+ $("lR").value=x.landRight??5;$("lT").value=x.landTop??5;$("lW").value=x.landWidth??100;$("lOn").checked=x.landVisible!==false;
+ $("e18R").value=x.e18Right??5;$("e18T").value=x.e18Top??10;$("e18W").value=x.e18Width??55;$("e18On").checked=x.e18Visible!==false;updateLogo();
+}
+function bindRange(id,out,suffix){$(id).oninput=()=>{$(out).textContent=$(id).value+suffix;updateLogo()}}
+function updateLogo(){
+ [["pR","pRO","%"],["pT","pTO","%"],["pW","pWO","px"],["lR","lRO","%"],["lT","lTO","%"],["lW","lWO","px"],["e18R","e18RO","%"],["e18T","e18TO","%"],["e18W","e18WO","px"]].forEach(a=>$(a[1]).textContent=$(a[0]).value+a[2]);
+ [["pvP","pUrl","pR","pT","pW"],["pvL","lUrl","lR","lT","lW"],["pv18","e18Url","e18R","e18T","e18W"]].forEach(a=>{let im=$(a[0]);im.src=$(a[1]).value;im.style.right=$(a[2]).value+"%";im.style.top=$(a[3]).value+"%";im.style.width=$(a[4]).value+"px"});
+}
+["pR","pT","pW","lR","lT","lW","e18R","e18T","e18W"].forEach((id,i)=>bindRange(id,["pRO","pTO","pWO","lRO","lTO","lWO","e18RO","e18TO","e18WO"][i],id.includes("W")?"px":"%"));
+
+async function write(ref,data,msg){await setDoc(ref,{...data,updatedAt:serverTimestamp()},{merge:true});if(msg)toast(msg)}
+window.runSlot=async i=>{let x=S.schedule[i];await write(refs.stream,{movieTitle:x.title,currentUrl:x.url||"",movieCategory:x.category||x.type,movieDescription:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!(x.is18Plus||x.age==="18"),startedAt:serverTimestamp(),playbackState:"PLAYING",timeOffsetSec:Number(x.offsetSec||0),trimStart:x.skipStartSec||0,trimEnd:x.skipEndSec||0},"تم إرسال العنصر للبث")};
+window.delSlot=i=>{S.schedule.splice(i,1);render()};window.moveSlot=(i,d)=>{let j=i+d;if(j<0||j>=S.schedule.length)return;[S.schedule[i],S.schedule[j]]=[S.schedule[j],S.schedule[i]];render()};
+window.delAd=i=>{S.ads.splice(i,1);render()};
+window.movieToSchedule=i=>{let m=S.movies[i];S.schedule.push({type:"movie",title:m.title,start:new Date().toISOString().slice(0,16),durationMin:m.durationMin,url:m.url,posterUrl:m.posterUrl,description:m.description,age:m.age,is18Plus:m.is18Plus,skipStartSec:m.skipStartSec||0,skipEndSec:m.skipEndSec||0});S.schedule.sort((a,b)=>a.start.localeCompare(b.start));render();show("schedule")};
+window.seriesToSchedule=i=>{let m=S.series[i];S.schedule.push({type:"series",title:`${m.name} — ${m.title||"الحلقة "+m.episode}`,start:new Date().toISOString().slice(0,16),durationMin:m.durationMin,url:m.url,posterUrl:m.posterUrl,description:m.description,age:m.age,is18Plus:m.age==="18"});S.schedule.sort((a,b)=>a.start.localeCompare(b.start));render();show("schedule")};
+
+$("addSchedule").onclick=()=>{let x={type:$("st").value,title:$("sn").value,start:$("ss").value,durationMin:Number($("sd").value||0),url:$("su").value,age:$("sa").value,is18Plus:$("s18").value==="true",skipStartSec:Number($("sk").value||0),skipEndSec:Number($("se").value||0),offsetSec:Number($("so").value||0),description:$("sdesc").value,posterUrl:$("sp").value};if(!x.title||!x.start)return toast("أدخل العنوان والوقت");S.schedule.push(x);S.schedule.sort((a,b)=>a.start.localeCompare(b.start));render();toast("أضيف للجدول — اضغط حفظ الجدول للنشر")};
+$("saveSchedule").onclick=async()=>{let playlist=S.schedule.map(x=>({title:x.title,url:x.url||"",durationSec:Number(x.durationMin||0)*60,skipStartSec:Number(x.skipStartSec||0),skipEndSec:Number(x.skipEndSec||0),category:x.category||x.type,description:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!x.is18Plus}));await write(refs.schedule,{items:S.schedule});await write(refs.stream,{schedule:S.schedule,playlist,autoPlay:true},"تم نشر الجدول إلى Firebase")};
+$("publish").onclick=async()=>{let playlist=S.schedule.map(x=>({title:x.title,url:x.url||"",durationSec:Number(x.durationMin||0)*60,skipStartSec:Number(x.skipStartSec||0),skipEndSec:Number(x.skipEndSec||0),category:x.category||x.type,description:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!x.is18Plus}));await write(refs.schedule,{items:S.schedule});await write(refs.stream,{schedule:S.schedule,playlist,autoPlay:true},"تم نشر الجدول وتشغيل Auto Play")};
+
+$("addMovie").onclick=async()=>{let m={title:$("mn").value,category:$("mc").value,description:$("mde").value,posterUrl:$("mp").value,url:$("mu").value,durationMin:Number($("md").value||0),age:$("ma").value,is18Plus:$("m18").value==="true",skipStartSec:Number($("mk").value||0),skipEndSec:Number($("mke").value||0)};if(!m.title||!m.url)return toast("اسم الفيلم والرابط مطلوبان");S.movies.push(m);await write(refs.movies,{items:S.movies},"تم حفظ الفيلم");render()};
+$("addSeries").onclick=async()=>{let m={name:$("serName").value,title:$("serTitle").value,season:Number($("serSeason").value||1),episode:Number($("serEp").value||1),durationMin:Number($("serDur").value||0),age:$("serAge").value,description:$("serDesc").value,posterUrl:$("serPoster").value,url:$("serUrl").value};if(!m.name||!m.url)return toast("اسم المسلسل والرابط مطلوبان");S.series.push(m);await write(refs.series,{items:S.series},"تم حفظ الحلقة");render()};
+$("savePrayer").onclick=async()=>{let p={};prayerKeys.forEach(([k])=>p[k]={time:$("pt_"+k).value,url:$("pu_"+k).value,durationMin:Number($("pd_"+k).value||10)});S.prayer=p;await write(refs.prayer,p);await write(refs.stream,{prayerSchedule:p},"تم حفظ الأذان والجمعة")};
+$("addAd").onclick=async()=>{let a={title:$("adName").value,start:$("adStart").value,durationMin:Number($("adDur").value||0),repeat:$("adRepeat").value,url:$("adUrl").value,active:$("adActive").value==="true"};if(!a.title||!a.url)return toast("أدخل اسم الإعلان والرابط");S.ads.push(a);await write(refs.ads,{items:S.ads},"تم حفظ الفاصل");render()};
+$("saveBrand").onclick=async()=>{let o={url:$("pUrl").value,logoUrl:$("pUrl").value,portUrl:$("pUrl").value,portTop:Number($("pT").value),portRight:Number($("pR").value),portWidth:Number($("pW").value),portVisible:$("pOn").checked,landUrl:$("lUrl").value,landTop:Number($("lT").value),landRight:Number($("lR").value),landWidth:Number($("lW").value),landVisible:$("lOn").checked,e18Url:$("e18Url").value,e18Top:Number($("e18T").value),e18Right:Number($("e18R").value),e18Width:Number($("e18W").value),e18Visible:$("e18On").checked};S.logo=o;await write(refs.logo,o);await write(refs.stream,o,"تم حفظ اللوجوهات")};
+$("saveBanners").onclick=async()=>{let b={topBannerUrl:$("tbUrl").value,topBannerAnimType:$("tbAnim").value,topBannerWidth:Number($("tbW").value||300),topBannerTopPx:Number($("tbT").value||10),isTopBannerActive:$("tbOn").value==="true",nextMovieBannerUrl:$("nbUrl").value,nextMovieAnimType:$("nbAnim").value,nextMovieWidth:Number($("nbW").value||90),isNextMovieActive:$("nbOn").value==="true"};S.banner=b;await write(refs.banner,b);await write(refs.stream,b,"تم حفظ البنرات")};
+$("saveSettings").onclick=async()=>{let s={channelName:$("channelName").value,timezone:$("timezone").value,offlineMsg:$("offlineMsg").value,autoPlay:$("autoPlay").checked};await write(refs.settings,s,"تم حفظ إعدادات القناة")};
+$("play").onclick=()=>write(refs.stream,{playbackState:"PLAYING"},"تم إرسال PLAYING");$("pause").onclick=()=>write(refs.stream,{playbackState:"PAUSED"},"تم إرسال PAUSED");$("skip").onclick=()=>write(refs.stream,{skipToNext:true},"تم إرسال أمر التالي");$("reload").onclick=()=>write(refs.stream,{reloadPlayer:true,reloadAt:serverTimestamp()},"تم إرسال إعادة التحميل");
+$("plus").onclick=()=>write(refs.stream,{timeOffsetSec:Number(S.stream.timeOffsetSec||0)+60},"+ دقيقة");$("minus").onclick=()=>write(refs.stream,{timeOffsetSec:Number(S.stream.timeOffsetSec||0)-60},"− دقيقة");
+$("liveToggle").onclick=async()=>{let v=S.stream.isLive===false;await write(refs.stream,{isLive:v,playbackState:v?"PLAYING":"PAUSED"},v?"تم تشغيل القناة":"تم إيقاف القناة")};
+$("saveNow").onclick=async()=>{await write(refs.stream,{movieTitle:$("nowTitle").value,currentUrl:$("nowUrl").value,movieCategory:$("nowCat").value,movieDescription:$("nowDesc").value,posterUrl:$("nowPoster").value,is18Plus:$("nowAge").value==="18",startedAt:serverTimestamp(),playbackState:"PLAYING"},"تم تشغيل المحتوى الحالي");$("preview").src=$("nowUrl").value};
+$("emStart").onclick=async()=>{if(!$("emUrl").value)return toast("أدخل رابط الطوارئ");await write(refs.stream,{emergencyAdUrl:$("emUrl").value,playbackState:"EMERGENCY_AD",emergencyAt:serverTimestamp()},"تم إطلاق الطوارئ")};
+$("emStop").onclick=()=>write(refs.stream,{playbackState:"PLAYING",emergencyAdUrl:""},"تم إلغاء الطوارئ");
+$("clearComments").onclick=async()=>{toast("الحذف الجماعي يحتاج تحديد مستندات التعليقات واحدًا واحدًا حفاظًا على التكلفة")};
+
+onSnapshot(refs.stream,s=>{if(s.exists()){S.stream=s.data();$("conn").textContent="متصل";render()}else $("conn").textContent="المستند غير موجود"},()=>{$("conn").textContent="خطأ في الصلاحيات"});
+onSnapshot(query(collection(db,"streams","live_stream_1","comments"),orderBy("timestamp","desc"),limit(50)),snap=>{$("comments").innerHTML=snap.empty?'<tr><td colspan="4" class="empty">لا توجد تعليقات.</td></tr>':snap.docs.map(d=>{let x=d.data();return `<tr><td>${esc(x.username||x.name||"زائر")}</td><td>${esc(x.text||"")}</td><td>${x.timestamp?.toDate?x.timestamp.toDate().toLocaleTimeString("ar-EG"):"—"}</td><td><button class="btn danger" onclick="deleteComment('${d.id}')">حذف</button></td></tr>`}).join("")},()=>{});
+window.deleteComment=async id=>{await deleteDoc(doc(db,"streams","live_stream_1","comments",id));toast("تم حذف التعليق")};
+
+Promise.all([getDoc(refs.movies),getDoc(refs.series),getDoc(refs.schedule),getDoc(refs.prayer),getDoc(refs.ads),getDoc(refs.logo),getDoc(refs.banner),getDoc(refs.settings)]).then(r=>{
+if(r[0].exists())S.movies=r[0].data().items||[];if(r[1].exists())S.series=r[1].data().items||[];if(r[2].exists())S.schedule=r[2].data().items||[];
+if(r[3].exists())S.prayer=r[3].data();if(r[4].exists())S.ads=r[4].data().items||[];if(r[5].exists())S.logo=r[5].data();if(r[6].exists())S.banner=r[6].data();
+if(r[7].exists()){let x=r[7].data();$("channelName").value=x.channelName||"Cobra TV";$("timezone").value=x.timezone||"Africa/Cairo";$("offlineMsg").value=x.offlineMsg||"";$("autoPlay").checked=x.autoPlay!==false}
+renderLogo();render();
+}).catch(()=>render());
+</script>
+</body>
+</html>
