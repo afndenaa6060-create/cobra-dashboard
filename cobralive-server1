@@ -75,7 +75,7 @@ main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;alig
 <div class="card"><div class="head"><h2>🎛️ البرنامج الحالي</h2></div><div class="body"><div class="field"><label>العنوان</label><input id="nowTitle"></div><div class="field" style="margin-top:9px"><label>الرابط</label><input id="nowUrl" dir="ltr"></div><div class="form" style="margin-top:9px"><div class="field"><label>التصنيف</label><input id="nowCat"></div><div class="field"><label>العمر</label><select id="nowAge"><option value="general">عام</option><option value="12">+12</option><option value="16">+16</option><option value="18">+18</option></select></div></div><div class="field" style="margin-top:9px"><label>الوصف</label><textarea id="nowDesc"></textarea></div><div class="field" style="margin-top:9px"><label>رابط البوستر</label><input id="nowPoster" dir="ltr"></div><div class="controlbar"><button class="btn primary" id="saveNow">حفظ وتشغيل الآن</button></div></div></div>
 </div>
 <div class="card"><div class="head"><h2>📋 الجدول القادم — رقم 1، 2، 3...</h2><button class="btn" onclick="show('schedule')">فتح الجدول</button></div><div class="body" id="dashSchedule"></div></div>
-<div class="notice">⚠️ مهم: Firebase يحفظ الجدول والأوامر حتى بعد إغلاق لوحة التحكم. الاستمرار الفعلي على أجهزة المشاهدين يتم من خلال Player التطبيق/الموقع الذي يقرأ <b>playlist + startedAt</b>. كود المشغل القديم عندك بالفعل يستخدم هذه الفكرة ويحسب العنصر الحالي من الوقت.</div>
+<div class="notice">⚠️ مهم: Firebase يحفظ الجدول والأوامر حتى بعد إغلاق لوحة التحكم. الاستمرار الفعلي على أجهزة المشاهدين يتم من خلال Player التطبيق/الموقع الذي يقرأ <b>playlist + startedAt</b>.</div>
 </section>
 
 <section id="schedule" class="page">
@@ -118,7 +118,7 @@ main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;alig
 </section>
 
 <section id="prayer" class="page">
-<div class="card"><div class="head"><h2>☾ الأذان وصلاة الجمعة</h2><button class="btn primary" id="savePrayer">💾 حفظ</button></div><div class="body"><div class="notice">كل صلاة لها وقت ورابط تشغيل مستقل. الجمعة منفصلة عن الظهر كما طلبت.</div><div class="prayer-grid" id="prayerGrid" style="margin-top:10px"></div></div></div>
+<div class="card"><div class="head"><h2>☾ الأذان وصلاة الجمعة</h2><button class="btn primary" id="savePrayer">💾 حفظ</button></div><div class="body"><div class="notice">كل صلاة لها وقت ورابط تشغيل مستقل. الجمعة منفصلة عن الظهر.</div><div class="prayer-grid" id="prayerGrid" style="margin-top:10px"></div></div></div>
 </section>
 
 <section id="ads" class="page">
@@ -133,7 +133,6 @@ main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;alig
 <div class="logo-card"><h3>🖥️ لوجو Landscape</h3><div class="preview"><img id="pvL"></div><div class="field"><label>الرابط</label><input id="lUrl" dir="ltr"></div><div class="range"><span>يمين</span><input id="lR" type="range" min="0" max="100" value="5"><output id="lRO">5%</output></div><div class="range"><span>أعلى</span><input id="lT" type="range" min="0" max="100" value="5"><output id="lTO">5%</output></div><div class="range"><span>الحجم</span><input id="lW" type="range" min="20" max="320" value="100"><output id="lWO">100px</output></div><label class="switch">إظهار <input id="lOn" type="checkbox" checked></label></div>
 <div class="logo-card"><h3>🔞 علامة +18</h3><div class="preview"><img id="pv18"></div><div class="field"><label>رابط صورة/شارة +18</label><input id="e18Url" dir="ltr"></div><div class="range"><span>يمين</span><input id="e18R" type="range" min="0" max="100" value="5"><output id="e18RO">5%</output></div><div class="range"><span>أعلى</span><input id="e18T" type="range" min="0" max="100" value="10"><output id="e18TO">10%</output></div><div class="range"><span>الحجم</span><input id="e18W" type="range" min="20" max="180" value="55"><output id="e18WO">55px</output></div><label class="switch">إظهار عند +18 <input id="e18On" type="checkbox" checked></label></div>
 </div>
-<div class="notice" style="margin-top:12px">التحكم هنا يحفظ نفس أسماء الحقول التي يقرأها مشغل Cobra TV القديم: <b>logoUrl / portTop / portRight / portWidth / landTop / landRight / landWidth</b>. أما +18 فتمت إضافته كطبقة مستقلة.</div>
 </div></div>
 </section>
 
@@ -145,7 +144,7 @@ main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;alig
 </section>
 
 <section id="emergency" class="page">
-<div class="card"><div class="head"><h2>⚡ الإعلان المفاجئ / الطوارئ</h2></div><div class="body"><div class="notice">هذا الأمر يكتب حالة طوارئ في Firebase ليقرأها المشغل. استخدمه فقط عند الحاجة.</div><div class="field" style="margin-top:10px"><label>رابط فيديو/صورة الطوارئ</label><input id="emUrl" dir="ltr"></div><div class="controlbar"><button class="btn danger" id="emStart">⚡ إطلاق الآن</button><button class="btn" id="emStop">إلغاء الطوارئ</button></div></div></div>
+<div class="card"><div class="head"><h2>⚡ الإعلان المفاجئ / الطوارئ</h2></div><div class="body"><div class="notice">هذا الأمر يكتب حالة طوارئ في Firebase ليقرأها المشغل.</div><div class="field" style="margin-top:10px"><label>رابط فيديو/صورة الطوارئ</label><input id="emUrl" dir="ltr"></div><div class="controlbar"><button class="btn danger" id="emStart">⚡ إطلاق الآن</button><button class="btn" id="emStop">إلغاء الطوارئ</button></div></div></div>
 </section>
 
 <section id="comments" class="page">
@@ -158,15 +157,6 @@ main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;alig
 <div class="field full"><label>رسالة التوقف</label><textarea id="offlineMsg">القناة متوقفة مؤقتًا.</textarea></div>
 <label class="switch full">التشغيل التلقائي <input id="autoPlay" type="checkbox" checked></label>
 </div></div></div>
-<div class="card"><div class="head"><h2>🧭 بنية Firebase المستخدمة</h2></div><div class="body"><div class="notice">
-<b>streams/live_stream_1</b> = الحالة الحالية + playlist + startedAt + اللوجو + البنرات + أوامر التشغيل.<br>
-<b>cobra_admin/movies</b> = مكتبة الأفلام.<br>
-<b>cobra_admin/series</b> = مكتبة المسلسلات.<br>
-<b>cobra_admin/schedule</b> = الجدول الكامل.<br>
-<b>cobra_admin/prayer</b> = مواعيد وروابط الأذان والجمعة.<br>
-<b>cobra_admin/ads</b> = الإعلانات والفواصل.<br>
-<b>cobra_admin/settings</b> = إعدادات القناة.
-</div></div></div>
 </section>
 </main>
 </div>
@@ -176,96 +166,191 @@ main{padding:24px;max-width:1750px;width:100%;margin:auto}.top{display:flex;alig
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import{getFirestore,doc,setDoc,getDoc,onSnapshot,collection,query,orderBy,limit,deleteDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const firebaseConfig={apiKey:"AIzaSyCZzSbLegFJ_xaVVqtFWFUCu2WFOd42cF0",authDomain:"cobra-tv-b1231.firebaseapp.com",projectId:"cobra-tv-b1231",storageBucket:"cobra-tv-b1231.firebasestorage.app",messagingSenderId:"73044924945",appId:"1:73044924945:web:4ed40ee2b6463b574e2fb0",measurementId:"G-X5JQH06QNK"};
-const db=getFirestore(initializeApp(firebaseConfig));
-const refs={
- stream:doc(db,"streams","live_stream_1"),movies:doc(db,"cobra_admin","movies"),series:doc(db,"cobra_admin","series"),
- schedule:doc(db,"cobra_admin","schedule"),prayer:doc(db,"cobra_admin","prayer"),ads:doc(db,"cobra_admin","ads"),
- settings:doc(db,"cobra_admin","settings"),logo:doc(db,"logo_settings","config"),banner:doc(db,"app_banners","config")
+// مفاتيح مشروعك الحقيقي: cobralive-server1
+const firebaseConfig = {
+  apiKey: "AIzaSyAwFgc1LrsO8xwJM6CJJYOnUSZHyWfkc",
+  authDomain: "cobralive-server1.firebaseapp.com",
+  projectId: "cobralive-server1",
+  storageBucket: "cobralive-server1.firebasestorage.app",
+  messagingSenderId: "874231764707",
+  appId: "1:874231764707:web:256fc4ad2e1420fa89d7d6",
+  measurementId: "G-P3B990Y934"
 };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const refs={
+  stream:doc(db,"streams","live_stream_1"),
+  movies:doc(db,"cobra_admin","movies"),
+  series:doc(db,"cobra_admin","series"),
+  schedule:doc(db,"cobra_admin","schedule"),
+  prayer:doc(db,"cobra_admin","prayer"),
+  ads:doc(db,"cobra_admin","ads"),
+  settings:doc(db,"cobra_admin","settings"),
+  logo:doc(db,"logo_settings","config"),
+  banner:doc(db,"app_banners","config")
+};
+
 let S={stream:{},movies:[],series:[],schedule:[],prayer:{},ads:[],logo:{},banner:{}};
 const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+
 function toast(x){let t=$("toast");t.textContent=x;t.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display="none",2300)}
 function show(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));$("title").textContent=document.querySelector(`[data-page="${id}"]`)?.textContent.trim()||"Cobra TV"}
 window.show=show;
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>show(b.dataset.page));
-setInterval(()=>{document.querySelector(".top p").textContent=new Intl.DateTimeFormat("ar-EG",{dateStyle:"full",timeStyle:"medium",timeZone:"Africa/Cairo"}).format(new Date())+" • الجدول محفوظ في Firebase"},1000);
+setInterval(()=>{document.querySelector(".top p").textContent=new Intl.DateTimeFormat("ar-EG",{dateStyle:"full",timeStyle:"medium",timeZone:"Africa/Cairo"}).format(new Date())+" • متصل مع قاعدة بيانات Cobra Live"},1000);
 
 function render(){
- const d=S.stream||{}, a=S.schedule||[];
- $("state").textContent=d.isLive===false?"OFFLINE":(d.playbackState==="PAUSED"?"PAUSED":"🔴 LIVE");
- $("current").textContent=d.movieTitle||"—"; $("next").textContent=a[1]?.title||a[0]?.title||"—";
- $("viewers").textContent=Number(d.viewers||0).toLocaleString("ar-EG"); $("offset").textContent=(d.timeOffsetSec||0)+" ث";
- $("fb").textContent="متصل";
- $("nowTitle").value=d.movieTitle||"";$("nowUrl").value=d.currentUrl||d.url||"";$("nowCat").value=d.movieCategory||d.category||"";
- $("nowDesc").value=d.movieDescription||d.description||"";$("nowPoster").value=d.posterUrl||d.moviePoster||"";$("nowAge").value=d.is18Plus?"18":(d.age||"general");
- $("screenNext").textContent="التالي: "+(a[1]?.title||a[0]?.title||"—");
- renderSchedule();renderDashSchedule();renderMovies();renderSeries();renderAds();renderPrayer();
+  const d=S.stream||{}, a=S.schedule||[];
+  $("state").textContent=d.isLive===false?"OFFLINE":(d.playbackState==="PAUSED"?"PAUSED":"🔴 LIVE");
+  $("current").textContent=d.movieTitle\vert{}\vert{}"—"; $("next").textContent=a[1]?.title||a[0]?.title||"—";
+  $("viewers").textContent=Number(d.viewers\vert{}\vert{}0).toLocaleString("ar-EG"); $("offset").textContent=(d.timeOffsetSec||0)+" ث";
+  $("fb").textContent="متصل ✓";
+  $("nowTitle").value=d.movieTitle||"";$("nowUrl").value=d.currentUrl\vert{}\vert{}d.url\vert{}\vert{}"";$("nowCat").value=d.movieCategory||d.category||"";
+  $("nowDesc").value=d.movieDescription||d.description||"";$("nowPoster").value=d.posterUrl\vert{}\vert{}d.moviePoster\vert{}\vert{}"";$("nowAge").value=d.is18Plus?"18":(d.age||"general");
+  $("screenNext").textContent="التالي: "+(a[1]?.title||a[0]?.title||"—");
+  renderSchedule();renderDashSchedule();renderMovies();renderSeries();renderAds();renderPrayer();
 }
+
 function slotHTML(x,i){
- return `<div class="slot ${i===0?"current":""}">
- <div class="num">${i+1}</div><div class="time">${esc((x.start||"").replace("T"," "))}</div>
- <div><div class="slottitle">${esc(x.title||"بدون عنوان")}</div><div class="meta">${esc(x.type||"movie")} • ${esc(x.durationMin??Math.round((x.durationSec||0)/60))} دقيقة • ${x.url?"رابط ✓":"بدون رابط"}</div></div>
- <div class="tag ${x.age==="18"||x.is18Plus?"age18":""}">${x.age==="18"||x.is18Plus?"+18":esc(x.age||"عام")}</div>
- <div class="tag">بداية +${esc(x.skipStartSec||0)}ث</div>
- <div class="slot-actions"><button class="btn green" onclick="runSlot(${i})">▶ تشغيل</button><button class="btn" onclick="moveSlot(${i},-1)">↑</button><button class="btn" onclick="moveSlot(${i},1)">↓</button><button class="btn danger" onclick="delSlot(${i})">حذف</button></div>
- </div>`
+  return `<div class="slot ${i===0?"current":""}">
+  <div class="num">${i+1}</div><div class="time">${esc((x.start||"").replace("T"," "))}</div>
+  <div><div class="slottitle">${esc(x.title||"بدون عنوان")}</div><div class="meta">${esc(x.type||"movie")} • ${esc(x.durationMin??Math.round((x.durationSec||0)/60))} دقيقة • ${x.url?"رابط ✓":"بدون رابط"}</div></div>
+  <div class="tag ${x.age==="18"||x.is18Plus?"age18":""}">${x.age==="18"||x.is18Plus?"+18":esc(x.age||"عام")}</div>
+  <div class="tag">بداية +${esc(x.skipStartSec||0)}ث</div>
+  <div class="slot-actions"><button class="btn green" onclick="runSlot(${i})">▶ تشغيل</button><button class="btn" onclick="moveSlot(${i},-1)">↑</button><button class="btn" onclick="moveSlot(${i},1)">↓</button><button class="btn danger" onclick="delSlot(${i})">حذف</button></div>
+  </div>`
 }
-function renderSchedule(){$("scheduleList").innerHTML=S.schedule.length?S.schedule.map(slotHTML).join(""):'<div class="empty">الجدول فارغ — أضف رقم 1 من النموذج.</div>'}
-function renderDashSchedule(){$("dashSchedule").innerHTML=S.schedule.slice(0,7).map(slotHTML).join("")||'<div class="empty">لا يوجد جدول.</div>'}
-function renderMovies(){$("movieLib").innerHTML=S.movies.length?S.movies.map((m,i)=>`<div class="media"><div class="poster">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:"🎬"}</div><h3>${esc(m.title)}</h3><div class="mini">${esc(m.category||"عام")} • ${esc(m.durationMin||Math.round((m.durationSec||0)/60))} دقيقة</div>${m.is18Plus||m.age==="18"?'<span class="badge badge18">+18</span>':""}<div class="controlbar"><button class="btn green" onclick="movieToSchedule(${i})">＋ للجدول</button></div></div>`).join(""):'<div class="empty">لا توجد أفلام.</div>'}
-function renderSeries(){$("seriesLib").innerHTML=S.series.length?S.series.map((m,i)=>`<div class="media"><div class="poster">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:"📺"}</div><h3>${esc(m.name)} — ${esc(m.title||"الحلقة")}</h3><div class="mini">موسم ${esc(m.season)} • حلقة ${esc(m.episode)} • ${esc(m.durationMin||0)} دقيقة</div>${m.age==="18"?'<span class="badge badge18">+18</span>':""}<div class="controlbar"><button class="btn green" onclick="seriesToSchedule(${i})">＋ للجدول</button></div></div>`).join(""):'<div class="empty">لا توجد حلقات.</div>'}
-function renderAds(){$("adList").innerHTML=S.ads.length?S.ads.map((a,i)=>`<div class="slot"><div class="num">📢</div><div class="time">${esc((a.start||"").slice(11,16)||"—")}</div><div><div class="slottitle">${esc(a.title||a.name)}</div><div class="meta">${esc(a.repeat||"once")} • ${esc(a.durationMin||a.duration||0)} دقيقة</div></div><div class="tag">${a.active===false?"متوقف":"فعال"}</div><div></div><div class="slot-actions"><button class="btn danger" onclick="delAd(${i})">حذف</button></div></div>`).join(""):'<div class="empty">لا توجد فواصل.</div>'}
+
+function renderSchedule(){$("scheduleList").innerHTML=S.schedule.length?S.schedule.map(slotHTML).join(""):'<div class="empty">الجدول فارغ — أضف عناصر من النموذج أعلاه.</div>'}
+function renderDashSchedule(){$("dashSchedule").innerHTML=S.schedule.slice(0,7).map(slotHTML).join("")||'<div class="empty">لا يوجد جدول مسجل.</div>'}
+function renderMovies(){$("movieLib").innerHTML=S.movies.length?S.movies.map((m,i)=>`<div class="media"><div class="poster">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:"🎬"}</div><h3>${esc(m.title)}</h3><div class="mini">${esc(m.category||"عام")} • ${esc(m.durationMin||Math.round((m.durationSec||0)/60))} دقيقة</div>${m.is18Plus||m.age==="18"?'<span class="badge badge18">+18</span>':""}<div class="controlbar"><button class="btn green" onclick="movieToSchedule(${i})">＋ للجدول</button></div></div>`).join(""):'<div class="empty">لا توجد أفلام بالمكتبة.</div>'}
+function renderSeries(){$("seriesLib").innerHTML=S.series.length?S.series.map((m,i)=>`<div class="media"><div class="poster">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:"📺"}</div><h3>${esc(m.name)} — ${esc(m.title||"الحلقة")}</h3><div class="mini">موسم ${esc(m.season)} • حلقة ${esc(m.episode)} • ${esc(m.durationMin||0)} دقيقة</div>${m.age==="18"?'<span class="badge badge18">+18</span>':""}<div class="controlbar"><button class="btn green" onclick="seriesToSchedule(${i})">＋ للجدول</button></div></div>`).join(""):'<div class="empty">لا توجد حلقات بالمكتبة.</div>'}
+function renderAds(){$("adList").innerHTML=S.ads.length?S.ads.map((a,i)=>`<div class="slot"><div class="num">📢</div><div class="time">${esc((a.start||"").slice(11,16)||"—")}</div><div><div class="slottitle">${esc(a.title||a.name)}</div><div class="meta">${esc(a.repeat||"once")} • ${esc(a.durationMin||a.duration||0)} دقيقة</div></div><div class="tag">${a.active===false?"متوقف":"فعال"}</div><div></div><div class="slot-actions"><button class="btn danger" onclick="delAd(${i})">حذف</button></div></div>`).join(""):'<div class="empty">لا توجد فواصل مسجلة.</div>'}
 const prayerKeys=[["fajr","الفجر"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"],["friday","الجمعة — صلاة الجمعة"]];
 function renderPrayer(){$("prayerGrid").innerHTML=prayerKeys.map(([k,n])=>`<div class="prayer ${k==="friday"?"friday":""}"><h3>${n}</h3><div class="field"><label>الوقت</label><input id="pt_${k}" type="time" value="${esc(S.prayer[k]?.time||"")}"></div><div class="field" style="margin-top:8px"><label>رابط التشغيل</label><input id="pu_${k}" dir="ltr" value="${esc(S.prayer[k]?.url||"")}"></div><div class="field" style="margin-top:8px"><label>المدة — دقيقة</label><input id="pd_${k}" type="number" value="${esc(S.prayer[k]?.durationMin||10)}"></div></div>`).join("")}
+
 function renderLogo(){
- const x=S.logo||{};$("pUrl").value=x.url||x.portUrl||"";$("lUrl").value=x.landUrl||"";$("e18Url").value=x.e18Url||"";
- $("pR").value=x.portRight??5;$("pT").value=x.portTop??5;$("pW").value=x.portWidth??80;$("pOn").checked=x.portVisible!==false;
- $("lR").value=x.landRight??5;$("lT").value=x.landTop??5;$("lW").value=x.landWidth??100;$("lOn").checked=x.landVisible!==false;
- $("e18R").value=x.e18Right??5;$("e18T").value=x.e18Top??10;$("e18W").value=x.e18Width??55;$("e18On").checked=x.e18Visible!==false;updateLogo();
+  const x=S.logo||{};$("pUrl").value=x.url||x.portUrl||"";$("lUrl").value=x.landUrl\vert{}\vert{}"";$("e18Url").value=x.e18Url||"";
+  $("pR").value=x.portRight??5;$("pT").value=x.portTop??5;$("pW").value=x.portWidth??80;$("pOn").checked=x.portVisible!==false;
+  $("lR").value=x.landRight??5;$("lT").value=x.landTop??5;$("lW").value=x.landWidth??100;$("lOn").checked=x.landVisible!==false;
+  $("e18R").value=x.e18Right??5;$("e18T").value=x.e18Top??10;$("e18W").value=x.e18Width??55;$("e18On").checked=x.e18Visible!==false;updateLogo();
 }
+
 function bindRange(id,out,suffix){$(id).oninput=()=>{$(out).textContent=$(id).value+suffix;updateLogo()}}
 function updateLogo(){
- [["pR","pRO","%"],["pT","pTO","%"],["pW","pWO","px"],["lR","lRO","%"],["lT","lTO","%"],["lW","lWO","px"],["e18R","e18RO","%"],["e18T","e18TO","%"],["e18W","e18WO","px"]].forEach(a=>$(a[1]).textContent=$(a[0]).value+a[2]);
- [["pvP","pUrl","pR","pT","pW"],["pvL","lUrl","lR","lT","lW"],["pv18","e18Url","e18R","e18T","e18W"]].forEach(a=>{let im=$(a[0]);im.src=$(a[1]).value;im.style.right=$(a[2]).value+"%";im.style.top=$(a[3]).value+"%";im.style.width=$(a[4]).value+"px"});
+  [["pR","pRO","%"],["pT","pTO","%"],["pW","pWO","px"],["lR","lRO","%"],["lT","lTO","%"],["lW","lWO","px"],["e18R","e18RO","%"],["e18T","e18TO","%"],["e18W","e18WO","px"]].forEach(a=>$(a[1]).textContent=$(a[0]).value+a[2]);
+  [["pvP","pUrl","pR","pT","pW"],["pvL","lUrl","lR","lT","lW"],["pv18","e18Url","e18R","e18T","e18W"]].forEach(a=>{let im=$(a[0]);im.src=$(a[1]).value;im.style.right=$(a[2]).value+"%";im.style.top=$(a[3]).value+"\%";im.style.width=$(a[4]).value+"px"});
 }
 ["pR","pT","pW","lR","lT","lW","e18R","e18T","e18W"].forEach((id,i)=>bindRange(id,["pRO","pTO","pWO","lRO","lTO","lWO","e18RO","e18TO","e18WO"][i],id.includes("W")?"px":"%"));
 
 async function write(ref,data,msg){await setDoc(ref,{...data,updatedAt:serverTimestamp()},{merge:true});if(msg)toast(msg)}
-window.runSlot=async i=>{let x=S.schedule[i];await write(refs.stream,{movieTitle:x.title,currentUrl:x.url||"",movieCategory:x.category||x.type,movieDescription:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!(x.is18Plus||x.age==="18"),startedAt:serverTimestamp(),playbackState:"PLAYING",timeOffsetSec:Number(x.offsetSec||0),trimStart:x.skipStartSec||0,trimEnd:x.skipEndSec||0},"تم إرسال العنصر للبث")};
-window.delSlot=i=>{S.schedule.splice(i,1);render()};window.moveSlot=(i,d)=>{let j=i+d;if(j<0||j>=S.schedule.length)return;[S.schedule[i],S.schedule[j]]=[S.schedule[j],S.schedule[i]];render()};
+
+window.runSlot=async i=>{
+  let x=S.schedule[i];
+  await write(refs.stream,{
+    movieTitle:x.title,currentUrl:x.url||"",movieCategory:x.category||x.type,
+    movieDescription:x.description||"",posterUrl:x.posterUrl||"",
+    is18Plus:!!(x.is18Plus||x.age==="18"),startedAt:serverTimestamp(),
+    playbackState:"PLAYING",timeOffsetSec:Number(x.offsetSec||0),
+    trimStart:x.skipStartSec||0,trimEnd:x.skipEndSec||0
+  },"تم إرسال العنصر للبث المباشر");
+};
+
+window.delSlot=i=>{S.schedule.splice(i,1);render()};
+window.moveSlot=(i,d)=>{let j=i+d;if(j<0||j>=S.schedule.length)return;[S.schedule[i],S.schedule[j]]=[S.schedule[j],S.schedule[i]];render()};
 window.delAd=i=>{S.ads.splice(i,1);render()};
 window.movieToSchedule=i=>{let m=S.movies[i];S.schedule.push({type:"movie",title:m.title,start:new Date().toISOString().slice(0,16),durationMin:m.durationMin,url:m.url,posterUrl:m.posterUrl,description:m.description,age:m.age,is18Plus:m.is18Plus,skipStartSec:m.skipStartSec||0,skipEndSec:m.skipEndSec||0});S.schedule.sort((a,b)=>a.start.localeCompare(b.start));render();show("schedule")};
 window.seriesToSchedule=i=>{let m=S.series[i];S.schedule.push({type:"series",title:`${m.name} — ${m.title||"الحلقة "+m.episode}`,start:new Date().toISOString().slice(0,16),durationMin:m.durationMin,url:m.url,posterUrl:m.posterUrl,description:m.description,age:m.age,is18Plus:m.age==="18"});S.schedule.sort((a,b)=>a.start.localeCompare(b.start));render();show("schedule")};
 
-$("addSchedule").onclick=()=>{let x={type:$("st").value,title:$("sn").value,start:$("ss").value,durationMin:Number($("sd").value||0),url:$("su").value,age:$("sa").value,is18Plus:$("s18").value==="true",skipStartSec:Number($("sk").value||0),skipEndSec:Number($("se").value||0),offsetSec:Number($("so").value||0),description:$("sdesc").value,posterUrl:$("sp").value};if(!x.title||!x.start)return toast("أدخل العنوان والوقت");S.schedule.push(x);S.schedule.sort((a,b)=>a.start.localeCompare(b.start));render();toast("أضيف للجدول — اضغط حفظ الجدول للنشر")};
-$("saveSchedule").onclick=async()=>{let playlist=S.schedule.map(x=>({title:x.title,url:x.url||"",durationSec:Number(x.durationMin||0)*60,skipStartSec:Number(x.skipStartSec||0),skipEndSec:Number(x.skipEndSec||0),category:x.category||x.type,description:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!x.is18Plus}));await write(refs.schedule,{items:S.schedule});await write(refs.stream,{schedule:S.schedule,playlist,autoPlay:true},"تم نشر الجدول إلى Firebase")};
-$("publish").onclick=async()=>{let playlist=S.schedule.map(x=>({title:x.title,url:x.url||"",durationSec:Number(x.durationMin||0)*60,skipStartSec:Number(x.skipStartSec||0),skipEndSec:Number(x.skipEndSec||0),category:x.category||x.type,description:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!x.is18Plus}));await write(refs.schedule,{items:S.schedule});await write(refs.stream,{schedule:S.schedule,playlist,autoPlay:true},"تم نشر الجدول وتشغيل Auto Play")};
+$("addSchedule").onclick=()=>{
+  let x={type:$("st").value,title:$("sn").value,start:$("ss").value,durationMin:Number($("sd").value||0),url:$("su").value,age:$("sa").value,is18Plus:$("s18").value==="true",skipStartSec:Number($("sk").value||0),skipEndSec:Number($("se").value\vert{}\vert{}0),offsetSec:Number($("so").value||0),description:$("sdesc").value,posterUrl:$("sp").value};
+  if(!x.title||!x.start)return toast("أدخل العنوان والوقت");
+  S.schedule.push(x);S.schedule.sort((a,b)=>a.start.localeCompare(b.start));
+  render();toast("أضيف للجدول — اضغط حفظ الجدول للنشر");
+};
 
-$("addMovie").onclick=async()=>{let m={title:$("mn").value,category:$("mc").value,description:$("mde").value,posterUrl:$("mp").value,url:$("mu").value,durationMin:Number($("md").value||0),age:$("ma").value,is18Plus:$("m18").value==="true",skipStartSec:Number($("mk").value||0),skipEndSec:Number($("mke").value||0)};if(!m.title||!m.url)return toast("اسم الفيلم والرابط مطلوبان");S.movies.push(m);await write(refs.movies,{items:S.movies},"تم حفظ الفيلم");render()};
-$("addSeries").onclick=async()=>{let m={name:$("serName").value,title:$("serTitle").value,season:Number($("serSeason").value||1),episode:Number($("serEp").value||1),durationMin:Number($("serDur").value||0),age:$("serAge").value,description:$("serDesc").value,posterUrl:$("serPoster").value,url:$("serUrl").value};if(!m.name||!m.url)return toast("اسم المسلسل والرابط مطلوبان");S.series.push(m);await write(refs.series,{items:S.series},"تم حفظ الحلقة");render()};
+$("saveSchedule").onclick=async()=>{
+  let playlist=S.schedule.map(x=>({title:x.title,url:x.url||"",durationSec:Number(x.durationMin||0)*60,skipStartSec:Number(x.skipStartSec||0),skipEndSec:Number(x.skipEndSec||0),category:x.category||x.type,description:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!x.is18Plus}));
+  await write(refs.schedule,{items:S.schedule});
+  await write(refs.stream,{schedule:S.schedule,playlist,autoPlay:true},"تم نشر الجدول إلى Firebase");
+};
+
+$("publish").onclick=async()=>{
+  let playlist=S.schedule.map(x=>({title:x.title,url:x.url||"",durationSec:Number(x.durationMin||0)*60,skipStartSec:Number(x.skipStartSec||0),skipEndSec:Number(x.skipEndSec||0),category:x.category||x.type,description:x.description||"",posterUrl:x.posterUrl||"",is18Plus:!!x.is18Plus}));
+  await write(refs.schedule,{items:S.schedule});
+  await write(refs.stream,{schedule:S.schedule,playlist,autoPlay:true},"تم نشر الجدول وتشغيل Auto Play");
+};
+
+$("addMovie").onclick=async()=>{let m={title:$("mn").value,category:$("mc").value,description:$("mde").value,posterUrl:$("mp").value,url:$("mu").value,durationMin:Number($("md").value||0),age:$("ma").value,is18Plus:$("m18").value==="true",skipStartSec:Number($("mk").value\vert{}\vert{}0),skipEndSec:Number($("mke").value||0)};if(!m.title||!m.url)return toast("اسم الفيلم والرابط مطلوبان");S.movies.push(m);await write(refs.movies,{items:S.movies},"تم حفظ الفيلم");render()};
+$("addSeries").onclick=async()=>{let m={name:$("serName").value,title:$("serTitle").value,season:Number($("serSeason").value||1),episode:Number($("serEp").value\vert{}\vert{}1),durationMin:Number($("serDur").value||0),age:$("serAge").value,description:$("serDesc").value,posterUrl:$("serPoster").value,url:$("serUrl").value};if(!m.name||!m.url)return toast("اسم المسلسل والرابط مطلوبان");S.series.push(m);await write(refs.series,{items:S.series},"تم حفظ الحلقة");render()};
 $("savePrayer").onclick=async()=>{let p={};prayerKeys.forEach(([k])=>p[k]={time:$("pt_"+k).value,url:$("pu_"+k).value,durationMin:Number($("pd_"+k).value||10)});S.prayer=p;await write(refs.prayer,p);await write(refs.stream,{prayerSchedule:p},"تم حفظ الأذان والجمعة")};
-$("addAd").onclick=async()=>{let a={title:$("adName").value,start:$("adStart").value,durationMin:Number($("adDur").value||0),repeat:$("adRepeat").value,url:$("adUrl").value,active:$("adActive").value==="true"};if(!a.title||!a.url)return toast("أدخل اسم الإعلان والرابط");S.ads.push(a);await write(refs.ads,{items:S.ads},"تم حفظ الفاصل");render()};
+$("addAd").onclick=async()=>{let a={title:$("adName").value,start:$("adStart").value,durationMin:Number($("adDur").value\vert{}\vert{}0),repeat:$("adRepeat").value,url:$("adUrl").value,active:$("adActive").value==="true"};if(!a.title||!a.url)return toast("أدخل اسم الإعلان والرابط");S.ads.push(a);await write(refs.ads,{items:S.ads},"تم حفظ الفاصل");render()};
 $("saveBrand").onclick=async()=>{let o={url:$("pUrl").value,logoUrl:$("pUrl").value,portUrl:$("pUrl").value,portTop:Number($("pT").value),portRight:Number($("pR").value),portWidth:Number($("pW").value),portVisible:$("pOn").checked,landUrl:$("lUrl").value,landTop:Number($("lT").value),landRight:Number($("lR").value),landWidth:Number($("lW").value),landVisible:$("lOn").checked,e18Url:$("e18Url").value,e18Top:Number($("e18T").value),e18Right:Number($("e18R").value),e18Width:Number($("e18W").value),e18Visible:$("e18On").checked};S.logo=o;await write(refs.logo,o);await write(refs.stream,o,"تم حفظ اللوجوهات")};
-$("saveBanners").onclick=async()=>{let b={topBannerUrl:$("tbUrl").value,topBannerAnimType:$("tbAnim").value,topBannerWidth:Number($("tbW").value||300),topBannerTopPx:Number($("tbT").value||10),isTopBannerActive:$("tbOn").value==="true",nextMovieBannerUrl:$("nbUrl").value,nextMovieAnimType:$("nbAnim").value,nextMovieWidth:Number($("nbW").value||90),isNextMovieActive:$("nbOn").value==="true"};S.banner=b;await write(refs.banner,b);await write(refs.stream,b,"تم حفظ البنرات")};
+$("saveBanners").onclick=async()=>{let b={topBannerUrl:$("tbUrl").value,topBannerAnimType:$("tbAnim").value,topBannerWidth:Number($("tbW").value||300),topBannerTopPx:Number($("tbT").value\vert{}\vert{}10),isTopBannerActive:$("tbOn").value==="true",nextMovieBannerUrl:$("nbUrl").value,nextMovieAnimType:$("nbAnim").value,nextMovieWidth:Number($("nbW").value\vert{}\vert{}90),isNextMovieActive:$("nbOn").value==="true"};S.banner=b;await write(refs.banner,b);await write(refs.stream,b,"تم حفظ البنرات")};
 $("saveSettings").onclick=async()=>{let s={channelName:$("channelName").value,timezone:$("timezone").value,offlineMsg:$("offlineMsg").value,autoPlay:$("autoPlay").checked};await write(refs.settings,s,"تم حفظ إعدادات القناة")};
-$("play").onclick=()=>write(refs.stream,{playbackState:"PLAYING"},"تم إرسال PLAYING");$("pause").onclick=()=>write(refs.stream,{playbackState:"PAUSED"},"تم إرسال PAUSED");$("skip").onclick=()=>write(refs.stream,{skipToNext:true},"تم إرسال أمر التالي");$("reload").onclick=()=>write(refs.stream,{reloadPlayer:true,reloadAt:serverTimestamp()},"تم إرسال إعادة التحميل");
-$("plus").onclick=()=>write(refs.stream,{timeOffsetSec:Number(S.stream.timeOffsetSec||0)+60},"+ دقيقة");$("minus").onclick=()=>write(refs.stream,{timeOffsetSec:Number(S.stream.timeOffsetSec||0)-60},"− دقيقة");
+
+$("play").onclick=()=>write(refs.stream,{playbackState:"PLAYING"},"تم إرسال PLAYING");
+$("pause").onclick=()=>write(refs.stream,{playbackState:"PAUSED"},"تم إرسال PAUSED");
+$("skip").onclick=()=>write(refs.stream,{skipToNext:true},"تم إرسال أمر التالي");
+$("reload").onclick=()=>write(refs.stream,{reloadPlayer:true,reloadAt:serverTimestamp()},"تم إرسال إعادة التحميل");
+$("plus").onclick=()=>write(refs.stream,{timeOffsetSec:Number(S.stream.timeOffsetSec||0)+60},"+ دقيقة");
+$("minus").onclick=()=>write(refs.stream,{timeOffsetSec:Number(S.stream.timeOffsetSec||0)-60},"− دقيقة");
 $("liveToggle").onclick=async()=>{let v=S.stream.isLive===false;await write(refs.stream,{isLive:v,playbackState:v?"PLAYING":"PAUSED"},v?"تم تشغيل القناة":"تم إيقاف القناة")};
-$("saveNow").onclick=async()=>{await write(refs.stream,{movieTitle:$("nowTitle").value,currentUrl:$("nowUrl").value,movieCategory:$("nowCat").value,movieDescription:$("nowDesc").value,posterUrl:$("nowPoster").value,is18Plus:$("nowAge").value==="18",startedAt:serverTimestamp(),playbackState:"PLAYING"},"تم تشغيل المحتوى الحالي");$("preview").src=$("nowUrl").value};
+
+$("saveNow").onclick=async()=>{
+  await write(refs.stream,{
+    movieTitle:$("nowTitle").value,currentUrl:$("nowUrl").value,
+    movieCategory:$("nowCat").value,movieDescription:$("nowDesc").value,
+    posterUrl:$("nowPoster").value,is18Plus:$("nowAge").value==="18",
+    startedAt:serverTimestamp(),playbackState:"PLAYING"
+  },"تم تشغيل المحتوى الحالي بنجاح");
+  $("preview").src=$("nowUrl").value;
+};
+
 $("emStart").onclick=async()=>{if(!$("emUrl").value)return toast("أدخل رابط الطوارئ");await write(refs.stream,{emergencyAdUrl:$("emUrl").value,playbackState:"EMERGENCY_AD",emergencyAt:serverTimestamp()},"تم إطلاق الطوارئ")};
 $("emStop").onclick=()=>write(refs.stream,{playbackState:"PLAYING",emergencyAdUrl:""},"تم إلغاء الطوارئ");
 $("clearComments").onclick=async()=>{toast("الحذف الجماعي يحتاج تحديد مستندات التعليقات واحدًا واحدًا حفاظًا على التكلفة")};
 
-onSnapshot(refs.stream,s=>{if(s.exists()){S.stream=s.data();$("conn").textContent="متصل";render()}else $("conn").textContent="المستند غير موجود"},()=>{$("conn").textContent="خطأ في الصلاحيات"});
-onSnapshot(query(collection(db,"streams","live_stream_1","comments"),orderBy("timestamp","desc"),limit(50)),snap=>{$("comments").innerHTML=snap.empty?'<tr><td colspan="4" class="empty">لا توجد تعليقات.</td></tr>':snap.docs.map(d=>{let x=d.data();return `<tr><td>${esc(x.username||x.name||"زائر")}</td><td>${esc(x.text||"")}</td><td>${x.timestamp?.toDate?x.timestamp.toDate().toLocaleTimeString("ar-EG"):"—"}</td><td><button class="btn danger" onclick="deleteComment('${d.id}')">حذف</button></td></tr>`}).join("")},()=>{});
+// المزامنة الحية المباشرة
+onSnapshot(refs.stream,s=>{
+  if(s.exists()){
+    S.stream=s.data();
+    $("conn").textContent="متصل بقاعدة البيانات";
+    render();
+  } else {
+    $("conn").textContent="المستند غير موجود (سيُنشأ تلقائياً عند أول حفظ)";
+  }
+},err=>{
+  $("conn").textContent="خطأ صلاحيات: تأكد من تفعيل قواعد Firestore";
+});
+
+onSnapshot(query(collection(db,"streams","live_stream_1","comments"),orderBy("timestamp","desc"),limit(50)),snap=>{
+  $("comments").innerHTML=snap.empty?'<tr><td colspan="4" class="empty">لا توجد تعليقات.</td></tr>':snap.docs.map(d=>{
+    let x=d.data();
+    return `<tr><td>${esc(x.username||x.name||"زائر")}</td><td>${esc(x.text||"")}</td><td>${x.timestamp?.toDate?x.timestamp.toDate().toLocaleTimeString("ar-EG"):"—"}</td><td><button class="btn danger" onclick="deleteComment('${d.id}')">حذف</button></td></tr>`
+  }).join("")
+},()=>{});
+
 window.deleteComment=async id=>{await deleteDoc(doc(db,"streams","live_stream_1","comments",id));toast("تم حذف التعليق")};
 
 Promise.all([getDoc(refs.movies),getDoc(refs.series),getDoc(refs.schedule),getDoc(refs.prayer),getDoc(refs.ads),getDoc(refs.logo),getDoc(refs.banner),getDoc(refs.settings)]).then(r=>{
-if(r[0].exists())S.movies=r[0].data().items||[];if(r[1].exists())S.series=r[1].data().items||[];if(r[2].exists())S.schedule=r[2].data().items||[];
-if(r[3].exists())S.prayer=r[3].data();if(r[4].exists())S.ads=r[4].data().items||[];if(r[5].exists())S.logo=r[5].data();if(r[6].exists())S.banner=r[6].data();
-if(r[7].exists()){let x=r[7].data();$("channelName").value=x.channelName||"Cobra TV";$("timezone").value=x.timezone||"Africa/Cairo";$("offlineMsg").value=x.offlineMsg||"";$("autoPlay").checked=x.autoPlay!==false}
-renderLogo();render();
+  if(r[0].exists())S.movies=r[0].data().items||[];
+  if(r[1].exists())S.series=r[1].data().items||[];
+  if(r[2].exists())S.schedule=r[2].data().items||[];
+  if(r[3].exists())S.prayer=r[3].data();
+  if(r[4].exists())S.ads=r[4].data().items||[];
+  if(r[5].exists())S.logo=r[5].data();
+  if(r[6].exists())S.banner=r[6].data();
+  if(r[7].exists()){
+    let x=r[7].data();
+    $("channelName").value=x.channelName||"Cobra TV";
+    $("timezone").value=x.timezone||"Africa/Cairo";
+    $("offlineMsg").value=x.offlineMsg||"";
+    $("autoPlay").checked=x.autoPlay!==false;
+  }
+  renderLogo();render();
 }).catch(()=>render());
 </script>
 </body>
