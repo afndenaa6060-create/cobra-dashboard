@@ -30,7 +30,7 @@ const streamRef = doc(db, "streams", "live_stream_1");
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const toast = msg => { $("toast").textContent=msg; $("toast").classList.add("show"); setTimeout(()=>$("toast").classList.remove("show"),2200); };
-const fmt = sec => { sec=Math.max(0,Math.floor(sec||0)); return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"); };
+const fmtMin = sec => { sec=Math.max(0,Math.floor(sec||0)); return Math.floor(sec/60) + " دقيقة"; };
 
 const screens = {
  dashboard:["غرفة التحكم الرئيسية","تحكم مباشر في البث والمحتوى"],
@@ -72,7 +72,7 @@ const normalizeItem = (m={}) => ({
   title: String(m.title ?? ""),
   url: String(m.url ?? ""),
   pageUrl: String(m.pageUrl ?? ""),
-  durationSec: Math.max(1, Number(m.durationSec ?? 0) || 1),
+  durationSec: Math.max(60, Number(m.durationSec ?? 0) || 7200),
   kind: String(m.kind ?? "MOVIE").toUpperCase(),
   ageRating: normalizeAge(m.ageRating ?? m.rating, !!m.is18Plus),
   posterUrl: String(m.posterUrl ?? ""),
@@ -126,7 +126,7 @@ function renderStream(){
   $("bannerState").textContent=(stream.topBannerUrl||"")?"مفعل":"غير مفعل";
   $("dashNextMetric").textContent=playlist[1]?.title||"—";
   $("nextTitle").textContent=playlist[1]?.title||"لا يوجد";
-  $("duration").textContent=fmt(playlist[0]?.durationSec || stream.durationSec || 0);
+  $("duration").textContent=fmtMin(playlist[0]?.durationSec || stream.durationSec || 7200);
   const url=stream.bannerUrl || stream.movieBannerUrl || stream.backdropUrl || poster;
   if(url) $("dashPoster").src=url;
 }
@@ -137,8 +137,8 @@ function renderMovies(){
   list.innerHTML=playlist.map((m,i)=>`<div class="media-item">
     <div class="media-info">${m.posterUrl?`<img src="${esc(m.posterUrl)}">`:""}<div>
       <b>${esc(m.kind)} ${i+1} — ${esc(m.title||"بدون اسم")}</b>
-      <small class="muted">${esc(m.category||"")} · ${fmt(m.durationSec)} · ${esc(m.ageRating||"عام")}</small>
-      ${m.pageUrl?`<br><small class="muted" style="color:var(--pink)">السورس: ${esc(m.pageUrl)}</small>`:""}
+      <small class="muted">${esc(m.category||"")} · مدة ${Math.floor(m.durationSec/60)} دقيقة · ${esc(m.ageRating||"عام")}</small>
+      <br><small class="muted" style="color:#7ee787">تخطي: أول ${Math.floor(m.skipStartSec/60)} د · آخر ${Math.floor(m.skipEndSec/60)} د</small>
     </div></div>
     <button class="btn danger" data-remove="${i}">حذف</button>
   </div>`).join("");
@@ -153,7 +153,7 @@ function renderPlaylist(){
   box.innerHTML=playlist.map((m,i)=>`<div class="playlist-row">
     <div class="drag">☷</div>
     <input data-p-title="${i}" value="${esc(m.title||"")}">
-    <input data-p-duration="${i}" type="number" min="1" value="${Number(m.durationSec||1)}">
+    <input data-p-duration="${i}" type="number" min="1" title="المدة بالدقائق" value="${Math.floor((m.durationSec||7200)/60)}">
     <button class="btn danger" data-p-remove="${i}">حذف</button>
   </div>`).join("");
   box.querySelectorAll("[data-p-remove]").forEach(b=>b.onclick=()=>{
@@ -165,6 +165,12 @@ $("movieForm").onsubmit=async e=>{
   e.preventDefault();
   const rawAge = $("movieAgeRating").value;
   const age = rawAge ? normalizeAge(rawAge, false) : "";
+  
+  // تحويل المدة والتخطي من دقائق إلى ثوانٍ عند الحفظ
+  const durSec = Math.max(1, Number($("movieDurationMin").value || 120)) * 60;
+  const skipStart = Math.max(0, Number($("skipStartMin").value || 0)) * 60;
+  const skipEnd = Math.max(0, Number($("skipEndMin").value || 0)) * 60;
+
   playlist.push(normalizeItem({
     title:$("movieTitle").value.trim(),
     category:$("movieCategory").value.trim() || "عام",
@@ -172,15 +178,15 @@ $("movieForm").onsubmit=async e=>{
     pageUrl:$("moviePageUrl").value.trim(),
     url:$("movieUrl").value.trim(),
     posterUrl:$("moviePoster").value.trim(),
-    durationSec:Number($("movieDuration").value||7200),
+    durationSec:durSec,
     kind:"MOVIE",
     ageRating:age,
-    skipStartSec:Number($("skipStart").value||0),
-    skipEndSec:Number($("skipEnd").value||0)
+    skipStartSec:skipStart,
+    skipEndSec:skipEnd
   }));
   renderMovies(); renderPlaylist(); e.target.reset();
-  $("movieDuration").value=7200; $("movieAgeRating").value="+18";
-  $("skipStart").value=0; $("skipEnd").value=0;
+  $("movieDurationMin").value=120; $("movieAgeRating").value="+18";
+  $("skipStartMin").value=0; $("skipEndMin").value=0;
   toast("تمت إضافة الفيلم للقائمة المحلية — اضغط حفظ قائمة البث لنشره.");
 };
 
@@ -190,7 +196,7 @@ $("movieCategory").oninput=e=>$("previewMovieCategory").textContent=e.target.val
 
 $("savePlaylist").onclick=async()=>{
   document.querySelectorAll("[data-p-title]").forEach(x=>playlist[+x.dataset.pTitle].title=x.value.trim());
-  document.querySelectorAll("[data-p-duration]").forEach(x=>playlist[+x.dataset.pDuration].durationSec=Math.max(1,Number(x.value||1)));
+  document.querySelectorAll("[data-p-duration]").forEach(x=>playlist[+x.dataset.pDuration].durationSec=Math.max(60,Number(x.value||1)*60));
 
   const normalized=playlist.map(normalizeItem);
   const first=normalized[0];
@@ -207,12 +213,14 @@ $("savePlaylist").onclick=async()=>{
       moviePoster:first?.posterUrl||"",
       ageRating:first?.ageRating||"",
       is18Plus:first?.ageRating==="+18",
-      durationSec:first?.durationSec||0,
+      durationSec:first?.durationSec||7200,
+      skipStartSec:first?.skipStartSec||0,
+      skipEndSec:first?.skipEndSec||0,
       playbackState:stream.playbackState||"PLAYING",
-      startedAt:serverTimestamp()
+      startedAt:serverTimestamp() // النقطة الزمنية المرجعية التي يعتمد عليها جميع المستخدمين
     },{merge:true});
     playlist=normalized; stream.playbackState=stream.playbackState||"PLAYING";
-    toast("تم نشر قائمة البث ومزامنة القناة بنجاح");
+    toast("تم نشر وتحديث القناة ومزامنة توقيت البث الجماعي بنجاح");
     await loadStream();
   }catch(e){toast("فشل الحفظ: "+e.message)}
 };
@@ -242,7 +250,9 @@ async function saveCurrentPlaylist(resetClock=false){
     moviePoster:first?.posterUrl||"",
     ageRating:first?.ageRating||"",
     is18Plus:first?.ageRating==="+18",
-    durationSec:first?.durationSec||0
+    durationSec:first?.durationSec||7200,
+    skipStartSec:first?.skipStartSec||0,
+    skipEndSec:first?.skipEndSec||0
   };
   if(resetClock) data.startedAt=serverTimestamp();
   await setDoc(streamRef,data,{merge:true});
@@ -301,7 +311,7 @@ $("adForm").onsubmit=async e=>{
 
 function renderAds(){
   $("adList").innerHTML=playlist.filter(x=>String(x.kind).toUpperCase()==="AD").map((a,i)=>`<div class="simple-item">
-    <span><b>${esc(a.title)}</b><small class="muted"> مدة ${fmt(a.durationSec)}</small></span>
+    <span><b>${esc(a.title)}</b><small class="muted"> مدة ${a.durationSec} ثانية</small></span>
     <button class="btn danger" onclick="window.adsRemove(${i})">حذف</button>
   </div>`).join("") || '<div class="empty">لا توجد فواصل محفوظة بعد.</div>';
 }
@@ -442,25 +452,22 @@ loadStream();
           <form class="panel form-card" id="movieForm">
             <div class="panel-head"><span>إضافة فيلم</span><span class="badge">MOVIE</span></div>
             
-            <!-- معلومات المحتوى الأساسية -->
             <div class="two">
               <label>اسم الفيلم<input id="movieTitle" required placeholder="مثال: فيلم Cobra"></label>
               <label>التصنيف<input id="movieCategory" placeholder="أكشن / رعب / كوميدي"></label>
             </div>
             
-            <label>الوصف<textarea id="movieDescription" rows="3" placeholder="اكتب نبذة أو قصة الفيلم هنا..."></textarea></label>
+            <label>الوصف<textarea id="movieDescription" rows="3" placeholder="اكتب نبذة الفيلم هنا..."></textarea></label>
             
-            <!-- قسم الروابط الموحد والمتناسق -->
             <label>رابط صفحة السورس الثابتة (EgyBest Page URL)<input id="moviePageUrl" type="url" placeholder="https://iegybest.cimawbas.tv/play.php?vid=..."></label>
             
             <div class="two">
-              <label>رابط الفيديو المباشر (m3u8 مؤقت - اختياري)<input id="movieUrl" type="url" placeholder="اتركه فارغاً للسحب التلقائي عبر السحابة"></label>
+              <label>رابط الفيديو المباشر (m3u8 مؤقت - اختياري)<input id="movieUrl" type="url" placeholder="اتركه فارغاً للتوليد التلقائي"></label>
               <label>رابط البوستر<input id="moviePoster" type="url" placeholder="https://.../poster.jpg"></label>
             </div>
             
-            <!-- التوقيت والتصنيف العمري -->
             <div class="two">
-              <label>مدة العرض (ثانية)<input id="movieDuration" type="number" min="1" value="7200" required></label>
+              <label>مدة العرض (بالدقائق)<input id="movieDurationMin" type="number" min="1" value="120" required></label>
               <label>التصنيف العمري
                 <select id="movieAgeRating">
                   <option value="">عام (بدون قيود)</option>
@@ -473,8 +480,8 @@ loadStream();
             </div>
             
             <div class="two">
-              <label>تخطي من البداية (ثانية)<input id="skipStart" type="number" min="0" value="0"></label>
-              <label>تخطي من النهاية (ثانية)<input id="skipEnd" type="number" min="0" value="0"></label>
+              <label>تخطي من البداية (بالدقائق)<input id="skipStartMin" type="number" min="0" value="0"></label>
+              <label>تخطي من النهاية (بالدقائق)<input id="skipEndMin" type="number" min="0" value="0"></label>
             </div>
             
             <button class="btn primary" type="submit">حفظ الفيلم</button>
@@ -503,7 +510,7 @@ loadStream();
             <div class="panel-head"><span>فواصل الإعلانات</span><span class="badge">AD BREAKS</span></div>
             <label>اسم ملف الإعلانات<input id="adName" placeholder="إعلانات الفاصل الأول"></label>
             <label>رابط فيديو الإعلانات<input id="adUrl" type="url" placeholder="https://..."></label>
-            <label>مدة الفاصل بالثواني<input id="adAt" type="number" min="0" placeholder="مثال: 900"></label>
+            <label>مدة الفاصل بالثواني<input id="adAt" type="number" min="0" placeholder="مثال: 30"></label>
             <label class="switch-row"><span>تفعيل الفاصل</span><input id="adActive" type="checkbox" checked><i></i></label>
             <button class="btn primary" type="submit">إضافة الفاصل</button>
           </form>
