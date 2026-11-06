@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مصنع المالك | Malek Factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070611;--panel:#100b20;--purple:#8b19ed;--pink:#e000cf;--cyan:#38d9ff;--text:#f8f4ff;--muted:#b8a9cb;--line:#512276}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#21103b 0,#080611 48%,#03030a 100%);color:var(--text);font-family:Cairo,Arial,sans-serif}
+a,button{color:inherit;text-decoration:none;font:inherit}button{cursor:pointer}
+.wrap{max-width:1500px;margin:auto;padding:0 22px}
+.top{position:sticky;top:0;z-index:20;background:#090611ed;backdrop-filter:blur(18px);border-bottom:1px solid #5b2583}
+.toprow{display:flex;align-items:center;gap:18px;padding:12px 0}
+.logo{font-weight:900;font-size:25px;white-space:nowrap;line-height:1.1}.logo small{display:block;color:#ef39e4;font-size:12px;letter-spacing:1px}
+.search{flex:1;display:flex;border:1px solid #a52bdf;border-radius:30px;background:#140b22;padding:9px 16px;box-shadow:0 0 16px #8b19ed22}.search input{background:none;border:0;outline:0;color:white;width:100%;font-family:inherit}
+.actions{display:flex;gap:10px;align-items:center}.pill{border:1px solid #6f28a5;border-radius:24px;padding:9px 14px;background:#170c28}.nav{display:flex;align-items:center;justify-content:space-between;padding:8px 0 14px;gap:12px}.navlinks{display:flex;gap:24px;align-items:center;color:#eee;font-weight:700}.navlinks a:hover{color:#ef4be5}.btn{border:0;border-radius:25px;padding:10px 18px;background:linear-gradient(100deg,#6500c8,#c300dc);box-shadow:0 0 18px #a000e755;font-weight:800}
+.hero{margin:16px 0;border:1px solid #7826b4;border-radius:22px;overflow:hidden;min-height:330px;display:grid;grid-template-columns:1.2fr .8fr;align-items:center;background:linear-gradient(110deg,#12071cdd,#24083b99),url('https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/imagesCZXDFCASDDCF.jpg') center/cover;box-shadow:0 0 25px #a000e522}
+.heroText{padding:35px 6%;text-shadow:0 3px 15px #000}.hero h1{font-size:clamp(35px,5vw,75px);margin:0 0 10px;font-weight:900}.hero p{font-size:clamp(17px,2vw,28px);margin:0 0 24px;color:#fff}.hero .cta{font-size:20px;border:1px solid #f05cff;border-radius:35px;padding:10px 30px;background:#4e087a99;display:inline-block}
+.heroBadge{justify-self:center;align-self:center;background:#090611b8;border:1px solid #9d31dd;border-radius:18px;padding:20px;text-align:center;box-shadow:0 0 30px #a500d955}
+.categories{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin:18px 0 30px}.cat{border:1px solid #512276;background:linear-gradient(150deg,#211033,#090611);border-radius:15px;overflow:hidden;text-align:center;min-width:0;transition:.2s}.cat:hover,.product:hover{transform:translateY(-3px);border-color:#e24bea}.cat img{width:100%;height:110px;object-fit:cover;display:block}.cat b{display:block;padding:7px;font-size:14px}
+.sectionhead{display:flex;align-items:center;gap:14px;margin:25px 0 15px}.sectionhead h2{margin:0;font-size:25px;white-space:nowrap}.sectionhead:after{content:"";height:1px;background:linear-gradient(90deg,#8123bb,transparent);flex:1}
+.shopLayout{display:grid;grid-template-columns:230px 1fr;gap:18px}.promo{border:1px solid #6e28a0;border-radius:16px;background:linear-gradient(160deg,#3a075c,#10071d);padding:18px;text-align:center;align-self:start;position:sticky;top:150px}.promo strong{font-size:32px;color:#ffe45a;display:block}.promo p{color:#e8d9f7}.products{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.product{border:1px solid #54237b;background:linear-gradient(160deg,#171024,#090611);border-radius:16px;overflow:hidden;position:relative;transition:.2s;min-width:0}.product img{width:100%;aspect-ratio: .72;object-fit:cover;display:block;background:#20112c}.tag{position:absolute;top:9px;right:9px;background:#e00052;border-radius:9px;padding:2px 8px;font-size:12px}.productbody{padding:10px}.product h3{font-size:14px;margin:0 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.product .add{width:100%;border:0;border-radius:20px;background:linear-gradient(90deg,#5900b4,#b000d2);padding:8px;font-weight:700;font-size:13px}
+.float{position:fixed;bottom:20px;left:18px;display:grid;gap:10px;z-index:10}.float a{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#16c66b;box-shadow:0 0 18px #16c66b55;font-size:22px}.float button{width:48px;height:48px;border:0;border-radius:50%;background:#7200c9;font-size:22px}
+footer{padding:30px 0;color:#aa9bbd;text-align:center;border-top:1px solid #32134c;margin-top:35px}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:40;padding:18px}.modal.open{display:flex}.dialog{width:min(480px,100%);background:#100b20;border:1px solid #8a28cb;border-radius:20px;padding:24px;box-shadow:0 0 30px #a000e544}.dialog input,.dialog select{width:100%;padding:12px;margin:8px 0;border:1px solid #62308a;background:#080611;color:white;border-radius:10px;font-family:inherit}.dialog h2{margin-top:0}
+@media(max-width:1000px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}.categories{grid-template-columns:repeat(3,minmax(0,1fr))}.cat img{height:100px}.shopLayout{grid-template-columns:170px 1fr}.navlinks{gap:12px}}
+@media(max-width:650px){
+.toprow{display:grid;grid-template-columns:1fr auto;gap:9px;padding:10px 0}
+.logo{font-size:20px;line-height:1.15}
+.actions{grid-column:1/-1;display:flex;gap:7px;justify-content:space-between}
+.actions .pill{flex:1;text-align:center;padding:7px 5px;font-size:12px;white-space:nowrap}
+.search{grid-column:1/-1;order:initial;flex-basis:auto;width:100%;padding:10px 13px}
+.nav{padding:7px 0;display:block}
+.navlinks{display:flex;gap:7px;overflow-x:auto;padding:0 0 4px;white-space:nowrap;font-size:12px}
+.navlinks a{padding:7px 10px;border-radius:18px;background:#140b22;flex:0 0 auto}
+.navlinks .btn{padding:7px 12px}
+.nav>span{display:none}
+.hero{margin:10px 0 16px;min-height:300px}
+.wrap{padding:0 12px}.hero{grid-template-columns:1fr;background-position:58% center}.heroText{padding:28px 20px;background:linear-gradient(90deg,#080611bb,#08061122)}.heroBadge{display:none}.hero h1{font-size:38px}.hero p{font-size:16px}.categories{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.cat img{height:85px}.cat b{font-size:12px;padding:5px}.shopLayout{grid-template-columns:1fr}.promo{position:static;display:flex;align-items:center;justify-content:space-around;padding:10px}.promo strong{font-size:22px}.promo p{font-size:12px;margin:0}.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.productbody{padding:8px}.product h3{font-size:12px}.product .add{font-size:12px}.sectionhead h2{font-size:20px}.float{left:10px;bottom:12px}.float a,.float button{width:43px;height:43px}}
+
+/* MOBILE REBUILD — compact storefront */
+@media(max-width:650px){
+  body{font-size:14px;overflow-x:hidden}
+  .wrap{padding-inline:12px}
+  .top{position:relative}
+  .toprow{display:grid;grid-template-columns:1fr;gap:8px;padding:12px 0 9px}
+  .logo{font-size:21px;text-align:center;line-height:1.05}
+  .logo small{font-size:10px;letter-spacing:1.4px;margin-top:3px}
+  .actions{grid-column:auto;grid-row:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .actions .pill{min-width:0;padding:8px 4px;font-size:12px;text-align:center;border-radius:15px}
+  .search{grid-column:auto;grid-row:auto;width:100%;min-height:44px;padding:9px 13px;border-radius:18px}
+  .search input{font-size:14px;min-width:0}
+  .nav{padding:0;margin:0 -12px;border-top:1px solid #32134c;display:block}
+  .navlinks{display:flex;justify-content:flex-start;gap:5px;overflow-x:auto;scrollbar-width:none;padding:8px 12px;white-space:nowrap;font-size:12px}
+  .navlinks::-webkit-scrollbar{display:none}
+  .navlinks a{background:transparent;padding:7px 11px;border-radius:13px;flex:0 0 auto}
+  .navlinks .btn{padding:7px 13px}
+  .nav>span{display:none}
+  .hero{margin:12px 0 18px;min-height:245px;display:block;background-position:center;background-size:cover;border-radius:18px}
+  .heroText{padding:25px 17px;background:linear-gradient(90deg,#070611e8 0%,#07061199 65%,#07061122 100%);min-height:245px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+  .hero h1{font-size:32px;line-height:1.2;margin-bottom:10px}
+  .hero p{font-size:15px;line-height:1.7;margin:0 0 8px}
+  .hero .cta{font-size:15px;padding:8px 20px;margin-top:8px}
+  .heroBadge{display:none}
+  .sectionhead{margin:20px 0 12px;gap:8px}
+  .sectionhead h2{font-size:18px}
+  .categories{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 22px}
+  .cat{border-radius:12px}
+  .cat img{height:auto;aspect-ratio:1.05;object-fit:cover}
+  .cat b{font-size:11px;padding:6px 3px}
+  .shopLayout{display:block}
+  .promo{position:static;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:12px;margin-bottom:12px;border-radius:13px}
+  .promo strong{font-size:18px}
+  .promo p{font-size:11px}
+  .promo .btn{font-size:12px;padding:7px 12px}
+  .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .product{border-radius:13px}
+  .product img{aspect-ratio: .78;object-fit:cover;width:100%}
+  .productbody{padding:8px}
+  .product h3{font-size:12px;margin-bottom:7px}
+  .product .add{font-size:12px;padding:9px 4px;border-radius:14px}
+  .tag{font-size:10px;top:7px;right:7px}
+  #about,#contact{font-size:13px;line-height:1.9}
+  footer{font-size:12px;padding:22px 12px}
+  .float{left:9px;bottom:12px;gap:8px}
+  .float a,.float button{width:39px;height:39px;font-size:18px}
+  .modal{padding:10px;align-items:flex-end}
+  .dialog{max-height:88dvh;overflow:auto;padding:18px;border-radius:18px}
+}
+@media(max-width:380px){
+  .logo{font-size:19px}
+  .actions .pill{font-size:11px}
+  .hero h1{font-size:28px}
+  .hero p{font-size:13px}
+  .cat b{font-size:10px}
+  .products{gap:7px}
+}
+
+
+/* Product detail experience */
+.product img{cursor:zoom-in}
+.product .add{cursor:pointer}
+.pdetail-overlay{position:fixed;inset:0;z-index:9999;background:#03020beF;display:none;align-items:center;justify-content:center;padding:16px}
+.pdetail-overlay.open{display:flex}
+.pdetail{width:min(950px,100%);max-height:94dvh;overflow:auto;background:#100b20;border:1px solid #8b19ed;border-radius:22px;box-shadow:0 0 45px #8b19ed44;display:grid;grid-template-columns:1.05fr 1fr;gap:22px;padding:20px;position:relative}
+.pdetail-close{position:absolute;top:10px;left:12px;background:#241033;color:#fff;border:1px solid #7130a0;border-radius:50%;width:38px;height:38px;font-size:20px;z-index:2}
+.pdetail-mainimg{width:100%;height:min(58dvh,520px);object-fit:contain;background:#070611;border-radius:15px;cursor:zoom-in}
+.pdetail-thumbs{display:flex;gap:8px;overflow:auto;margin-top:10px}
+.pdetail-thumbs img{width:65px;height:75px;object-fit:cover;border:1px solid #61318a;border-radius:9px;cursor:pointer}
+.pdetail-info{padding:16px 8px}.pdetail-info h2{font-size:26px;margin:8px 0 14px}
+.pdetail-label{display:block;color:#c9b4df;margin:16px 0 8px;font-weight:700}
+.pdetail-options{display:flex;flex-wrap:wrap;gap:8px}
+.pdetail-option{border:1px solid #67308d;background:#160d25;color:#fff;padding:9px 14px;border-radius:12px;cursor:pointer}
+.pdetail-option.selected{background:linear-gradient(120deg,#6c00c9,#d000c7);border-color:#e7a1ff;box-shadow:0 0 12px #b500ff55}
+.pdetail-qty{display:flex;align-items:center;gap:12px;margin-top:8px}
+.pdetail-qty button{width:38px;height:38px;border-radius:10px;background:#241033;color:white;border:1px solid #7a35a5;font-size:20px}
+.pdetail-qty input{width:70px;text-align:center;background:#080611;color:white;border:1px solid #67308d;border-radius:10px;padding:10px}
+.pdetail-add{width:100%;margin-top:22px;padding:14px;border-radius:15px;background:linear-gradient(110deg,#7600d9,#d000c8);color:#fff;border:0;font-family:inherit;font-size:17px;font-weight:800}
+.zoom-overlay{position:fixed;inset:0;background:#000e;z-index:10000;display:none;align-items:center;justify-content:center;padding:12px}
+.zoom-overlay.open{display:flex}.zoom-overlay img{max-width:100%;max-height:95dvh;object-fit:contain}.zoom-close{position:absolute;top:15px;right:15px;background:#222;color:white;border:0;border-radius:50%;width:42px;height:42px;font-size:24px}
+@media(max-width:650px){.pdetail{grid-template-columns:1fr;gap:8px;padding:12px;border-radius:18px;max-height:96dvh}.pdetail-mainimg{height:43dvh}.pdetail-info{padding:5px 7px}.pdetail-info h2{font-size:20px;margin:5px 0}.pdetail-label{margin:10px 0 6px}.pdetail-option{padding:8px 11px;font-size:13px}.pdetail-add{margin-top:14px;padding:12px}.pdetail-thumbs img{width:54px;height:60px}}
+</style>
+</head><body>
+<header class="top"><div class="wrap">
+<div class="toprow"><div class="logo">👑 مصنع المالك <small>MALEK FACTORY</small></div>
+<div class="search">⌕ <input id="search" placeholder="ابحث عن موديل أو منتج ..."></div>
+<div class="actions"><button class="pill" id="loginBtn">👤 حسابي</button><button class="pill" id="cartBtn">🛒 سلة <span id="count">0</span></button><a class="pill" href="https://wa.me/201030059501">واتساب</a></div></div>
+<div class="nav"><div class="navlinks"><a class="btn" href="#">الرئيسية</a><a href="#products">المنتجات</a><a href="#categories">الأقسام</a><a href="#about">عن المصنع</a><a href="#contact">تواصل معنا</a></div><span>جودة عالية • أناقة تدوم</span></div></div></header>
+<main class="wrap">
+<section class="hero"><div class="heroText"><h1>مصنع المالك</h1><p>أحدث موديلات الملابس النسائية والأطفال</p><p>أناقة • جودة • أسعار تنافسية</p><a class="cta" href="#products">تسوق الآن　🛒</a></div><div class="heroBadge">👑<br><b>جودة<br>من المصنع</b></div></section>
+<div class="sectionhead" id="categories"><h2>تسوق حسب القسم</h2></div>
+<div class="categories">
+<div class="cat"><img src="https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/images.jpg"><b>جينز</b></div>
+<div class="cat"><img src="https://res.cloudinary.com/mfkqydlq/image/upload/v1793994689/imagesSADAWS.jpg"><b>ملابس حريمي</b></div>
+<div class="cat"><img src="https://res.cloudinary.com/mfkqydlq/image/upload/v1793994689/imagesDSFSEDA.jpg"><b>بلوزات وتيشيرتات</b></div>
+<div class="cat"><img src="https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/imagesVCBDFGB.jpg"><b>فساتين</b></div>
+<div class="cat"><img src="https://res.cloudinary.com/mfkqydlq/image/upload/v1793994689/imagesVCXVSDFFV.jpg"><b>بنطلونات</b></div>
+<div class="cat"><img src="https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/imagesSDAWDQAW.jpg"><b>أطفال</b></div>
+</div>
+<div class="sectionhead" id="products"><h2>👑 أحدث الموديلات</h2></div>
+<div class="shopLayout"><aside class="promo"><div>🎁 عروض وخصومات</div><strong>لفترة محدودة</strong><p>تابع أحدث موديلات المصنع</p><a class="btn" href="#products">شوف المنتجات</a></aside><div class="products" id="grid"></div></div>
+<section id="about"><div class="sectionhead"><h2>عن مصنع المالك</h2></div><p>تأسس مصنع المالك عام 2010 بخبرة 16 سنة في مجال الملابس. نهتم بالخامات الفرز الأول والتصميمات العصرية، ونوفر الشحن إلى جميع محافظات مصر.</p></section>
+<section id="contact"><div class="sectionhead"><h2>تواصل مع المصنع</h2></div><p>واتساب المبيعات: <a href="https://wa.me/201030059501">01030059501</a></p></section>
+</main><footer>© مصنع المالك Malek Factory — جميع الحقوق محفوظة</footer>
+<div class="float"><a href="https://wa.me/201030059501" aria-label="WhatsApp">☏</a><button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button></div>
+<div class="modal" id="modal"><div class="dialog"><button style="float:left;background:none;border:0" onclick="closeModal()">✕</button><h2>تسجيل الدخول / إنشاء حساب</h2><p>الدخول السريع بحساب Google، وبعدها اكتب بيانات التواصل.</p><button class="btn" style="width:100%" onclick="googleLogin()">الدخول باستخدام Google</button><input id="realName" placeholder="اسمك الحقيقي"><input id="phone" placeholder="رقم الموبايل"><select id="kind"><option value="retail">عميل قطاعي</option><option value="wholesale">تاجر جملة</option></select><input id="shop" placeholder="اسم المحل (لتاجر الجملة فقط)"><button class="btn" style="width:100%" onclick="saveProfile()">حفظ البيانات</button><small id="status"></small></div></div>
+
+<div class="pdetail-overlay" id="productDetail"><div class="pdetail">
+<button class="pdetail-close" id="detailClose" aria-label="إغلاق">×</button>
+<div><img class="pdetail-mainimg" id="detailImage" alt="صورة الموديل"><div class="pdetail-thumbs" id="detailThumbs"></div></div>
+<div class="pdetail-info"><h2 id="detailTitle">موديل المالك</h2><p style="color:#b8a9cb">اختار اللون والمقاس والكمية المطلوبة لكل قطعة.</p>
+<span class="pdetail-label">اللون</span><div class="pdetail-options" id="detailColors"></div>
+<span class="pdetail-label">المقاس</span><div class="pdetail-options" id="detailSizes"></div>
+<span class="pdetail-label">عدد القطع</span><div class="pdetail-qty"><button id="qtyMinus">−</button><input id="detailQty" type="number" min="1" value="1"><button id="qtyPlus">+</button></div>
+<button class="pdetail-add" id="detailAdd">＋ إضافة الاختيار للسلة</button><p style="font-size:12px;color:#b8a9cb;margin-top:12px">الطلب غير نهائي؛ مسؤول المبيعات سيتواصل معك لتأكيد التفاصيل.</p>
+</div></div></div>
+<div class="zoom-overlay" id="imageZoom"><button class="zoom-close" id="zoomClose">×</button><img id="zoomImage" alt="تكبير الصورة"></div>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {getFirestore,collection,addDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const firebaseConfig={apiKey:"AIzaSyCbshZ6bCEh6NMsB8IZ5IJQkt_fRt2rAWQ",authDomain:"malek-factory.firebaseapp.com",projectId:"malek-factory",storageBucket:"malek-factory.firebasestorage.app",messagingSenderId:"697696813492",appId:"1:697696813492:web:96e2aae16c40cfaea572e1",measurementId:"G-ZE4H1MQ2T2"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+const imgs=['https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/imagesCZXDFCASDDCF.jpg','https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/images.jpg','https://res.cloudinary.com/mfkqydlq/image/upload/v1793994689/imagesSADAWS.jpg','https://res.cloudinary.com/mfkqydlq/image/upload/v1793994689/imagesDSFSEDA.jpg','https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/imagesVCBDFGB.jpg','https://res.cloudinary.com/mfkqydlq/image/upload/v1793994689/imagesVCXVSDFFV.jpg','https://res.cloudinary.com/mfkqydlq/image/upload/v1793994688/imagesSDAWDQAW.jpg'];
+let cart=[],user=null;
+const grid=document.querySelector('#grid');
+
+let activeProduct=0,selectedColor='كحلي',selectedSize='L',detailQty=1;
+const colorChoices=['كحلي','أسود','أزرق','بيج','أبيض'],sizeChoices=['S','M','L','XL','2XL'];
+function openProduct(i){
+ activeProduct=i;selectedColor='كحلي';selectedSize='L';detailQty=1;
+ const src=imgs[i],title='موديل المالك '+String(i+1).padStart(2,'0');
+ document.querySelector('#detailTitle').textContent=title;
+ document.querySelector('#detailImage').src=src;
+ document.querySelector('#detailQty').value=1;
+ const thumbs=document.querySelector('#detailThumbs');thumbs.innerHTML='';
+ [src].forEach(u=>{let im=document.createElement('img');im.src=u;im.onclick=()=>document.querySelector('#detailImage').src=u;thumbs.append(im)});
+ function choices(id,arr,selected,cb){let el=document.querySelector(id);el.innerHTML='';arr.forEach(v=>{let b=document.createElement('button');b.className='pdetail-option'+(v===selected?' selected':'');b.textContent=v;b.onclick=()=>{selected=v;[...el.children].forEach(x=>x.classList.toggle('selected',x===b));cb(v)};el.append(b)})}
+ choices('#detailColors',colorChoices,selectedColor,v=>selectedColor=v);
+ choices('#detailSizes',sizeChoices,selectedSize,v=>selectedSize=v);
+ document.querySelector('#productDetail').classList.add('open');document.body.style.overflow='hidden';
+}
+function closeProduct(){document.querySelector('#productDetail').classList.remove('open');document.body.style.overflow=''}
+imgs.forEach((src,i)=>{let card=document.createElement('article');card.className='product';card.dataset.search='موديل '+(i+1);card.innerHTML=`<span class="tag">جديد</span><img src="${src}" loading="lazy" alt="موديل المالك ${i+1}"><div class="productbody"><h3>موديل المالك ${String(i+1).padStart(2,'0')}</h3><button class="add">عرض التفاصيل واختيار القطع</button></div>`;card.querySelector('img').onclick=()=>openProduct(i);card.querySelector('button').onclick=()=>openProduct(i);grid.append(card)});
+document.querySelector('#detailClose').onclick=closeProduct;
+document.querySelector('#qtyMinus').onclick=()=>{detailQty=Math.max(1,Number(document.querySelector('#detailQty').value||1)-1);document.querySelector('#detailQty').value=detailQty};
+document.querySelector('#qtyPlus').onclick=()=>{detailQty=Math.max(1,Number(document.querySelector('#detailQty').value||1)+1);document.querySelector('#detailQty').value=detailQty};
+document.querySelector('#detailQty').onchange=e=>{detailQty=Math.max(1,parseInt(e.target.value)||1);e.target.value=detailQty};
+document.querySelector('#detailImage').onclick=()=>{document.querySelector('#zoomImage').src=document.querySelector('#detailImage').src;document.querySelector('#imageZoom').classList.add('open')};
+document.querySelector('#zoomClose').onclick=()=>document.querySelector('#imageZoom').classList.remove('open');
+document.querySelector('#detailAdd').onclick=()=>{cart.push({name:'موديل المالك '+String(activeProduct+1).padStart(2,'0'),image:imgs[activeProduct],color:selectedColor,size:selectedSize,quantity:detailQty});document.querySelector('#count').textContent=cart.reduce((a,x)=>a+x.quantity,0);closeProduct();alert(`اتضاف للسلة: ${selectedColor} / ${selectedSize} / ${detailQty} قطعة`)};
+document.querySelector('#search').addEventListener('input',e=>{let q=e.target.value.trim();[...grid.children].forEach(c=>c.style.display=c.dataset.search.includes(q)||!q?'':'none')});
+document.querySelector('#loginBtn').onclick=()=>document.querySelector('#modal').classList.add('open');document.querySelector('#cartBtn').onclick=async()=>{if(!cart.length)return alert('السلة فاضية');if(!auth.currentUser){document.querySelector('#modal').classList.add('open');return alert('سجّل دخولك الأول لإرسال الطلب');}let n=prompt('اسمك ورقم موبايلك لتأكيد الطلب');if(!n)return;try{await addDoc(collection(db,'orders'),{items:cart,customerName:n,userId:auth.currentUser.uid,status:'pending_sales_confirmation',createdAt:serverTimestamp()});alert('وصل طلبك للمبيعات — سيتم التواصل معك لتأكيد الطلب');cart=[];document.querySelector('#count').textContent=0}catch(e){alert('تعذر إرسال الطلب: '+e.message)}};
+window.closeModal=()=>document.querySelector('#modal').classList.remove('open');window.googleLogin=async()=>{try{let r=await signInWithPopup(auth,provider);user=r.user;document.querySelector('#status').textContent='تم تسجيل الدخول: '+user.email}catch(e){document.querySelector('#status').textContent=e.message}};
+window.saveProfile=async()=>{if(!auth.currentUser)return alert('سجّل دخول Google الأول');let name=document.querySelector('#realName').value.trim(),phone=document.querySelector('#phone').value.trim(),kind=document.querySelector('#kind').value,shop=document.querySelector('#shop').value.trim();if(!name||!phone||(kind==='wholesale'&&!shop))return alert('اكمل الاسم ورقم الموبايل واسم المحل للجملة');try{await addDoc(collection(db,'customers'),{uid:auth.currentUser.uid,name,phone,accountType:kind,shopName:shop||null,email:auth.currentUser.email,createdAt:serverTimestamp()});alert('تم حفظ بياناتك');closeModal()}catch(e){alert(e.message)}};
+onAuthStateChanged(auth,u=>user=u);
+</script></body></html>
